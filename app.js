@@ -1984,8 +1984,27 @@ export function buildResultSummaryItems(result, phaseIndex = 0) {
     }
     return summary;
 }
+/**
+ * A phase that did not converge has no equilibrium state (typically a wall
+ * that is unstable in that phase); its numbers must not be read as results,
+ * and later phases start from that invalid state.
+ */
+export function buildPhaseConvergenceAlert(result, phaseIndex) {
+    const phase = result?.phases?.[phaseIndex];
+    if (phase?.converged === false) {
+        return `<div class="phase-alert" role="alert"><strong>No equilibrium found in this phase.</strong> The solver stopped after ${escapeHtml(phase?.iterations ?? "n/a")} iterations. This usually means the wall is unstable here: insufficient embedment, or anchors/props at their capacity. The plotted values are not a valid result — lengthen the wall or add support and run again.</div>`;
+    }
+    const earlierFailure = (result?.phases ?? [])
+        .slice(0, Math.max(0, phaseIndex))
+        .find((item) => item?.converged === false);
+    if (earlierFailure) {
+        return `<div class="phase-alert" role="alert"><strong>An earlier phase did not converge</strong> (${escapeHtml(earlierFailure.name)}). This phase starts from that invalid state, so its values are not a valid result.</div>`;
+    }
+    return "";
+}
 export function buildResultHtml(result, phaseIndex) {
     const phase = result.phases[phaseIndex];
+    const convergenceAlert = buildPhaseConvergenceAlert(result, phaseIndex);
     const wallLengthSearch = result.search_evaluation;
     const plotData = buildPhasePlotData(result, phaseIndex);
     const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
@@ -2017,6 +2036,7 @@ export function buildResultHtml(result, phaseIndex) {
     </details>
   `;
     return `
+    ${convergenceAlert}
     <div class="depth-plot-grid" aria-label="Selected phase depth plots">
       ${plotCards}
       ${rotationPlot}

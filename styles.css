@@ -718,3 +718,16 @@ th { background: #f0eee7; font-weight: 700; }
   .workspace { display: block; max-width: none; padding: 0; }
   .panel, .report-card, .contact-card-panel { box-shadow: none; break-inside: avoid; }
 }
+
+.phase-alert {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid #b42318;
+  border-left-width: 5px;
+  border-radius: 8px;
+  background: #fdecea;
+  color: #5c1411;
+  line-height: 1.45;
+}
+
+.phase-alert strong { color: #8a1c14; }

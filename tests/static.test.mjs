@@ -1358,3 +1358,14 @@ test("shear plot is stepped when the API returns shear above and below each node
   assert.equal(stepped.values[0], 5);
   assert.equal(stepped.values[1], 10);
 });
+
+test("non-converged phases are flagged as having no equilibrium", async () => {
+  const { buildResultHtml, buildPhaseConvergenceAlert, SAMPLE_RESULT } = await import("../app.js");
+  const result = structuredClone(SAMPLE_RESULT);
+  assert.equal(buildPhaseConvergenceAlert(result, 2), "");
+  result.phases[1].converged = false;
+  result.phases[1].iterations = 60;
+  assert.match(buildResultHtml(result, 1), /class="phase-alert" role="alert"><strong>No equilibrium found in this phase/);
+  assert.match(buildPhaseConvergenceAlert(result, 2), /An earlier phase did not converge/);
+  assert.equal(buildPhaseConvergenceAlert(result, 0), "");
+});
