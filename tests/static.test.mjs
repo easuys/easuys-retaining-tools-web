@@ -33,6 +33,7 @@ import {
   loadTurnstileScript,
   resetTurnstileLoaderForTests,
   runAnalysis,
+  resolveApiBaseUrl,
   submitStudyRequest,
 } from "../app.js";
 
@@ -50,7 +51,8 @@ test("frontend is configured for retaining domain and API", async () => {
   assert.match(html, /EA Suys Retaining Tools/);
   assert.match(html, /name="robots" content="noindex,nofollow"/);
   assert.match(html, /Engineering preview — benchmark validation pending/);
-  assert.match(html, /https:\/\/www\.easuys\.be\/tools\/index-en\.html/);
+  assert.match(html, /href="https:\/\/www\.easuys\.be\/"/);
+  assert.match(html, /href="https:\/\/structural\.easuys\.com\/"/);
   assert.match(html, /data-project-input/);
   assert.match(html, /data-quick-editor/);
   assert.match(html, /data-run-analysis/);
@@ -62,11 +64,14 @@ test("frontend is configured for retaining domain and API", async () => {
   assert.match(html, /data-report-shell/);
   assert.match(html, /data-contact-shell/);
   assert.match(html, /data-download-json/);
+  assert.match(html, /data-download-input/);
+  assert.match(html, /data-service-status/);
+  assert.match(html, /data-result-plots/);
   assert.match(html, /data-download-html/);
   assert.match(css, /Space Grotesk/);
   assert.match(css, /\.workspace\s*{/);
   assert.match(css, /\.quick-editor-grid\s*{/);
-  assert.match(css, /\.geometry-svg,/);
+  assert.match(css, /\.geometry-svg\s*\{/);
   assert.match(css, /\.plot-svg\s*{/);
   assert.equal(
     API_BASE_URL,
@@ -166,6 +171,43 @@ test("runAnalysis surfaces backend error messages", async () => {
   );
 });
 
+test("runAnalysis gives a recoverable message for unavailable or non-JSON service responses", async () => {
+  const expectedMessage = /The calculation service is currently unavailable \(HTTP (404|503|200|0)\)\. Your input is kept; you can download the JSON payload and try again later\./;
+  const notFound = async () => ({
+    ok: false,
+    status: 404,
+    json: async () => { throw new SyntaxError("Cloudflare response was HTML"); },
+  });
+  const serverError = async () => ({
+    ok: false,
+    status: 503,
+    json: async () => ({ error: "temporary backend detail" }),
+  });
+  const invalidJson = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => { throw new SyntaxError("not JSON"); },
+  });
+  const networkFailure = async () => { throw new TypeError("fetch failed"); };
+
+  await assert.rejects(() => runAnalysis(SAMPLE_PROJECT, notFound), expectedMessage);
+  await assert.rejects(() => runAnalysis(SAMPLE_PROJECT, serverError), expectedMessage);
+  await assert.rejects(() => runAnalysis(SAMPLE_PROJECT, invalidJson), expectedMessage);
+  await assert.rejects(() => runAnalysis(SAMPLE_PROJECT, networkFailure), expectedMessage);
+});
+
+test("resolveApiBaseUrl accepts only the four approved origins", () => {
+  assert.equal(resolveApiBaseUrl(""), API_BASE_URL);
+  assert.equal(
+    resolveApiBaseUrl("?api=https%3A%2F%2Feasuys-retaining-tools-api-staging.yellow-violet-f185.workers.dev%2Fextra"),
+    "https://easuys-retaining-tools-api-staging.yellow-violet-f185.workers.dev"
+  );
+  assert.equal(resolveApiBaseUrl("api=http%3A%2F%2F127.0.0.1%3A8787"), "http://127.0.0.1:8787");
+  assert.equal(resolveApiBaseUrl("?api=http%3A%2F%2Flocalhost%3A8787"), "http://localhost:8787");
+  assert.equal(resolveApiBaseUrl("?api=https%3A%2F%2Fevil.example"), API_BASE_URL);
+  assert.equal(resolveApiBaseUrl("?api=https%3A%2F%2Fuser%40easuys-retaining-tools-api.yellow-violet-f185.workers.dev"), API_BASE_URL);
+});
+
 test("sample project exposes a dedicated retaining payload", () => {
   assert.equal(SAMPLE_PROJECT.wall_type, "steel_sheet_pile");
   assert.equal(SAMPLE_PROJECT.design_mode, "classic");
@@ -254,6 +296,16 @@ test("quick editor shows design-mode gamma M0 defaults when manual steel gamma i
   );
 });
 
+test("quick editor exposes six keyboard-ready input tabs", () => {
+  const html = buildQuickEditorHtml(SAMPLE_PROJECT, 1);
+  for (const label of ["General", "Wall", "Soils", "Phases", "Supports", "JSON"]) {
+    assert.match(html, new RegExp(`role="tab"[^>]*>${label}<\\/button>`));
+  }
+  assert.match(html, /role="tablist"/);
+  assert.match(html, /role="tabpanel"/);
+  assert.match(html, /data-json-input-mount/);
+});
+
 test("result helpers create options, plots and html fragments", () => {
   assert.equal(SAMPLE_RESULT.phases.length, 3);
   assert.equal(SAMPLE_RESULT.phases[0].converged, true);
@@ -336,6 +388,9 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Benchmark-backed validation remains pending/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /plan\.md screenshot acceptance workflow/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Direct API visualization displacement array/);
+  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Max 16\.40 mm @ -4\.00 m/);
+  assert.match(buildResultHtml(SAMPLE_RESULT, 2), />0\.0 m<\/text>/);
+  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /fill-opacity="0\.16"/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Direct API visualization rotation array/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Rotation/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Global governing envelope/);
@@ -799,23 +854,12 @@ test("result rendering prefers visualization arrays over sampled-result fallback
 
   const html = buildResultHtml(visualized, 2);
   const report = buildReportHtml(SAMPLE_PROJECT, visualized, 2);
-  const visualizationPath = buildPlotPath([0, -4, -9.5], [0, 250, 0]);
-  const sampledPath = buildPlotPath(
-    SAMPLE_RESULT.phases[2].sampled_results.map((item) => item.level_m),
-    SAMPLE_RESULT.phases[2].sampled_results.map((item) => item.moment_kNm_per_m)
-  );
-  const visualizationRotationPath = buildPlotPath([0, -4, -9.5], [0, 9, 0]);
-  const sampledRotationPath = buildPlotPath(
-    SAMPLE_RESULT.phases[2].sampled_results.map((item) => item.level_m),
-    SAMPLE_RESULT.phases[2].sampled_results.map((item) => item.rotation_mrad)
-  );
-
   assert.match(html, /Direct API visualization moment array/);
   assert.match(html, /Direct API visualization rotation array/);
-  assert.match(html, new RegExp(visualizationPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  assert.match(html, new RegExp(visualizationRotationPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  assert.doesNotMatch(html, new RegExp(sampledPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  assert.doesNotMatch(html, new RegExp(sampledRotationPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(html, /Max 250\.0 kNm\/m @ -4\.00 m/);
+  assert.match(html, /Max 9\.00 mrad @ -4\.00 m/);
+  assert.doesNotMatch(html, /Max 182\.5 kNm\/m @ -4\.00 m/);
+  assert.doesNotMatch(html, /Max 4\.00 mrad @ -4\.00 m/);
   assert.match(report, /Direct API visualization moment array/);
   assert.match(report, /Direct API visualization rotation array/);
 });
@@ -1291,4 +1335,26 @@ test("quick editor can patch support permanence across phases", () => {
   assert.match(buildInputSnapshot(phasedSupport, 1)[4].text, /first support phase window 3-3/);
   assert.match(buildGeometryPreviewSvg(phasedSupport, 1), /Supports none in this phase/);
   assert.match(buildGeometryPreviewSvg(phasedSupport, 2), /A1 anchor/);
+});
+
+test("shear plot is stepped when the API returns shear above and below each node", async () => {
+  const { buildSteppedShearSeries, buildResultHtml, SAMPLE_RESULT } = await import("../app.js");
+  const result = structuredClone(SAMPLE_RESULT);
+  assert.equal(buildSteppedShearSeries(result, 2), undefined);
+  assert.match(buildResultHtml(result, 2), /Shear · kN\/m[\s\S]*?<svg class="plot-svg"/);
+
+  const phase = result.phases[2];
+  phase.sampled_results.forEach((row, index) => {
+    row.shear_above_kN_per_m = index * 10;
+    row.shear_below_kN_per_m = index * 10 + 5;
+  });
+  if (result.visualization?.phases?.[2]) {
+    result.visualization.phases[2].shear_above_kN_per_m = phase.sampled_results.map((row) => row.shear_above_kN_per_m);
+    result.visualization.phases[2].shear_below_kN_per_m = phase.sampled_results.map((row) => row.shear_below_kN_per_m);
+  }
+  const stepped = buildSteppedShearSeries(result, 2);
+  const nodeCount = phase.sampled_results.length;
+  assert.equal(stepped.levels.length, 2 * nodeCount - 2);
+  assert.equal(stepped.values[0], 5);
+  assert.equal(stepped.values[1], 10);
 });

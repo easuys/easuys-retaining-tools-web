@@ -1,16 +1,8 @@
 # Retaining Workspace Screenshots
 
-Generated screenshots for the `plan.md` acceptance set live here.
-
-Files:
-- `project-editor-desktop.png`
-- `project-editor-mobile.png`
-- `live-geometry-desktop.png`
-- `live-geometry-mobile.png`
-- `results-workspace-desktop.png`
-- `results-workspace-mobile.png`
-- `contact-report-desktop.png`
-- `contact-report-mobile.png`
+Acceptance screenshots of the real `index.html`, rendered with headless Edge at
+1920×1200, 1440×900 and 390×844, before a run and with the labelled demo result
+(`?demo=1`; no calculation request is made, the health check is stubbed).
 
 Regenerate them with:
 
@@ -18,4 +10,5 @@ Regenerate them with:
 npm run screenshots:render
 ```
 
-The renderer uses the shipped frontend helpers plus `wkhtmltoimage`, so the captures come from deterministic local sample project/result state rather than an ad hoc manual browser session.
+(`npm run screenshots:render -- --scratch` writes a throw-away run under
+`.codex-scratch/screenshots/` instead.)
