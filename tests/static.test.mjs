@@ -1369,3 +1369,15 @@ test("non-converged phases are flagged as having no equilibrium", async () => {
   assert.match(buildPhaseConvergenceAlert(result, 2), /An earlier phase did not converge/);
   assert.equal(buildPhaseConvergenceAlert(result, 0), "");
 });
+
+test("after a run the view jumps to the governing (or first failed) phase", async () => {
+  const { governingPhaseIndex, SAMPLE_RESULT } = await import("../app.js");
+  const result = structuredClone(SAMPLE_RESULT);
+  result.governing = { ...result.governing, max_abs_moment_phase: result.phases[1].name };
+  assert.equal(governingPhaseIndex(result, result.phases.length), 1);
+  result.governing.max_abs_moment_phase = "unknown";
+  assert.equal(governingPhaseIndex(result, result.phases.length), result.phases.length - 1);
+  result.phases[0].converged = false;
+  assert.equal(governingPhaseIndex(result, result.phases.length), 0);
+  assert.equal(governingPhaseIndex({ phases: [] }, 3), 0);
+});

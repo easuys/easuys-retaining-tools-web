@@ -641,6 +641,21 @@ export function buildSteppedShearSeries(result: any, phaseIndex: number) {
   return { levels: steppedLevels, values: steppedValues };
 }
 
+/**
+ * Phase to show after a run: the first phase without equilibrium if there is
+ * one (the user must see it), otherwise the phase with the governing bending
+ * moment, otherwise the last phase.
+ */
+export function governingPhaseIndex(result: any, phaseCount: number) {
+  const phases = result?.phases ?? [];
+  const failed = phases.findIndex((phase: any) => phase?.converged === false);
+  if (failed >= 0) return Math.min(failed, Math.max(0, phaseCount - 1));
+  const governingName = result?.governing?.max_abs_moment_phase;
+  const governing = phases.findIndex((phase: any) => phase?.name === governingName);
+  const index = governing >= 0 ? governing : phases.length - 1;
+  return Math.max(0, Math.min(index, phaseCount - 1));
+}
+
 function plotSourceDescription(source: "visualization" | "sampled_results", quantity: string) {
   if (source === "visualization") {
     return `Direct API visualization ${quantity}, without client-side mechanics.`;
@@ -3308,7 +3323,7 @@ function bootApp() {
       status.classList.remove("status-error");
       currentProject = JSON.parse(input.value);
       currentResult = await runAnalysis(currentProject, fetch, apiBaseUrl);
-      currentPreviewPhaseIndex = Math.min(currentPreviewPhaseIndex, currentProject.phases.length - 1);
+      currentPreviewPhaseIndex = governingPhaseIndex(currentResult, currentProject.phases.length);
       currentResultPhaseIndex = resultPhaseIndexForProject(currentProject, currentResult, currentPreviewPhaseIndex);
       renderPreview();
       renderResults();
