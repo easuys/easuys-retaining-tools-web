@@ -1,224 +1,223 @@
-import { execFile as execFileCallback } from "node:child_process";
+import { spawn } from "node:child_process";
+import { createServer } from "node:http";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
-
-import {
-  SAMPLE_CONTACT_STATE,
-  SAMPLE_PROJECT,
-  SAMPLE_RESULT,
-  buildContactPanelHtml,
-  buildGeometryPreviewSvg,
-  buildInputSnapshot,
-  buildPhaseOptions,
-  buildProjectPhaseOptions,
-  buildQuickEditorHtml,
-  buildReportPreviewHtml,
-  buildResultHtml,
-  formatJson,
-} from "../app.js";
-
-const execFile = promisify(execFileCallback);
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const stylesPath = path.join(repoRoot, "styles.css");
-const outputDir = path.join(repoRoot, "docs", "screenshots");
-const tempDir = await mkdtemp(path.join(tmpdir(), "retaining-screenshots-"));
-const screenshotPhaseIndex = 2;
-const baseStyles = (await readFile(stylesPath, "utf8")).replace(/^@import[^\n]+\n+/, "");
-
-function buildSelectHtml(options, selectedIndex) {
-  return `
-    <select class="phase-select">
-      ${options.map((option) => `<option value="${option.index}" ${option.index === selectedIndex ? "selected" : ""}>${option.label}</option>`).join("")}
-    </select>
-  `;
-}
-
-function buildSnapshotGridHtml(project, phaseIndex) {
-  return `
-    <div class="snapshot-grid">
-      ${buildInputSnapshot(project, phaseIndex).map((card) => `
-        <article class="snapshot-card">
-          <strong>${card.title}</strong>
-          <p>${card.text}</p>
-        </article>
-      `).join("")}
-    </div>
-  `;
-}
-
-function buildShellHtml(title, workspaceClass, bodyContent) {
-  return [
-    "<!doctype html>",
-    '<html lang="en">',
-    "<head>",
-    '  <meta charset="utf-8">',
-    '  <meta name="viewport" content="width=device-width, initial-scale=1">',
-    `  <title>${title}</title>`,
-    "  <style>",
-    baseStyles,
-    "  .screenshot-shell { width: min(1280px, calc(100vw - 1.5rem)); margin: 0 auto; padding: 1rem 0 1.5rem; }",
-    "  .screenshot-workspace { grid-template-columns: 1fr; }",
-    "  .screenshot-shell .project-input { min-height: 22rem; height: 22rem; }",
-    "  .screenshot-shell .panel { break-inside: avoid; }",
-    "  .screenshot-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: 1.25rem; background: rgba(255, 251, 243, 0.88); box-shadow: var(--shadow); }",
-    "  .screenshot-banner p { margin: 0; color: var(--muted); }",
-    "  .screenshot-banner strong { display: block; margin-bottom: 0.2rem; font-size: 1.05rem; }",
-    "  .screenshot-tag { padding: 0.5rem 0.85rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent-deep); font-family: \"IBM Plex Mono\", monospace; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }",
-    "  .screenshot-workspace-results .result-shell, .screenshot-workspace-contact .report-shell, .screenshot-workspace-contact .contact-shell { margin-top: 0.85rem; }",
-    "  .screenshot-workspace-results .result-status, .screenshot-workspace-contact .result-status { margin-top: 0.8rem; }",
-    "  .screenshot-workspace-contact .export-actions .secondary-button { opacity: 1; }",
-    "  .screenshot-workspace-preview .snapshot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }",
-    "  @media (max-width: 760px) { .screenshot-shell { width: min(100vw - 0.75rem, 1280px); } .screenshot-banner { display: grid; } .screenshot-workspace-preview .snapshot-grid { grid-template-columns: 1fr; } }",
-    "  </style>",
-    "</head>",
-    "<body>",
-    '  <div class="screenshot-shell">',
-    '    <header class="screenshot-banner">',
-    "      <div>",
-    `        <strong>${title}</strong>`,
-    "        <p>Deterministic retaining workspace snapshot rendered from shipped frontend helpers.</p>",
-    "      </div>",
-    '      <span class="screenshot-tag">retaining.easuys.com</span>',
-    "    </header>",
-    `    <main class="workspace screenshot-workspace ${workspaceClass}">`,
-    bodyContent,
-    "    </main>",
-    "  </div>",
-    "</body>",
-    "</html>",
-  ].join("\n");
-}
-
-function buildProjectEditorPage() {
-  return buildShellHtml(
-    "Project editor",
-    "screenshot-workspace-editor",
-    `
-      <section class="panel editor-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="panel-kicker">Project Editor</p>
-            <h2>Retaining project payload</h2>
-          </div>
-          <button class="action-button" type="button">Run Analysis</button>
-        </div>
-        <p class="panel-note">Quick editor plus canonical JSON payload for the selected construction phase.</p>
-        <div class="quick-editor-shell">${buildQuickEditorHtml(SAMPLE_PROJECT, screenshotPhaseIndex)}</div>
-        <textarea class="project-input" spellcheck="false">${formatJson(SAMPLE_PROJECT)}</textarea>
-      </section>
-    `
-  );
-}
-
-function buildLiveGeometryPage() {
-  return buildShellHtml(
-    "Live geometry view",
-    "screenshot-workspace-preview",
-    `
-      <section class="panel preview-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="panel-kicker">Live Input Visualization</p>
-            <h2>Wall, soils, excavation, groundwater, supports</h2>
-          </div>
-          ${buildSelectHtml(buildProjectPhaseOptions(SAMPLE_PROJECT), screenshotPhaseIndex)}
-        </div>
-        <div class="geometry-shell">${buildGeometryPreviewSvg(SAMPLE_PROJECT, screenshotPhaseIndex)}</div>
-        ${buildSnapshotGridHtml(SAMPLE_PROJECT, screenshotPhaseIndex)}
-      </section>
-    `
-  );
-}
-
-function buildResultsPage() {
-  return buildShellHtml(
-    "Results workspace",
-    "screenshot-workspace-results",
-    `
-      <section class="panel result-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="panel-kicker">Results Workspace</p>
-            <h2>Phase response</h2>
-          </div>
-          ${buildSelectHtml(buildPhaseOptions(SAMPLE_RESULT), screenshotPhaseIndex)}
-        </div>
-        <div class="result-status">Sample backend response loaded.</div>
-        <div class="export-actions">
-          <button type="button" class="secondary-button">Download JSON</button>
-          <button type="button" class="secondary-button">Download HTML report</button>
-          <button type="button" class="secondary-button">Print report</button>
-        </div>
-        <div class="result-shell">${buildResultHtml(SAMPLE_RESULT, screenshotPhaseIndex)}</div>
-      </section>
-    `
-  );
-}
-
-function buildContactReportPage() {
-  return buildShellHtml(
-    "Contact and report flow",
-    "screenshot-workspace-contact",
-    `
-      <section class="panel result-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="panel-kicker">Export / Contact</p>
-            <h2>HTML report and study request</h2>
-          </div>
-          ${buildSelectHtml(buildPhaseOptions(SAMPLE_RESULT), screenshotPhaseIndex)}
-        </div>
-        <div class="result-status">Report preview staged from sampled retaining result.</div>
-        <div class="export-actions">
-          <button type="button" class="secondary-button">Download JSON</button>
-          <button type="button" class="secondary-button">Download HTML report</button>
-          <button type="button" class="secondary-button">Print report</button>
-        </div>
-        <div class="report-shell">${buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, screenshotPhaseIndex)}</div>
-        <div class="contact-shell">${buildContactPanelHtml(SAMPLE_CONTACT_STATE, SAMPLE_RESULT, screenshotPhaseIndex, "Turnstile placeholder for screenshot generation.")}</div>
-      </section>
-    `
-  );
-}
-
-async function renderScreenshot(htmlName, htmlContent, width, outputName) {
-  const htmlPath = path.join(tempDir, htmlName);
-  const outputPath = path.join(outputDir, outputName);
-  await writeFile(htmlPath, htmlContent, "utf8");
-  await execFile("wkhtmltoimage", [
-    "--format",
-    "png",
-    "--encoding",
-    "utf-8",
-    "--width",
-    String(width),
-    htmlPath,
-    outputPath,
-  ]);
-}
+const edgePath = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const runId = `workspace-layout-${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`;
+// The published acceptance set lives in docs/screenshots; pass --scratch to
+// write a throw-away run under .codex-scratch instead.
+const outputDir = process.argv.includes("--scratch")
+  ? path.join(repoRoot, ".codex-scratch", "screenshots", runId)
+  : path.join(repoRoot, "docs", "screenshots");
+const serverPort = 8787;
+const serverUrl = `http://127.0.0.1:${serverPort}`;
+const mimeTypes = {
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+};
 
 await mkdir(outputDir, { recursive: true });
 
-const pageBuilders = [
-  { prefix: "project-editor", html: buildProjectEditorPage() },
-  { prefix: "live-geometry", html: buildLiveGeometryPage() },
-  { prefix: "results-workspace", html: buildResultsPage() },
-  { prefix: "contact-report", html: buildContactReportPage() },
-];
+const server = createServer(async (request, response) => {
+  const requestUrl = new URL(request.url ?? "/", serverUrl);
+  if (requestUrl.pathname === "/health") {
+    response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    response.end(JSON.stringify({ ok: false, screenshot_stub: true }));
+    return;
+  }
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    response.writeHead(405).end();
+    return;
+  }
+  const relativePath = decodeURIComponent(requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname);
+  const filePath = path.resolve(repoRoot, `.${relativePath}`);
+  if (filePath !== repoRoot && !filePath.startsWith(`${repoRoot}${path.sep}`)) {
+    response.writeHead(403).end();
+    return;
+  }
+  try {
+    const content = await readFile(filePath);
+    response.writeHead(200, {
+      "content-type": mimeTypes[path.extname(filePath)] ?? "application/octet-stream",
+      "cache-control": "no-store",
+    });
+    response.end(request.method === "HEAD" ? undefined : content);
+  } catch {
+    response.writeHead(404).end("Not found");
+  }
+});
 
+await new Promise((resolve, reject) => {
+  server.once("error", reject);
+  server.listen(serverPort, "127.0.0.1", resolve);
+});
+
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function launchEdge(width, height) {
+  const profileDir = await mkdtemp(path.join(tmpdir(), "retaining-edge-"));
+  const child = spawn(edgePath, [
+    "--headless=new",
+    "--disable-gpu",
+    "--disable-background-networking",
+    "--disable-extensions",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--remote-debugging-port=0",
+    `--user-data-dir=${profileDir}`,
+    `--window-size=${width},${height}`,
+    "about:blank",
+  ], { windowsHide: true, stdio: "ignore" });
+  let exited = false;
+  const childExit = new Promise((resolve) => child.once("exit", resolve));
+  child.once("exit", () => { exited = true; });
+  const activePortPath = path.join(profileDir, "DevToolsActivePort");
+  let debuggingPort = 0;
+  for (let attempt = 0; attempt < 150; attempt += 1) {
+    if (exited) {
+      throw new Error("Headless Edge exited before opening its debugging endpoint.");
+    }
+    try {
+      debuggingPort = Number((await readFile(activePortPath, "utf8")).split(/\r?\n/)[0]);
+      if (debuggingPort > 0) break;
+    } catch {}
+    await delay(100);
+  }
+  if (!debuggingPort) {
+    child.kill();
+    throw new Error("Headless Edge did not expose its debugging endpoint within 15 seconds.");
+  }
+  const targetResponse = await fetch(`http://127.0.0.1:${debuggingPort}/json/new?about%3Ablank`, { method: "PUT" });
+  if (!targetResponse.ok) {
+    child.kill();
+    throw new Error(`Unable to create a headless Edge tab (HTTP ${targetResponse.status}).`);
+  }
+  const target = await targetResponse.json();
+  const socket = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => {
+    socket.addEventListener("open", resolve, { once: true });
+    socket.addEventListener("error", reject, { once: true });
+  });
+  let nextId = 0;
+  const pending = new Map();
+  socket.addEventListener("message", (event) => {
+    const message = JSON.parse(event.data);
+    const request = pending.get(message.id);
+    if (!request) return;
+    pending.delete(message.id);
+    if (message.error) request.reject(new Error(message.error.message));
+    else request.resolve(message.result);
+  });
+  const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = ++nextId;
+    pending.set(id, { resolve, reject });
+    socket.send(JSON.stringify({ id, method, params }));
+  });
+  await send("Page.enable");
+  await send("Runtime.enable");
+  await send("Emulation.setDeviceMetricsOverride", {
+    width,
+    height,
+    deviceScaleFactor: 1,
+    mobile: width < 600,
+  });
+  return {
+    send,
+    socket,
+    child,
+    profileDir,
+    async close() {
+      socket.close();
+      child.kill();
+      await childExit;
+      await delay(200);
+      await rm(profileDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 250 });
+    },
+  };
+}
+
+async function evaluate(browser, expression) {
+  const result = await browser.send("Runtime.evaluate", {
+    expression,
+    returnByValue: true,
+    awaitPromise: true,
+  });
+  if (result.exceptionDetails) {
+    throw new Error(result.exceptionDetails.text ?? "Browser evaluation failed.");
+  }
+  return result.result.value;
+}
+
+async function waitForPage(browser, demo) {
+  const condition = demo
+    ? 'document.querySelector("[data-demo-label]")?.hidden === false && document.querySelector(".depth-plot-grid svg.plot-svg")'
+    : 'document.querySelector("[data-project-input]") && document.querySelector("[data-service-status]")?.textContent.trim() === "Service offline"';
+  for (let attempt = 0; attempt < 160; attempt += 1) {
+    if (await evaluate(browser, `Boolean(document.readyState === "complete" && (${condition}))`)) return;
+    await delay(125);
+  }
+  throw new Error(`Timed out waiting for the ${demo ? "demo result" : "input"} page to render.`);
+}
+
+async function saveViewportScreenshot(browser, outputPath) {
+  const screenshot = await browser.send("Page.captureScreenshot", {
+    format: "png",
+    fromSurface: true,
+    captureBeyondViewport: false,
+  });
+  await writeFile(outputPath, Buffer.from(screenshot.data, "base64"));
+}
+
+const apiParam = `api=${encodeURIComponent(serverUrl)}`;
+const metrics = [];
 try {
-  for (const page of pageBuilders) {
-    await renderScreenshot(`${page.prefix}.desktop.html`, page.html, 1440, `${page.prefix}-desktop.png`);
-    await renderScreenshot(`${page.prefix}.mobile.html`, page.html, 430, `${page.prefix}-mobile.png`);
+  for (const viewport of [
+    { width: 1920, height: 1200, label: "1920x1200" },
+    { width: 1440, height: 900, label: "1440x900" },
+    { width: 390, height: 844, label: "390x844" },
+  ]) {
+    const browser = await launchEdge(viewport.width, viewport.height);
+    try {
+      await browser.send("Page.navigate", { url: `${serverUrl}/?${apiParam}` });
+      await waitForPage(browser, false);
+      const beforeName = `${viewport.label}-before-run.png`;
+      await saveViewportScreenshot(browser, path.join(outputDir, beforeName));
+
+      await browser.send("Page.navigate", { url: `${serverUrl}/?${apiParam}&demo=1` });
+      await waitForPage(browser, true);
+      const afterName = `${viewport.label}-demo-result.png`;
+      await saveViewportScreenshot(browser, path.join(outputDir, afterName));
+      metrics.push({
+        viewport: viewport.label,
+        before: beforeName,
+        demo: afterName,
+        layout: await evaluate(browser, `(() => ({innerWidth, documentWidth: document.documentElement.scrollWidth, bodyWidth: document.body.scrollWidth, pageHeight: document.documentElement.scrollHeight, plotCount: document.querySelectorAll(".depth-plot-grid > .depth-plot-card").length, overflowElements: [...document.body.querySelectorAll("*")].filter((element) => { const rect = element.getBoundingClientRect(); let parent = element.parentElement; let contained = false; while (parent) { const overflow = getComputedStyle(parent).overflowX; if ((overflow === "auto" || overflow === "scroll") && parent.scrollWidth > parent.clientWidth) { contained = true; break; } parent = parent.parentElement; } return !contained && (rect.left < -1 || rect.right > innerWidth + 1) && getComputedStyle(element).overflowX === "visible"; }).slice(0, 12).map((element) => ({tag: element.tagName, className: String(element.className), left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right)}))}))()`),
+      });
+      if (viewport.width < 600) {
+        await evaluate(browser, 'window.scrollTo(0, document.querySelector(".canvas-pane").getBoundingClientRect().top + window.scrollY)');
+        await delay(250);
+        const canvasName = `${viewport.label}-demo-canvas.png`;
+        await saveViewportScreenshot(browser, path.join(outputDir, canvasName));
+        metrics[metrics.length - 1].mobileCanvas = canvasName;
+        await evaluate(browser, 'document.querySelector(".plots-panel").scrollIntoView({block: "start"})');
+        await delay(250);
+        const plotsName = `${viewport.label}-demo-plots.png`;
+        await saveViewportScreenshot(browser, path.join(outputDir, plotsName));
+        metrics[metrics.length - 1].mobilePlots = plotsName;
+      }
+    } finally {
+      await browser.close();
+    }
   }
 } finally {
-  await rm(tempDir, { recursive: true, force: true });
+  await new Promise((resolve) => server.close(resolve));
 }
 
-for (const page of pageBuilders) {
-  console.log(`Rendered ${page.prefix}-desktop.png and ${page.prefix}-mobile.png`);
-}
+console.log(JSON.stringify({ runId, outputDir, metrics }, null, 2));

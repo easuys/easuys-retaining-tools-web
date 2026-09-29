@@ -1,4 +1,25 @@
 export const API_BASE_URL = "https://easuys-retaining-tools-api.yellow-violet-f185.workers.dev";
+const ALLOWED_API_ORIGINS = new Set([
+    "https://easuys-retaining-tools-api.yellow-violet-f185.workers.dev",
+    "https://easuys-retaining-tools-api-staging.yellow-violet-f185.workers.dev",
+    "http://127.0.0.1:8787",
+    "http://localhost:8787",
+]);
+export function resolveApiBaseUrl(search) {
+    const override = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search).get("api");
+    if (!override) {
+        return API_BASE_URL;
+    }
+    try {
+        const parsed = new URL(override);
+        return !parsed.username && !parsed.password && ALLOWED_API_ORIGINS.has(parsed.origin)
+            ? parsed.origin
+            : API_BASE_URL;
+    }
+    catch {
+        return API_BASE_URL;
+    }
+}
 export const ANALYSIS_ROUTE = "/calculate/retaining/flexible-wall-analysis";
 export const CONTACT_ENDPOINT = "/lead/study-request";
 export const TURNSTILE_SITE_KEY = "0x4AAAAAADYeVJCZgqihubKs";
@@ -288,6 +309,9 @@ export const SAMPLE_RESULT = {
         },
     ],
 };
+// BEGIN GENERATED DEMO_RESULT (scripts/build_demo_result.mjs, engine formula ea-suys-retaining-formulas-2026-09-28-a)
+export const DEMO_RESULT = { "calculator_id": "retaining_flexible_wall_analysis", "version": "0.1.0", "formula_version": "ea-suys-retaining-formulas-2026-09-28-a", "normalized_input": { "design_mode": "classic", "wall_type": "steel_sheet_pile", "wall_geometry": { "top_level_m": 0, "toe_level_m": -9, "inclination_degrees": 4, "segments": [{ "label": "AZ 18 sample", "top_level_m": 0, "bottom_level_m": -9, "ei_kNm2_per_m": 52000, "steel_section": { "library_section_id": "AZ_18", "steel_grade_mpa": 355, "gamma_m0": 1 } }] }, "phases": [{ "name": "Initial at-rest state", "excavation_level_left_m": 0, "excavation_level_right_m": 0, "groundwater_level_left_m": -2, "groundwater_level_right_m": -2, "surcharge_left_kPa": 0, "surcharge_right_kPa": 12 }, { "name": "Excavate left side to -4.0 m", "excavation_level_left_m": -4, "excavation_level_right_m": 0, "groundwater_level_left_m": -2, "groundwater_level_right_m": -2, "surcharge_left_kPa": 0, "surcharge_right_kPa": 18, "vertical_line_load_kN_per_m": 35, "include_vertical_line_second_order": true }, { "name": "Deepen excavation to -5.0 m", "excavation_level_left_m": -5, "excavation_level_right_m": 0, "groundwater_level_left_m": -2, "groundwater_level_right_m": -2, "surcharge_left_kPa": 0, "surcharge_right_kPa": 18, "vertical_line_load_kN_per_m": 35, "include_vertical_line_second_order": true }], "soil_profiles": { "left": { "layers": [{ "top_level_m": 0, "bottom_level_m": -12, "unit_weight_dry_kN_m3": 17, "unit_weight_wet_kN_m3": 20, "friction_angle_deg": 30, "cohesion_kPa": 0, "subgrade_modulus_kN_m3": 22000 }] }, "right": { "layers": [{ "top_level_m": 0, "bottom_level_m": -12, "unit_weight_dry_kN_m3": 18, "unit_weight_wet_kN_m3": 20, "friction_angle_deg": 33, "cohesion_kPa": 0, "subgrade_modulus_kN_m3": 28000 }] } }, "supports": [{ "id": "A1", "type": "anchor", "depth_m": 1.6, "side": "right", "inclination_degrees": 15, "stiffness_kN_per_m": 9000, "prestress_kN_per_m": 55, "capacity_kN_per_m": 150, "active_from_phase": 1 }], "design_options": { "target_element_length_m": 0.5, "max_wall_displacement_mm": 30 } }, "discretization": { "node_levels_m": [0, -0.5, -1, -1.5, -1.6, -2, -2.5, -3, -3.5, -4, -4.5, -5, -5.5, -6, -6.5, -7, -7.5, -8, -8.5, -9], "element_lengths_m": [0.5, 0.5, 0.5, 0.1, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5] }, "phases": [{ "name": "Initial at-rest state", "phase_index": 0, "converged": true, "iterations": 3, "sampled_results": [{ "level_m": 0, "depth_m": 0, "displacement_mm": -0.152435, "rotation_mrad": 0.0347493, "moment_kNm_per_m": -1.24345e-14, "shear_kN_per_m": -0.882248, "shear_above_kN_per_m": 0, "shear_below_kN_per_m": -0.882248, "net_soil_pressure_kPa": -3.53761, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 3.53761, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -0.5, "depth_m": 0.5, "displacement_mm": -0.135414, "rotation_mrad": 0.0326285, "moment_kNm_per_m": -0.441124, "shear_kN_per_m": -0.882248, "shear_above_kN_per_m": -0.882248, "shear_below_kN_per_m": -0.364373, "net_soil_pressure_kPa": 1.03828, "left_soil_pressure_kPa": 7.2291, "right_soil_pressure_kPa": 6.19082, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -1, "depth_m": 1, "displacement_mm": -0.120306, "rotation_mrad": 0.027511, "moment_kNm_per_m": -0.623311, "shear_kN_per_m": -0.364373, "shear_above_kN_per_m": -0.364373, "shear_below_kN_per_m": 0.0618141, "net_soil_pressure_kPa": 0.854456, "left_soil_pressure_kPa": 11.1467, "right_soil_pressure_kPa": 10.2923, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -1.5, "depth_m": 1.5, "displacement_mm": -0.108024, "rotation_mrad": 0.0216663, "moment_kNm_per_m": -0.592404, "shear_kN_per_m": 0.179161, "shear_above_kN_per_m": 0.0618141, "shear_below_kN_per_m": 0.179161, "net_soil_pressure_kPa": 0.39211, "left_soil_pressure_kPa": 15.1265, "right_soil_pressure_kPa": 14.7344, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -1.6, "depth_m": 1.6, "displacement_mm": -0.105914, "rotation_mrad": 0.0205443, "moment_kNm_per_m": -0.574488, "shear_kN_per_m": 0.258205, "shear_above_kN_per_m": 0.179161, "shear_below_kN_per_m": 0.258205, "net_soil_pressure_kPa": 0.316948, "left_soil_pressure_kPa": 15.9301, "right_soil_pressure_kPa": 15.6131, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -2, "depth_m": 2, "displacement_mm": -0.0985267, "rotation_mrad": 0.0165224, "moment_kNm_per_m": -0.471206, "shear_kN_per_m": 0.289182, "shear_above_kN_per_m": 0.258205, "shear_below_kN_per_m": 0.289182, "net_soil_pressure_kPa": 0.0690071, "left_soil_pressure_kPa": 19.1676, "right_soil_pressure_kPa": 19.0986, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -2.5, "depth_m": 2.5, "displacement_mm": -0.0912823, "rotation_mrad": 0.0126867, "moment_kNm_per_m": -0.326615, "shear_kN_per_m": 0.289182, "shear_above_kN_per_m": 0.289182, "shear_below_kN_per_m": 0.256375, "net_soil_pressure_kPa": -0.0657735, "left_soil_pressure_kPa": 21.5557, "right_soil_pressure_kPa": 21.6215, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -3, "depth_m": 3, "displacement_mm": -0.0856214, "rotation_mrad": 0.0101624, "moment_kNm_per_m": -0.198427, "shear_kN_per_m": 0.256375, "shear_above_kN_per_m": 0.256375, "shear_below_kN_per_m": 0.195831, "net_soil_pressure_kPa": -0.121384, "left_soil_pressure_kPa": 23.9787, "right_soil_pressure_kPa": 24.1001, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -3.5, "depth_m": 3.5, "displacement_mm": -0.0809387, "rotation_mrad": 0.00872524, "moment_kNm_per_m": -0.100511, "shear_kN_per_m": 0.195831, "shear_above_kN_per_m": 0.195831, "shear_below_kN_per_m": 0.131946, "net_soil_pressure_kPa": -0.128083, "left_soil_pressure_kPa": 26.4232, "right_soil_pressure_kPa": 26.5512, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -4, "depth_m": 4, "displacement_mm": -0.0767649, "rotation_mrad": 0.00807596, "moment_kNm_per_m": -0.0345382, "shear_kN_per_m": 0.131946, "shear_above_kN_per_m": 0.131946, "shear_below_kN_per_m": 0.0774092, "net_soil_pressure_kPa": -0.10934, "left_soil_pressure_kPa": 28.8788, "right_soil_pressure_kPa": 28.9882, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -4.5, "depth_m": 4.5, "displacement_mm": -0.0727789, "rotation_mrad": 0.00792994, "moment_kNm_per_m": 0.00416637, "shear_kN_per_m": 0.0774092, "shear_above_kN_per_m": 0.0774092, "shear_below_kN_per_m": 0.0369068, "net_soil_pressure_kPa": -0.0812027, "left_soil_pressure_kPa": 31.3386, "right_soil_pressure_kPa": 31.4198, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -5, "depth_m": 5, "displacement_mm": -0.0687891, "rotation_mrad": 0.00805872, "moment_kNm_per_m": 0.0226198, "shear_kN_per_m": 0.0369068, "shear_above_kN_per_m": 0.0369068, "shear_below_kN_per_m": 0.0103439, "net_soil_pressure_kPa": -0.0532555, "left_soil_pressure_kPa": 33.7984, "right_soil_pressure_kPa": 33.8516, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -5.5, "depth_m": 5.5, "displacement_mm": -0.0647012, "rotation_mrad": 0.00830109, "moment_kNm_per_m": 0.0277917, "shear_kN_per_m": 0.0103439, "shear_above_kN_per_m": 0.0103439, "shear_below_kN_per_m": -0.00472618, "net_soil_pressure_kPa": -0.0302137, "left_soil_pressure_kPa": 36.2559, "right_soil_pressure_kPa": 36.2861, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -6, "depth_m": 6, "displacement_mm": -0.0604858, "rotation_mrad": 0.00855695, "moment_kNm_per_m": 0.0254286, "shear_kN_per_m": -0.011485, "shear_above_kN_per_m": -0.00472618, "shear_below_kN_per_m": -0.011485, "net_soil_pressure_kPa": -0.0135506, "left_soil_pressure_kPa": 38.7107, "right_soil_pressure_kPa": 38.7242, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -6.5, "depth_m": 6.5, "displacement_mm": -0.0561508, "rotation_mrad": 0.00877385, "moment_kNm_per_m": 0.0196861, "shear_kN_per_m": -0.0129139, "shear_above_kN_per_m": -0.011485, "shear_below_kN_per_m": -0.0129139, "net_soil_pressure_kPa": -0.00286485, "left_soil_pressure_kPa": 41.1628, "right_soil_pressure_kPa": 41.1657, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -7, "depth_m": 7, "displacement_mm": -0.0517217, "rotation_mrad": 0.0089321, "moment_kNm_per_m": 0.0132291, "shear_kN_per_m": -0.0129139, "shear_above_kN_per_m": -0.0129139, "shear_below_kN_per_m": -0.0113591, "net_soil_pressure_kPa": 0.00311733, "left_soil_pressure_kPa": 43.6129, "right_soil_pressure_kPa": 43.6098, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -7.5, "depth_m": 7.5, "displacement_mm": -0.0472284, "rotation_mrad": 0.009032, "moment_kNm_per_m": 0.00754962, "shear_kN_per_m": -0.0113591, "shear_above_kN_per_m": -0.0113591, "shear_below_kN_per_m": -0.00842209, "net_soil_pressure_kPa": 0.00588828, "left_soil_pressure_kPa": 46.0615, "right_soil_pressure_kPa": 46.0556, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -8, "depth_m": 8, "displacement_mm": -0.0426976, "rotation_mrad": 0.00908434, "moment_kNm_per_m": 0.00333857, "shear_kN_per_m": -0.00842209, "shear_above_kN_per_m": -0.00842209, "shear_below_kN_per_m": -0.00503756, "net_soil_pressure_kPa": 0.00678558, "left_soil_pressure_kPa": 48.5093, "right_soil_pressure_kPa": 48.5026, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -8.5, "depth_m": 8.5, "displacement_mm": -0.0381494, "rotation_mrad": 0.00910433, "moment_kNm_per_m": 0.000819794, "shear_kN_per_m": -0.00503756, "shear_above_kN_per_m": -0.00503756, "shear_below_kN_per_m": -0.00163959, "net_soil_pressure_kPa": 0.00681254, "left_soil_pressure_kPa": 50.9568, "right_soil_pressure_kPa": 50.95, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -9, "depth_m": 9, "displacement_mm": -0.033596, "rotation_mrad": 0.00910828, "moment_kNm_per_m": -4.88498e-15, "shear_kN_per_m": -0.00163959, "shear_above_kN_per_m": -0.00163959, "shear_below_kN_per_m": 0, "net_soil_pressure_kPa": 0.00657437, "left_soil_pressure_kPa": 53.4041, "right_soil_pressure_kPa": 53.3975, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }], "support_reactions": [{ "id": "A1", "type": "anchor", "side": "right", "depth_m": 1.6, "reaction_kN_per_m": 0, "branch_state": "inactive" }], "envelope": { "max_abs_displacement_mm": 0.152435, "max_abs_moment_kNm_per_m": 0.623311, "max_abs_shear_kN_per_m": 0.882248, "max_abs_plastic_offset_mm": 0.152435 } }, { "name": "Excavate left side to -4.0 m", "phase_index": 1, "converged": true, "iterations": 4, "sampled_results": [{ "level_m": 0, "depth_m": 0, "displacement_mm": 0.0859281, "rotation_mrad": -0.471517, "moment_kNm_per_m": -2.84217e-14, "shear_kN_per_m": -3.2281, "shear_above_kN_per_m": 0, "shear_below_kN_per_m": -3.2281, "net_soil_pressure_kPa": -12.9439, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 12.9439, "water_pressure_kPa": 0, "branch_state": "inactive/neutral", "left_branch": "inactive", "right_branch": "neutral" }, { "level_m": -0.5, "depth_m": 0.5, "displacement_mm": -0.151117, "rotation_mrad": -0.479237, "moment_kNm_per_m": -1.60575, "shear_kN_per_m": -7.45941, "shear_above_kN_per_m": -3.2281, "shear_below_kN_per_m": -7.45941, "net_soil_pressure_kPa": -8.48329, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 8.48329, "water_pressure_kPa": 0, "branch_state": "inactive/neutral", "left_branch": "inactive", "right_branch": "neutral" }, { "level_m": -1, "depth_m": 1, "displacement_mm": -0.397577, "rotation_mrad": -0.512567, "moment_kNm_per_m": -5.32683, "shear_kN_per_m": -12.7529, "shear_above_kN_per_m": -7.45941, "shear_below_kN_per_m": -12.7529, "net_soil_pressure_kPa": -10.6128, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 10.6128, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -1.5, "depth_m": 1.5, "displacement_mm": -0.671768, "rotation_mrad": -0.594398, "moment_kNm_per_m": -11.6937, "shear_kN_per_m": -16.723, "shear_above_kN_per_m": -12.7529, "shear_below_kN_per_m": -16.723, "net_soil_pressure_kPa": -13.266, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 13.266, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -1.6, "depth_m": 1.6, "displacement_mm": -0.732386, "rotation_mrad": -0.618492, "moment_kNm_per_m": -13.3639, "shear_kN_per_m": 32.9621, "shear_above_kN_per_m": -16.723, "shear_below_kN_per_m": 32.9621, "net_soil_pressure_kPa": -13.7967, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 13.7967, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -2, "depth_m": 2, "displacement_mm": -0.993576, "rotation_mrad": -0.670545, "moment_kNm_per_m": -0.169873, "shear_kN_per_m": 32.9621, "shear_above_kN_per_m": 32.9621, "shear_below_kN_per_m": 25.8159, "net_soil_pressure_kPa": -15.9192, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 15.9192, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -2.5, "depth_m": 2.5, "displacement_mm": -1.3189, "rotation_mrad": -0.610065, "moment_kNm_per_m": 12.7495, "shear_kN_per_m": 25.8159, "shear_above_kN_per_m": 25.8159, "shear_below_kN_per_m": 17.1265, "net_soil_pressure_kPa": -17.4213, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 17.4213, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -3, "depth_m": 3, "displacement_mm": -1.58642, "rotation_mrad": -0.446257, "moment_kNm_per_m": 21.3221, "shear_kN_per_m": 17.1265, "shear_above_kN_per_m": 17.1265, "shear_below_kN_per_m": 7.68792, "net_soil_pressure_kPa": -18.9233, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 18.9233, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -3.5, "depth_m": 3.5, "displacement_mm": -1.75521, "rotation_mrad": -0.222725, "moment_kNm_per_m": 25.172, "shear_kN_per_m": 7.68792, "shear_above_kN_per_m": 7.68792, "shear_below_kN_per_m": -2.49984, "net_soil_pressure_kPa": -20.4253, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 20.4253, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -4, "depth_m": 4, "displacement_mm": -1.80706, "rotation_mrad": 0.0133157, "moment_kNm_per_m": 23.9239, "shear_kN_per_m": -13.4368, "shear_above_kN_per_m": -2.49984, "shear_below_kN_per_m": -13.4368, "net_soil_pressure_kPa": -21.9273, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 21.9273, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -4.5, "depth_m": 4.5, "displacement_mm": -1.74828, "rotation_mrad": 0.211046, "moment_kNm_per_m": 17.2034, "shear_kN_per_m": -17.499, "shear_above_kN_per_m": -13.4368, "shear_below_kN_per_m": -17.499, "net_soil_pressure_kPa": -8.1443, "left_soil_pressure_kPa": 15.285, "right_soil_pressure_kPa": 23.4293, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -5, "depth_m": 5, "displacement_mm": -1.60841, "rotation_mrad": 0.334376, "moment_kNm_per_m": 8.44901, "shear_kN_per_m": -17.499, "shear_above_kN_per_m": -17.499, "shear_below_kN_per_m": -14.6865, "net_soil_pressure_kPa": 5.63869, "left_soil_pressure_kPa": 30.57, "right_soil_pressure_kPa": 24.9313, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -5.5, "depth_m": 5.5, "displacement_mm": -1.42681, "rotation_mrad": 0.380283, "moment_kNm_per_m": 1.09939, "shear_kN_per_m": -14.6865, "shear_above_kN_per_m": -14.6865, "shear_below_kN_per_m": -8.40243, "net_soil_pressure_kPa": 12.5989, "left_soil_pressure_kPa": 39.0322, "right_soil_pressure_kPa": 26.4333, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -6, "depth_m": 6, "displacement_mm": -1.23739, "rotation_mrad": 0.370624, "moment_kNm_per_m": -3.10845, "shear_kN_per_m": -8.40243, "shear_above_kN_per_m": -8.40243, "shear_below_kN_per_m": -3.67532, "net_soil_pressure_kPa": 9.4773, "left_soil_pressure_kPa": 37.4126, "right_soil_pressure_kPa": 27.9353, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -6.5, "depth_m": 6.5, "displacement_mm": -1.06103, "rotation_mrad": 0.33187, "moment_kNm_per_m": -4.95229, "shear_kN_per_m": -3.67532, "shear_above_kN_per_m": -3.67532, "shear_below_kN_per_m": -0.362001, "net_soil_pressure_kPa": 6.64283, "left_soil_pressure_kPa": 36.0802, "right_soil_pressure_kPa": 29.4373, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -7, "depth_m": 7, "displacement_mm": -0.90715, "rotation_mrad": 0.283355, "moment_kNm_per_m": -5.13867, "shear_kN_per_m": 1.78423, "shear_above_kN_per_m": -0.362001, "shear_below_kN_per_m": 1.78423, "net_soil_pressure_kPa": 4.30294, "left_soil_pressure_kPa": 35.2423, "right_soil_pressure_kPa": 30.9394, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -7.5, "depth_m": 7.5, "displacement_mm": -0.777114, "rotation_mrad": 0.238211, "moment_kNm_per_m": -4.25111, "shear_kN_per_m": 3.02502, "shear_above_kN_per_m": 1.78423, "shear_below_kN_per_m": 3.02502, "net_soil_pressure_kPa": 2.48764, "left_soil_pressure_kPa": 34.929, "right_soil_pressure_kPa": 32.4414, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -8, "depth_m": 8, "displacement_mm": -0.667018, "rotation_mrad": 0.204588, "moment_kNm_per_m": -2.74246, "shear_kN_per_m": 3.57918, "shear_above_kN_per_m": 3.02502, "shear_below_kN_per_m": 3.57918, "net_soil_pressure_kPa": 1.11103, "left_soil_pressure_kPa": 35.0544, "right_soil_pressure_kPa": 33.9434, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -8.5, "depth_m": 8.5, "displacement_mm": -0.569886, "rotation_mrad": 0.186805, "moment_kNm_per_m": -0.956267, "shear_kN_per_m": 3.57918, "shear_above_kN_per_m": 3.57918, "shear_below_kN_per_m": 1.91896, "net_soil_pressure_kPa": -3.32853, "left_soil_pressure_kPa": 35.465, "right_soil_pressure_kPa": 38.7935, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -9, "depth_m": 9, "displacement_mm": -0.478016, "rotation_mrad": 0.182208, "moment_kNm_per_m": 0, "shear_kN_per_m": 1.91896, "shear_above_kN_per_m": 1.91896, "shear_below_kN_per_m": 0, "net_soil_pressure_kPa": -7.6946, "left_soil_pressure_kPa": 35.9913, "right_soil_pressure_kPa": 43.6859, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }], "support_reactions": [{ "id": "A1", "type": "anchor", "side": "right", "depth_m": 1.6, "reaction_kN_per_m": 53.126, "axial_force_kN_per_m": 55, "utilization_ratio": 0.367, "branch_state": "elastic" }], "envelope": { "max_abs_displacement_mm": 1.80706, "max_abs_moment_kNm_per_m": 25.172, "max_abs_shear_kN_per_m": 32.9621, "max_abs_plastic_offset_mm": 1.80706 } }, { "name": "Deepen excavation to -5.0 m", "phase_index": 2, "converged": true, "iterations": 3, "sampled_results": [{ "level_m": 0, "depth_m": 0, "displacement_mm": 0.15974, "rotation_mrad": -1.44858, "moment_kNm_per_m": -1.13687e-13, "shear_kN_per_m": -3.74353, "shear_above_kN_per_m": 0, "shear_below_kN_per_m": -3.74353, "net_soil_pressure_kPa": -15.0107, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 15.0107, "water_pressure_kPa": 0, "branch_state": "inactive/neutral", "left_branch": "inactive", "right_branch": "neutral" }, { "level_m": -0.5, "depth_m": 0.5, "displacement_mm": -0.566027, "rotation_mrad": -1.45745, "moment_kNm_per_m": -1.84636, "shear_kN_per_m": -7.71365, "shear_above_kN_per_m": -3.74353, "shear_below_kN_per_m": -7.71365, "net_soil_pressure_kPa": -7.95962, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 7.95962, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -1, "depth_m": 1, "displacement_mm": -1.30226, "rotation_mrad": -1.49362, "moment_kNm_per_m": -5.67742, "shear_kN_per_m": -13.0071, "shear_above_kN_per_m": -7.71365, "shear_below_kN_per_m": -13.0071, "net_soil_pressure_kPa": -10.6128, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 10.6128, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -1.5, "depth_m": 1.5, "displacement_mm": -2.06791, "rotation_mrad": -1.57935, "moment_kNm_per_m": -12.1542, "shear_kN_per_m": -16.9773, "shear_above_kN_per_m": -13.0071, "shear_below_kN_per_m": -16.9773, "net_soil_pressure_kPa": -13.266, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 13.266, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -1.6, "depth_m": 1.6, "displacement_mm": -2.22707, "rotation_mrad": -1.60436, "moment_kNm_per_m": -13.8463, "shear_kN_per_m": 45.259, "shear_above_kN_per_m": -16.9773, "shear_below_kN_per_m": 45.259, "net_soil_pressure_kPa": -13.7967, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 13.7967, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -2, "depth_m": 2, "displacement_mm": -2.88082, "rotation_mrad": -1.64115, "moment_kNm_per_m": 4.28014, "shear_kN_per_m": 45.259, "shear_above_kN_per_m": 45.259, "shear_below_kN_per_m": 38.1128, "net_soil_pressure_kPa": -15.9192, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 15.9192, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -2.5, "depth_m": 2.5, "displacement_mm": -3.67581, "rotation_mrad": -1.50824, "moment_kNm_per_m": 23.3644, "shear_kN_per_m": 38.1128, "shear_above_kN_per_m": 38.1128, "shear_below_kN_per_m": 29.4234, "net_soil_pressure_kPa": -17.4213, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 17.4213, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -3, "depth_m": 3, "displacement_mm": -4.36196, "rotation_mrad": -1.21273, "moment_kNm_per_m": 38.1001, "shear_kN_per_m": 29.4234, "shear_above_kN_per_m": 29.4234, "shear_below_kN_per_m": 19.9848, "net_soil_pressure_kPa": -18.9233, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 18.9233, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -3.5, "depth_m": 3.5, "displacement_mm": -4.86872, "rotation_mrad": -0.798256, "moment_kNm_per_m": 48.1102, "shear_kN_per_m": 19.9848, "shear_above_kN_per_m": 19.9848, "shear_below_kN_per_m": 9.79703, "net_soil_pressure_kPa": -20.4253, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 20.4253, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -4, "depth_m": 4, "displacement_mm": -5.14826, "rotation_mrad": -0.312053, "moment_kNm_per_m": 53.0185, "shear_kN_per_m": 9.79703, "shear_above_kN_per_m": 9.79703, "shear_below_kN_per_m": -1.1399, "net_soil_pressure_kPa": -21.9273, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 21.9273, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -4.5, "depth_m": 4.5, "displacement_mm": -5.17729, "rotation_mrad": 0.195012, "moment_kNm_per_m": 52.4496, "shear_kN_per_m": -12.826, "shear_above_kN_per_m": -1.1399, "shear_below_kN_per_m": -12.826, "net_soil_pressure_kPa": -23.4293, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 23.4293, "water_pressure_kPa": 0, "branch_state": "inactive/active", "left_branch": "inactive", "right_branch": "active" }, { "level_m": -5, "depth_m": 5, "displacement_mm": -4.95885, "rotation_mrad": 0.668473, "moment_kNm_per_m": 46.0289, "shear_kN_per_m": -25.2613, "shear_above_kN_per_m": -12.826, "shear_below_kN_per_m": -25.2613, "net_soil_pressure_kPa": -24.9313, "left_soil_pressure_kPa": 0, "right_soil_pressure_kPa": 24.9313, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -5.5, "depth_m": 5.5, "displacement_mm": -4.5241, "rotation_mrad": 1.05027, "moment_kNm_per_m": 33.383, "shear_kN_per_m": -30.8219, "shear_above_kN_per_m": -25.2613, "shear_below_kN_per_m": -30.8219, "net_soil_pressure_kPa": -11.1483, "left_soil_pressure_kPa": 15.285, "right_soil_pressure_kPa": 26.4333, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -6, "depth_m": 6, "displacement_mm": -3.93108, "rotation_mrad": 1.29707, "moment_kNm_per_m": 17.9513, "shear_kN_per_m": -30.8219, "shear_above_kN_per_m": -30.8219, "shear_below_kN_per_m": -29.5078, "net_soil_pressure_kPa": 2.63467, "left_soil_pressure_kPa": 30.57, "right_soil_pressure_kPa": 27.9353, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -6.5, "depth_m": 6.5, "displacement_mm": -3.25123, "rotation_mrad": 1.39863, "moment_kNm_per_m": 3.17367, "shear_kN_per_m": -29.5078, "shear_above_kN_per_m": -29.5078, "shear_below_kN_per_m": -21.3189, "net_soil_pressure_kPa": 16.4177, "left_soil_pressure_kPa": 45.855, "right_soil_pressure_kPa": 29.4373, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -7, "depth_m": 7, "displacement_mm": -2.55285, "rotation_mrad": 1.37778, "moment_kNm_per_m": -7.51024, "shear_kN_per_m": -21.3189, "shear_above_kN_per_m": -21.3189, "shear_below_kN_per_m": -6.25539, "net_soil_pressure_kPa": 30.2006, "left_soil_pressure_kPa": 61.14, "right_soil_pressure_kPa": 30.9394, "water_pressure_kPa": 0, "branch_state": "passive/active", "left_branch": "passive", "right_branch": "active" }, { "level_m": -7.5, "depth_m": 7.5, "displacement_mm": -1.88454, "rotation_mrad": 1.29042, "moment_kNm_per_m": -10.6613, "shear_kN_per_m": -6.25539, "shear_above_kN_per_m": -6.25539, "shear_below_kN_per_m": 4.59607, "net_soil_pressure_kPa": 21.7559, "left_soil_pressure_kPa": 54.1973, "right_soil_pressure_kPa": 32.4414, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -8, "depth_m": 8, "displacement_mm": -1.26313, "rotation_mrad": 1.19885, "moment_kNm_per_m": -8.38504, "shear_kN_per_m": 9.15021, "shear_above_kN_per_m": 4.59607, "shear_below_kN_per_m": 9.15021, "net_soil_pressure_kPa": 9.1305, "left_soil_pressure_kPa": 43.0739, "right_soil_pressure_kPa": 33.9434, "water_pressure_kPa": 0, "branch_state": "neutral/active", "left_branch": "neutral", "right_branch": "active" }, { "level_m": -8.5, "depth_m": 8.5, "displacement_mm": -0.680213, "rotation_mrad": 1.14012, "moment_kNm_per_m": -3.83034, "shear_kN_per_m": 9.15021, "shear_above_kN_per_m": 9.15021, "shear_below_kN_per_m": 7.70016, "net_soil_pressure_kPa": -2.90718, "left_soil_pressure_kPa": 32.7972, "right_soil_pressure_kPa": 35.7044, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }, { "level_m": -9, "depth_m": 9, "displacement_mm": -0.116291, "rotation_mrad": 1.12171, "moment_kNm_per_m": 5.68434e-14, "shear_kN_per_m": 7.70016, "shear_above_kN_per_m": 7.70016, "shear_below_kN_per_m": 0, "net_soil_pressure_kPa": -30.8758, "left_soil_pressure_kPa": 22.9384, "right_soil_pressure_kPa": 53.8142, "water_pressure_kPa": 0, "branch_state": "neutral/neutral", "left_branch": "neutral", "right_branch": "neutral" }], "support_reactions": [{ "id": "A1", "type": "anchor", "side": "right", "depth_m": 1.6, "reaction_kN_per_m": 65.677, "axial_force_kN_per_m": 67.994, "utilization_ratio": 0.453, "branch_state": "elastic" }], "envelope": { "max_abs_displacement_mm": 5.17729, "max_abs_moment_kNm_per_m": 53.0185, "max_abs_shear_kN_per_m": 45.259, "max_abs_plastic_offset_mm": 3.94512 } }], "governing": { "max_abs_displacement_mm": 5.177, "max_abs_displacement_phase": "Deepen excavation to -5.0 m", "max_displacement_mm": 0.16, "max_displacement_phase": "Deepen excavation to -5.0 m", "min_displacement_mm": -5.177, "min_displacement_phase": "Deepen excavation to -5.0 m", "max_abs_rotation_mrad": 1.641, "max_abs_rotation_phase": "Deepen excavation to -5.0 m", "max_rotation_mrad": 1.399, "max_rotation_phase": "Deepen excavation to -5.0 m", "min_rotation_mrad": -1.641, "min_rotation_phase": "Deepen excavation to -5.0 m", "max_abs_moment_kNm_per_m": 53.019, "max_abs_moment_phase": "Deepen excavation to -5.0 m", "max_moment_kNm_per_m": 53.019, "max_moment_phase": "Deepen excavation to -5.0 m", "min_moment_kNm_per_m": -13.846, "min_moment_phase": "Deepen excavation to -5.0 m", "max_abs_shear_kN_per_m": 45.259, "max_abs_shear_phase": "Deepen excavation to -5.0 m", "max_shear_kN_per_m": 45.259, "max_shear_phase": "Deepen excavation to -5.0 m", "min_shear_kN_per_m": -30.822, "min_shear_phase": "Deepen excavation to -5.0 m" }, "design_checks": { "wall": { "wall_type": "steel_sheet_pile", "governing_check": "shear", "governing_phase": "Deepen excavation to -5.0 m", "governing_level_m": -2, "bending_governing_phase": "Deepen excavation to -5.0 m", "bending_governing_level_m": -4, "bending_demand_kNm_per_m": 53.019, "bending_capacity_kNm_per_m": 419.965, "bending_utilization": 0.126, "shear_governing_phase": "Deepen excavation to -5.0 m", "shear_governing_level_m": -2, "shear_demand_kN_per_m": 45.259, "shear_capacity_kN_per_m": 280.794, "shear_utilization": 0.161, "cracked_stiffness_state": "not_applicable", "pass": true }, "supports": [{ "support_id": "A1", "support_type": "anchor", "governing_phase": "Deepen excavation to -5.0 m", "demand_kN_per_m": 65.677, "capacity_kN_per_m": 144.889, "axial_demand_kN_per_m": 67.994, "axial_capacity_kN_per_m": 150, "utilization_ratio": 0.453, "pass": true }], "serviceability": { "assessed": true, "max_abs_displacement_mm": 5.177, "limit_mm": 30, "pass": true }, "overall_pass": true }, "visualization": { "phases": [{ "name": "Initial at-rest state", "phase_index": 0, "converged": true, "iterations": 3, "levels_m": [0, -0.5, -1, -1.5, -1.6, -2, -2.5, -3, -3.5, -4, -4.5, -5, -5.5, -6, -6.5, -7, -7.5, -8, -8.5, -9], "displacement_mm": [-0.152435, -0.135414, -0.120306, -0.108024, -0.105914, -0.0985267, -0.0912823, -0.0856214, -0.0809387, -0.0767649, -0.0727789, -0.0687891, -0.0647012, -0.0604858, -0.0561508, -0.0517217, -0.0472284, -0.0426976, -0.0381494, -0.033596], "rotation_mrad": [0.0347493, 0.0326285, 0.027511, 0.0216663, 0.0205443, 0.0165224, 0.0126867, 0.0101624, 0.00872524, 0.00807596, 0.00792994, 0.00805872, 0.00830109, 0.00855695, 0.00877385, 0.0089321, 0.009032, 0.00908434, 0.00910433, 0.00910828], "moment_kNm_per_m": [-1.24345e-14, -0.441124, -0.623311, -0.592404, -0.574488, -0.471206, -0.326615, -0.198427, -0.100511, -0.0345382, 0.00416637, 0.0226198, 0.0277917, 0.0254286, 0.0196861, 0.0132291, 0.00754962, 0.00333857, 0.000819794, -4.88498e-15], "shear_kN_per_m": [-0.882248, -0.882248, -0.364373, 0.179161, 0.258205, 0.289182, 0.289182, 0.256375, 0.195831, 0.131946, 0.0774092, 0.0369068, 0.0103439, -0.011485, -0.0129139, -0.0129139, -0.0113591, -0.00842209, -0.00503756, -0.00163959], "shear_above_kN_per_m": [0, -0.882248, -0.364373, 0.0618141, 0.179161, 0.258205, 0.289182, 0.256375, 0.195831, 0.131946, 0.0774092, 0.0369068, 0.0103439, -0.00472618, -0.011485, -0.0129139, -0.0113591, -0.00842209, -0.00503756, -0.00163959], "shear_below_kN_per_m": [-0.882248, -0.364373, 0.0618141, 0.179161, 0.258205, 0.289182, 0.256375, 0.195831, 0.131946, 0.0774092, 0.0369068, 0.0103439, -0.00472618, -0.011485, -0.0129139, -0.0113591, -0.00842209, -0.00503756, -0.00163959, 0], "net_soil_pressure_kPa": [-3.53761, 1.03828, 0.854456, 0.39211, 0.316948, 0.0690071, -0.0657735, -0.121384, -0.128083, -0.10934, -0.0812027, -0.0532555, -0.0302137, -0.0135506, -0.00286485, 0.00311733, 0.00588828, 0.00678558, 0.00681254, 0.00657437], "left_soil_pressure_kPa": [0, 7.2291, 11.1467, 15.1265, 15.9301, 19.1676, 21.5557, 23.9787, 26.4232, 28.8788, 31.3386, 33.7984, 36.2559, 38.7107, 41.1628, 43.6129, 46.0615, 48.5093, 50.9568, 53.4041], "right_soil_pressure_kPa": [3.53761, 6.19082, 10.2923, 14.7344, 15.6131, 19.0986, 21.6215, 24.1001, 26.5512, 28.9882, 31.4198, 33.8516, 36.2861, 38.7242, 41.1657, 43.6098, 46.0556, 48.5026, 50.95, 53.3975], "water_pressure_kPa": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "branch_state": ["passive/active", "neutral/active", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral", "neutral/neutral"], "left_branch": ["passive", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral"], "right_branch": ["active", "active", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral"] }, { "name": "Excavate left side to -4.0 m", "phase_index": 1, "converged": true, "iterations": 4, "levels_m": [0, -0.5, -1, -1.5, -1.6, -2, -2.5, -3, -3.5, -4, -4.5, -5, -5.5, -6, -6.5, -7, -7.5, -8, -8.5, -9], "displacement_mm": [0.0859281, -0.151117, -0.397577, -0.671768, -0.732386, -0.993576, -1.3189, -1.58642, -1.75521, -1.80706, -1.74828, -1.60841, -1.42681, -1.23739, -1.06103, -0.90715, -0.777114, -0.667018, -0.569886, -0.478016], "rotation_mrad": [-0.471517, -0.479237, -0.512567, -0.594398, -0.618492, -0.670545, -0.610065, -0.446257, -0.222725, 0.0133157, 0.211046, 0.334376, 0.380283, 0.370624, 0.33187, 0.283355, 0.238211, 0.204588, 0.186805, 0.182208], "moment_kNm_per_m": [-2.84217e-14, -1.60575, -5.32683, -11.6937, -13.3639, -0.169873, 12.7495, 21.3221, 25.172, 23.9239, 17.2034, 8.44901, 1.09939, -3.10845, -4.95229, -5.13867, -4.25111, -2.74246, -0.956267, 0], "shear_kN_per_m": [-3.2281, -7.45941, -12.7529, -16.723, 32.9621, 32.9621, 25.8159, 17.1265, 7.68792, -13.4368, -17.499, -17.499, -14.6865, -8.40243, -3.67532, 1.78423, 3.02502, 3.57918, 3.57918, 1.91896], "shear_above_kN_per_m": [0, -3.2281, -7.45941, -12.7529, -16.723, 32.9621, 25.8159, 17.1265, 7.68792, -2.49984, -13.4368, -17.499, -14.6865, -8.40243, -3.67532, -0.362001, 1.78423, 3.02502, 3.57918, 1.91896], "shear_below_kN_per_m": [-3.2281, -7.45941, -12.7529, -16.723, 32.9621, 25.8159, 17.1265, 7.68792, -2.49984, -13.4368, -17.499, -14.6865, -8.40243, -3.67532, -0.362001, 1.78423, 3.02502, 3.57918, 1.91896, 0], "net_soil_pressure_kPa": [-12.9439, -8.48329, -10.6128, -13.266, -13.7967, -15.9192, -17.4213, -18.9233, -20.4253, -21.9273, -8.1443, 5.63869, 12.5989, 9.4773, 6.64283, 4.30294, 2.48764, 1.11103, -3.32853, -7.6946], "left_soil_pressure_kPa": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15.285, 30.57, 39.0322, 37.4126, 36.0802, 35.2423, 34.929, 35.0544, 35.465, 35.9913], "right_soil_pressure_kPa": [12.9439, 8.48329, 10.6128, 13.266, 13.7967, 15.9192, 17.4213, 18.9233, 20.4253, 21.9273, 23.4293, 24.9313, 26.4333, 27.9353, 29.4373, 30.9394, 32.4414, 33.9434, 38.7935, 43.6859], "water_pressure_kPa": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "branch_state": ["inactive/neutral", "inactive/neutral", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "passive/active", "passive/active", "passive/active", "neutral/active", "neutral/active", "neutral/active", "neutral/active", "neutral/active", "neutral/active", "neutral/neutral", "neutral/neutral"], "left_branch": ["inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "passive", "passive", "passive", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral"], "right_branch": ["neutral", "neutral", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "neutral", "neutral"] }, { "name": "Deepen excavation to -5.0 m", "phase_index": 2, "converged": true, "iterations": 3, "levels_m": [0, -0.5, -1, -1.5, -1.6, -2, -2.5, -3, -3.5, -4, -4.5, -5, -5.5, -6, -6.5, -7, -7.5, -8, -8.5, -9], "displacement_mm": [0.15974, -0.566027, -1.30226, -2.06791, -2.22707, -2.88082, -3.67581, -4.36196, -4.86872, -5.14826, -5.17729, -4.95885, -4.5241, -3.93108, -3.25123, -2.55285, -1.88454, -1.26313, -0.680213, -0.116291], "rotation_mrad": [-1.44858, -1.45745, -1.49362, -1.57935, -1.60436, -1.64115, -1.50824, -1.21273, -0.798256, -0.312053, 0.195012, 0.668473, 1.05027, 1.29707, 1.39863, 1.37778, 1.29042, 1.19885, 1.14012, 1.12171], "moment_kNm_per_m": [-1.13687e-13, -1.84636, -5.67742, -12.1542, -13.8463, 4.28014, 23.3644, 38.1001, 48.1102, 53.0185, 52.4496, 46.0289, 33.383, 17.9513, 3.17367, -7.51024, -10.6613, -8.38504, -3.83034, 5.68434e-14], "shear_kN_per_m": [-3.74353, -7.71365, -13.0071, -16.9773, 45.259, 45.259, 38.1128, 29.4234, 19.9848, 9.79703, -12.826, -25.2613, -30.8219, -30.8219, -29.5078, -21.3189, -6.25539, 9.15021, 9.15021, 7.70016], "shear_above_kN_per_m": [0, -3.74353, -7.71365, -13.0071, -16.9773, 45.259, 38.1128, 29.4234, 19.9848, 9.79703, -1.1399, -12.826, -25.2613, -30.8219, -29.5078, -21.3189, -6.25539, 4.59607, 9.15021, 7.70016], "shear_below_kN_per_m": [-3.74353, -7.71365, -13.0071, -16.9773, 45.259, 38.1128, 29.4234, 19.9848, 9.79703, -1.1399, -12.826, -25.2613, -30.8219, -29.5078, -21.3189, -6.25539, 4.59607, 9.15021, 7.70016, 0], "net_soil_pressure_kPa": [-15.0107, -7.95962, -10.6128, -13.266, -13.7967, -15.9192, -17.4213, -18.9233, -20.4253, -21.9273, -23.4293, -24.9313, -11.1483, 2.63467, 16.4177, 30.2006, 21.7559, 9.1305, -2.90718, -30.8758], "left_soil_pressure_kPa": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15.285, 30.57, 45.855, 61.14, 54.1973, 43.0739, 32.7972, 22.9384], "right_soil_pressure_kPa": [15.0107, 7.95962, 10.6128, 13.266, 13.7967, 15.9192, 17.4213, 18.9233, 20.4253, 21.9273, 23.4293, 24.9313, 26.4333, 27.9353, 29.4373, 30.9394, 32.4414, 33.9434, 35.7044, 53.8142], "water_pressure_kPa": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "branch_state": ["inactive/neutral", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "inactive/active", "passive/active", "passive/active", "passive/active", "passive/active", "passive/active", "neutral/active", "neutral/active", "neutral/neutral", "neutral/neutral"], "left_branch": ["inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "inactive", "passive", "passive", "passive", "passive", "passive", "neutral", "neutral", "neutral", "neutral"], "right_branch": ["neutral", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "active", "neutral", "neutral"] }] }, "assumptions": ["Wall solved as a 2 DOF Euler-Bernoulli beam line.", "Soil response represented by left/right capped Winkler-type springs with carried offsets.", "EC7 mode currently uses simplified deterministic factors inside the public worker solver.", "Inclined walls use an approximate horizontal-component treatment for soil and water loads based on the wall angle from vertical."], "source_refs": ["/home/user/plan.md", "/home/user/projects/Engineering-Scripts/RetainingWall/README.md", "/home/user/projects/Engineering-Scripts/RetainingWall/reference/solver_notes.md"], "warnings": ["BENCHMARK_IMPORTS_PENDING", "FIRST_PASS_EC7_FACTORS", "NODAL_PRESSURE_LUMPING"] };
+// END GENERATED DEMO_RESULT
 SAMPLE_RESULT.normalized_input = structuredClone(SAMPLE_PROJECT);
 SAMPLE_RESULT.visualization = {
     phases: SAMPLE_RESULT.phases.map((phase, phaseIndex) => ({
@@ -416,6 +440,54 @@ function buildPhasePlotData(result, phaseIndex) {
         };
     }
     return sampled;
+}
+/**
+ * Shear jumps at every node by the lumped spring/support force (large at
+ * anchors and props). When the API returns the shear just above and just
+ * below each node, plot it as a stepped diagram; otherwise use the nodal value.
+ */
+export function buildSteppedShearSeries(result, phaseIndex) {
+    const visualizationPhase = visualizationPhaseForResult(result, phaseIndex);
+    const sampledResults = result?.phases?.[phaseIndex]?.sampled_results ?? [];
+    const levels = visualizationPhase?.levels_m ?? sampledResults.map((item) => item.level_m);
+    const above = visualizationPhase?.shear_above_kN_per_m ??
+        (sampledResults.length ? sampledResults.map((item) => item.shear_above_kN_per_m) : undefined);
+    const below = visualizationPhase?.shear_below_kN_per_m ??
+        (sampledResults.length ? sampledResults.map((item) => item.shear_below_kN_per_m) : undefined);
+    const isFiniteSeries = (value) => isPlotArray(value, levels?.length ?? -1) && value.every((item) => Number.isFinite(item));
+    if (!levels?.length || !isFiniteSeries(above) || !isFiniteSeries(below)) {
+        return undefined;
+    }
+    const aboveValues = above;
+    const belowValues = below;
+    const steppedLevels = [];
+    const steppedValues = [];
+    levels.forEach((level, index) => {
+        if (index > 0) {
+            steppedLevels.push(level);
+            steppedValues.push(aboveValues[index]);
+        }
+        if (index < levels.length - 1) {
+            steppedLevels.push(level);
+            steppedValues.push(belowValues[index]);
+        }
+    });
+    return { levels: steppedLevels, values: steppedValues };
+}
+/**
+ * Phase to show after a run: the first phase without equilibrium if there is
+ * one (the user must see it), otherwise the phase with the governing bending
+ * moment, otherwise the last phase.
+ */
+export function governingPhaseIndex(result, phaseCount) {
+    const phases = result?.phases ?? [];
+    const failed = phases.findIndex((phase) => phase?.converged === false);
+    if (failed >= 0)
+        return Math.min(failed, Math.max(0, phaseCount - 1));
+    const governingName = result?.governing?.max_abs_moment_phase;
+    const governing = phases.findIndex((phase) => phase?.name === governingName);
+    const index = governing >= 0 ? governing : phases.length - 1;
+    return Math.max(0, Math.min(index, phaseCount - 1));
 }
 function plotSourceDescription(source, quantity) {
     if (source === "visualization") {
@@ -906,14 +978,14 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
     const rightSurfaceLevel = phase.surface_level_right_m ?? wallTop;
     const minLevel = Math.min(wallToe, ...project.soil_profiles.left.layers.map((layer) => layer.bottom_level_m), ...project.soil_profiles.right.layers.map((layer) => layer.bottom_level_m));
     const maxLevel = Math.max(wallTop, leftSurfaceLevel, rightSurfaceLevel);
-    const width = 420;
-    const height = 520;
-    const topPad = 24;
+    const width = 640;
+    const height = 1040;
+    const topPad = 36;
     const bottomPad = 24;
-    const leftSoilX = 46;
-    const wallX = width / 2;
-    const rightSoilX = width - 46;
-    const soilWidth = 118;
+    const leftSoilX = 118;
+    const wallX = 320;
+    const rightSoilX = 522;
+    const soilWidth = 164;
     const inclinationTan = Math.tan(((project.wall_geometry.inclination_degrees ?? 0) * Math.PI) / 180);
     const wallBottomX = wallX + inclinationTan * (height - topPad - bottomPad) * 0.18;
     const scaleY = (levelM) => topPad + ((maxLevel - levelM) / Math.max(1e-9, maxLevel - minLevel)) * (height - topPad - bottomPad);
@@ -922,15 +994,23 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
         const normalized = (y - topPad) / Math.max(1e-9, height - topPad - bottomPad);
         return wallX + (wallBottomX - wallX) * normalized;
     };
+    const layerCaption = (layer) => {
+        const namedLayer = layer.name || layer.label;
+        return namedLayer
+            ? String(namedLayer)
+            : `φ ${formatNumber(layer.friction_angle_deg, 0)}° · γ ${formatNumber(layer.unit_weight_wet_kN_m3, 1)}`;
+    };
     const leftSoils = project.soil_profiles.left.layers.map((layer, index) => {
         const yTop = scaleY(layer.top_level_m);
         const yBottom = scaleY(layer.bottom_level_m);
-        return `<rect x="${leftSoilX}" y="${yTop.toFixed(1)}" width="${soilWidth}" height="${Math.max(2, yBottom - yTop).toFixed(1)}" rx="12" fill="${index % 2 === 0 ? "#d8c3aa" : "#c7b097"}"></rect>`;
+        const rectHeight = Math.max(2, yBottom - yTop);
+        return `<rect x="${leftSoilX}" y="${yTop.toFixed(1)}" width="${soilWidth}" height="${rectHeight.toFixed(1)}" fill="${index % 2 === 0 ? "#d8c3aa" : "#c7b097"}" stroke="#a58e73" stroke-width="1"></rect>${rectHeight > 30 ? `<text x="${leftSoilX + soilWidth / 2}" y="${((yTop + yBottom) / 2 + 4).toFixed(1)}" text-anchor="middle" font-size="17" font-weight="600" fill="#493b2c">${escapeHtml(layerCaption(layer))}</text>` : ""}`;
     }).join("");
     const rightSoils = project.soil_profiles.right.layers.map((layer, index) => {
         const yTop = scaleY(layer.top_level_m);
         const yBottom = scaleY(layer.bottom_level_m);
-        return `<rect x="${(rightSoilX - soilWidth).toFixed(1)}" y="${yTop.toFixed(1)}" width="${soilWidth}" height="${Math.max(2, yBottom - yTop).toFixed(1)}" rx="12" fill="${index % 2 === 0 ? "#ceb693" : "#b89d78"}"></rect>`;
+        const rectHeight = Math.max(2, yBottom - yTop);
+        return `<rect x="${(rightSoilX - soilWidth).toFixed(1)}" y="${yTop.toFixed(1)}" width="${soilWidth}" height="${rectHeight.toFixed(1)}" fill="${index % 2 === 0 ? "#ceb693" : "#b89d78"}" stroke="#a58e73" stroke-width="1"></rect>${rectHeight > 30 ? `<text x="${rightSoilX - soilWidth / 2}" y="${((yTop + yBottom) / 2 + 4).toFixed(1)}" text-anchor="middle" font-size="17" font-weight="600" fill="#493b2c">${escapeHtml(layerCaption(layer))}</text>` : ""}`;
     }).join("");
     const leftExcavationY = scaleY(phase.excavation_level_left_m);
     const rightExcavationY = scaleY(phase.excavation_level_right_m);
@@ -941,7 +1021,7 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
     const wallSegments = project.wall_geometry.segments.map((segment) => {
         const yTop = scaleY(segment.top_level_m);
         const yBottom = scaleY(segment.bottom_level_m);
-        return `<line x1="${wallAxisX(segment.top_level_m).toFixed(1)}" y1="${yTop.toFixed(1)}" x2="${wallAxisX(segment.bottom_level_m).toFixed(1)}" y2="${yBottom.toFixed(1)}" stroke="#23495a" stroke-width="8" stroke-linecap="round"></line>`;
+        return `<line x1="${wallAxisX(segment.top_level_m).toFixed(1)}" y1="${yTop.toFixed(1)}" x2="${wallAxisX(segment.bottom_level_m).toFixed(1)}" y2="${yBottom.toFixed(1)}" stroke="#23495a" stroke-width="9"></line><circle cx="${wallAxisX(segment.top_level_m).toFixed(1)}" cy="${yTop.toFixed(1)}" r="5" fill="#fff" stroke="#23495a" stroke-width="3"></circle><circle cx="${wallAxisX(segment.bottom_level_m).toFixed(1)}" cy="${yBottom.toFixed(1)}" r="5" fill="#fff" stroke="#23495a" stroke-width="3"></circle>`;
     }).join("");
     const activeSupports = project.supports.filter((support) => {
         const supportStartPhase = support.active_from_phase ?? 0;
@@ -956,23 +1036,23 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
         const supportColor = supportSide === "left" ? "#8b5e00" : "#0b6e4f";
         const supportLabel = `${support.id} ${supportTypeLabel(support.type)}`;
         const angle = ((support.inclination_degrees ?? 0) * Math.PI) / 180;
-        const length = 56;
+        const length = 64;
         const dx = Math.cos(angle) * length * (supportSide === "left" ? -1 : 1);
         const dy = Math.sin(angle) * length;
-        const targetX = supportSide === "left" ? Math.max(leftSoilX + 10, supportWallX + dx) : Math.min(rightSoilX - 10, supportWallX + dx);
+        const targetX = supportSide === "left" ? Math.max(leftSoilX + 8, supportWallX + dx) : Math.min(rightSoilX - 8, supportWallX + dx);
         const targetY = y + dy;
         if (support.type === "anchor" || support.type === "strut") {
             return [
                 `<line x1="${supportWallX.toFixed(1)}" y1="${y.toFixed(1)}" x2="${targetX.toFixed(1)}" y2="${targetY.toFixed(1)}" stroke="${supportColor}" stroke-width="4"></line>`,
                 `<circle cx="${targetX.toFixed(1)}" cy="${targetY.toFixed(1)}" r="6" fill="${supportColor}"></circle>`,
-                `<text x="${(targetX + (supportSide === "left" ? -12 : 12)).toFixed(1)}" y="${(targetY - 10).toFixed(1)}" font-size="11" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
+                `<text x="${(targetX + (supportSide === "left" ? -9 : 9)).toFixed(1)}" y="${(targetY - 10).toFixed(1)}" font-size="16" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
             ].join("");
         }
         if (support.type === "spring") {
             return [
                 `<line x1="${supportWallX.toFixed(1)}" y1="${y.toFixed(1)}" x2="${targetX.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${supportColor}" stroke-width="3" stroke-dasharray="5 5"></line>`,
                 `<rect x="${(targetX - 6).toFixed(1)}" y="${(y - 6).toFixed(1)}" width="12" height="12" fill="${supportColor}" rx="2"></rect>`,
-                `<text x="${(targetX + (supportSide === "left" ? -12 : 12)).toFixed(1)}" y="${(y - 10).toFixed(1)}" font-size="11" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
+                `<text x="${(targetX + (supportSide === "left" ? -9 : 9)).toFixed(1)}" y="${(y - 10).toFixed(1)}" font-size="16" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
             ].join("");
         }
         if (support.type === "underwater_concrete_block") {
@@ -983,7 +1063,7 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
                 `<line x1="${supportWallX.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(supportSide === "left" ? targetX + 2 : targetX - 2).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${supportColor}" stroke-width="4"></line>`,
                 `<rect x="${blockX.toFixed(1)}" y="${(y - blockHeight / 2).toFixed(1)}" width="${blockWidth}" height="${blockHeight}" fill="${supportColor}" rx="2"></rect>`,
                 `<line x1="${blockX.toFixed(1)}" y1="${(y + blockHeight / 2 + 3).toFixed(1)}" x2="${(blockX + blockWidth).toFixed(1)}" y2="${(y + blockHeight / 2 + 3).toFixed(1)}" stroke="${supportColor}" stroke-width="2"></line>`,
-                `<text x="${(targetX + (supportSide === "left" ? -12 : 12)).toFixed(1)}" y="${(y - 12).toFixed(1)}" font-size="11" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
+                `<text x="${(targetX + (supportSide === "left" ? -9 : 9)).toFixed(1)}" y="${(y - 12).toFixed(1)}" font-size="16" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
             ].join("");
         }
         if (support.type === "rigid" || support.type === "clamp") {
@@ -995,7 +1075,7 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
                 support.type === "clamp"
                     ? `<line x1="${(supportWallX + bracketDirection * 7).toFixed(1)}" y1="${(y - 12).toFixed(1)}" x2="${(supportWallX + bracketDirection * 7).toFixed(1)}" y2="${(y + 12).toFixed(1)}" stroke="${supportColor}" stroke-width="2"></line>`
                     : "",
-                `<text x="${(supportWallX + bracketDirection * 18).toFixed(1)}" y="${(y - 16).toFixed(1)}" font-size="11" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
+                `<text x="${(supportWallX + bracketDirection * 18).toFixed(1)}" y="${(y - 16).toFixed(1)}" font-size="16" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "end" : "start"}">${escapeHtml(supportLabel)}</text>`,
             ].join("");
         }
         if (support.type === "point_load") {
@@ -1005,7 +1085,7 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
             return [
                 `<line x1="${arrowStartX.toFixed(1)}" y1="${y.toFixed(1)}" x2="${arrowEndX.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${supportColor}" stroke-width="4"></line>`,
                 `<polygon points="${arrowEndX.toFixed(1)},${y.toFixed(1)} ${arrowHeadX.toFixed(1)},${(y - 7).toFixed(1)} ${arrowHeadX.toFixed(1)},${(y + 7).toFixed(1)}" fill="${supportColor}"></polygon>`,
-                `<text x="${arrowStartX.toFixed(1)}" y="${(y - 10).toFixed(1)}" font-size="11" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "start" : "end"}">${escapeHtml(`${supportLabel} ${formatNumber(support.force_kN_per_m ?? 0, 1)} kN/m`)}</text>`,
+                `<text x="${arrowStartX.toFixed(1)}" y="${(y - 10).toFixed(1)}" font-size="16" font-weight="700" fill="${supportColor}" text-anchor="${supportSide === "left" ? "start" : "end"}">${escapeHtml(`${supportLabel} ${formatNumber(support.force_kN_per_m ?? 0, 1)} kN/m`)}</text>`,
             ].join("");
         }
         if (support.type === "moment") {
@@ -1017,11 +1097,25 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
             return [
                 `<path d="M ${startX.toFixed(1)} ${(y + 2).toFixed(1)} A ${radius} ${radius} 0 1 ${sweep} ${endX.toFixed(1)} ${(y + 2).toFixed(1)}" stroke="${supportColor}" stroke-width="3" fill="none"></path>`,
                 `<polygon points="${(supportSide === "left" ? arrowHeadX + 8 : arrowHeadX - 8).toFixed(1)},${(y - 10).toFixed(1)} ${arrowHeadX.toFixed(1)},${(y - 2).toFixed(1)} ${(supportSide === "left" ? arrowHeadX + 10 : arrowHeadX - 10).toFixed(1)},${(y + 6).toFixed(1)}" fill="${supportColor}"></polygon>`,
-                `<text x="${supportWallX.toFixed(1)}" y="${(y - 22).toFixed(1)}" font-size="11" font-weight="700" fill="${supportColor}" text-anchor="middle">${escapeHtml(`${supportLabel} ${formatNumber(support.moment_kNm_per_m ?? 0, 1)} kNm/m`)}</text>`,
+                `<text x="${supportWallX.toFixed(1)}" y="${(y - 22).toFixed(1)}" font-size="16" font-weight="700" fill="${supportColor}" text-anchor="middle">${escapeHtml(`${supportLabel} ${formatNumber(support.moment_kNm_per_m ?? 0, 1)} kNm/m`)}</text>`,
             ].join("");
         }
         return "";
     }).join("");
+    const tickLevels = [];
+    const tickStep = maxLevel - minLevel > 14 ? 2 : 1;
+    for (let level = Math.floor(maxLevel / tickStep) * tickStep; level >= minLevel; level -= tickStep) {
+        tickLevels.push(level);
+    }
+    const levelTicks = tickLevels.map((level) => {
+        const y = scaleY(level);
+        return `<line x1="88" y1="${y.toFixed(1)}" x2="101" y2="${y.toFixed(1)}" stroke="#657174" stroke-width="1.5"></line><text x="78" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="17" fill="#465154">${formatNumber(level, 0)} m</text>`;
+    }).join("");
+    const leftSurcharge = phase.surcharge_left_kPa ?? 0;
+    const rightSurcharge = phase.surcharge_right_kPa ?? 0;
+    const surchargeArrow = (x, y, value, anchor) => value > 0
+        ? `<line x1="${x}" y1="${(y - 35).toFixed(1)}" x2="${x}" y2="${(y - 8).toFixed(1)}" stroke="#9b2226" stroke-width="3"></line><polygon points="${x - 6},${(y - 12).toFixed(1)} ${x + 6},${(y - 12).toFixed(1)} ${x},${(y - 2).toFixed(1)}" fill="#9b2226"></polygon><text x="${x + (anchor === "start" ? 9 : -9)}" y="${(y - 21).toFixed(1)}" text-anchor="${anchor}" font-size="17" font-weight="700" fill="#7c2020">${formatNumber(value, 1)} kPa</text>`
+        : "";
     const legend = [
         `Phase ${phaseIndex + 1}: ${phase.name}`,
         `Left excavation ${formatNumber(phase.excavation_level_left_m, 1)} m`,
@@ -1034,29 +1128,71 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
             : "Supports none in this phase",
     ];
     return `
-    <svg class="geometry-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Retaining wall geometry preview">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="24" fill="#fdfbf6"></rect>
-      ${leftSoils}
-      ${rightSoils}
-      <rect x="${leftSoilX}" y="0" width="${soilWidth}" height="${leftExcavationY.toFixed(1)}" fill="#fdfbf6"></rect>
-      <rect x="${(rightSoilX - soilWidth).toFixed(1)}" y="0" width="${soilWidth}" height="${rightExcavationY.toFixed(1)}" fill="#fdfbf6"></rect>
-      <line x1="${leftSoilX}" y1="${leftSurfaceY.toFixed(1)}" x2="${wallAxisX(leftSurfaceLevel).toFixed(1)}" y2="${leftSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="4 4"></line>
-      <line x1="${wallAxisX(rightSurfaceLevel).toFixed(1)}" y1="${rightSurfaceY.toFixed(1)}" x2="${rightSoilX}" y2="${rightSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="4 4"></line>
-      <line x1="${leftSoilX}" y1="${leftWaterY.toFixed(1)}" x2="${(wallAxisX(phase.groundwater_level_left_m) - 10).toFixed(1)}" y2="${leftWaterY.toFixed(1)}" stroke="#2f8fda" stroke-width="2.5" stroke-dasharray="7 7"></line>
-      <line x1="${(wallAxisX(phase.groundwater_level_right_m) + 10).toFixed(1)}" y1="${rightWaterY.toFixed(1)}" x2="${rightSoilX}" y2="${rightWaterY.toFixed(1)}" stroke="#2f8fda" stroke-width="2.5" stroke-dasharray="7 7"></line>
-      <line x1="${leftSoilX}" y1="${leftExcavationY.toFixed(1)}" x2="${wallAxisX(phase.excavation_level_left_m).toFixed(1)}" y2="${leftExcavationY.toFixed(1)}" stroke="#9b6b43" stroke-width="3"></line>
-      <line x1="${wallAxisX(phase.excavation_level_right_m).toFixed(1)}" y1="${rightExcavationY.toFixed(1)}" x2="${rightSoilX}" y2="${rightExcavationY.toFixed(1)}" stroke="#9b6b43" stroke-width="3"></line>
-      ${wallSegments}
-      ${supports}
-      <text x="24" y="30" font-size="14" font-weight="700" fill="#182022">${escapeHtml(legend[0])}</text>
-      <text x="24" y="50" font-size="12" fill="#596265">${escapeHtml(legend[1])}</text>
-      <text x="24" y="68" font-size="12" fill="#596265">${escapeHtml(legend[2])}</text>
-      <text x="24" y="86" font-size="12" fill="#596265">${escapeHtml(legend[3])}</text>
-      <text x="24" y="104" font-size="12" fill="#596265">${escapeHtml(legend[4])}</text>
-      <text x="24" y="122" font-size="12" fill="#596265">${escapeHtml(legend[5])}</text>
-      <text x="24" y="140" font-size="12" fill="#596265">${escapeHtml(legend[6])}</text>
-    </svg>
+    <div class="geometry-figure">
+      <svg class="geometry-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Retaining wall geometry preview">
+        <rect x="0" y="0" width="${width}" height="${height}" fill="#fdfbf6"></rect>
+        ${leftSoils}
+        ${rightSoils}
+        <rect x="${leftSoilX}" y="0" width="${soilWidth}" height="${leftExcavationY.toFixed(1)}" fill="#fdfbf6"></rect>
+        <rect x="${(rightSoilX - soilWidth).toFixed(1)}" y="0" width="${soilWidth}" height="${rightExcavationY.toFixed(1)}" fill="#fdfbf6"></rect>
+        ${levelTicks}
+        <line x1="${leftSoilX}" y1="${leftSurfaceY.toFixed(1)}" x2="${wallAxisX(leftSurfaceLevel).toFixed(1)}" y2="${leftSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="5 5"></line>
+        <line x1="${wallAxisX(rightSurfaceLevel).toFixed(1)}" y1="${rightSurfaceY.toFixed(1)}" x2="${rightSoilX}" y2="${rightSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="5 5"></line>
+        <line x1="${leftSoilX}" y1="${leftWaterY.toFixed(1)}" x2="${(wallAxisX(phase.groundwater_level_left_m) - 10).toFixed(1)}" y2="${leftWaterY.toFixed(1)}" stroke="#2f8fda" stroke-width="2.5" stroke-dasharray="8 7"></line>
+        <line x1="${(wallAxisX(phase.groundwater_level_right_m) + 10).toFixed(1)}" y1="${rightWaterY.toFixed(1)}" x2="${rightSoilX}" y2="${rightWaterY.toFixed(1)}" stroke="#2f8fda" stroke-width="2.5" stroke-dasharray="8 7"></line>
+        <text x="${wallAxisX(phase.groundwater_level_left_m) - 16}" y="${(leftWaterY - 6).toFixed(1)}" font-size="22" fill="#146aa8">▽</text>
+        <text x="${wallAxisX(phase.groundwater_level_right_m) + 14}" y="${(rightWaterY - 6).toFixed(1)}" font-size="22" fill="#146aa8">▽</text>
+        <line x1="${leftSoilX}" y1="${leftExcavationY.toFixed(1)}" x2="${wallAxisX(phase.excavation_level_left_m).toFixed(1)}" y2="${leftExcavationY.toFixed(1)}" stroke="#9b6b43" stroke-width="3"></line>
+        <line x1="${wallAxisX(phase.excavation_level_right_m).toFixed(1)}" y1="${rightExcavationY.toFixed(1)}" x2="${rightSoilX}" y2="${rightExcavationY.toFixed(1)}" stroke="#9b6b43" stroke-width="3"></line>
+        ${surchargeArrow(leftSoilX + soilWidth / 2, leftSurfaceY, leftSurcharge, "start")}
+        ${surchargeArrow(rightSoilX - soilWidth / 2, rightSurfaceY, rightSurcharge, "end")}
+        ${wallSegments}
+        ${supports}
+      </svg>
+      <ul class="geometry-legend" aria-label="Phase and geometry notes">
+        ${legend.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </div>
   `;
+}
+function buildTabbedQuickEditorHtml(flatMarkup) {
+    const tabDefinitions = [
+        { id: "general", label: "General" },
+        { id: "wall", label: "Wall" },
+        { id: "soils", label: "Soils" },
+        { id: "phases", label: "Phases" },
+        { id: "supports", label: "Supports" },
+        { id: "json", label: "JSON" },
+    ];
+    const grouped = new Map(tabDefinitions.map((tab) => [tab.id, []]));
+    const items = flatMarkup.match(/<label class="quick-editor-field">[\s\S]*?<\/label>|<div class="quick-editor-actions">[\s\S]*?<\/div>|<p class="quick-editor-note">[\s\S]*?<\/p>/g) ?? [];
+    for (const item of items) {
+        let group = "general";
+        if (/data-qe-support-(?:index|id|type|side|depth|active|inclination|stiffness|prestress|capacity|force|moment)|anchor-inclination|support_(?:add|remove)/.test(item)) {
+            group = "supports";
+        }
+        else if (/data-qe-(?:left-|right-)|left_layer_|right_layer_/.test(item)) {
+            group = "soils";
+        }
+        else if (/data-qe-phase-name|phase_(?:duplicate|remove)|data-qe-(?:surface|exc-|gw-|sur-|vertical-load|second-order)/.test(item)) {
+            group = "phases";
+        }
+        else if (/data-qe-(?:segment|library|section-name|wpl|av|fy|gamma-m0)|segment_(?:split|remove)/.test(item)) {
+            group = "wall";
+        }
+        grouped.get(group)?.push(item);
+    }
+    const tabButtons = tabDefinitions.map((tab, index) => `
+    <button type="button" class="editor-tab" id="editor-tab-${tab.id}" role="tab" aria-controls="editor-panel-${tab.id}" aria-selected="${index === 0}" tabindex="${index === 0 ? "0" : "-1"}" data-editor-tab="${tab.id}">${tab.label}</button>
+  `).join("");
+    const tabPanels = tabDefinitions.map((tab, index) => `
+    <section class="editor-tab-panel" id="editor-panel-${tab.id}" role="tabpanel" aria-labelledby="editor-tab-${tab.id}" ${index === 0 ? "" : "hidden"}>
+      ${tab.id === "json"
+        ? `<div class="json-editor-note">Canonical project payload. Direct edits are parsed and reflected in the preview.</div><div data-json-input-mount></div>`
+        : `<div class="quick-editor-grid">${grouped.get(tab.id)?.join("\n") ?? ""}</div>`}
+    </section>
+  `).join("");
+    return `<div class="editor-tabs" role="tablist" aria-label="Project input sections">${tabButtons}</div><div class="editor-tab-panels">${tabPanels}</div>`;
 }
 export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
     const phase = activePhaseForProject(project, phaseIndex);
@@ -1104,7 +1240,7 @@ export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
       <option value="${index}" ${index === focusState.supportIndex ? "selected" : ""}>${escapeHtml(`${index + 1}. ${support.id} ${supportTypeLabel(support.type)}`)}</option>
     `).join("")
         : `<option value="0" selected>No supports</option>`;
-    return `
+    const flatMarkup = `
     <div class="quick-editor-grid">
       <label class="quick-editor-field"><span>Wall segment</span><select data-qe-segment-index>${segmentOptions}</select></label>
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-structure-action="segment_split">Split segment</button><button type="button" class="secondary-button" data-qe-structure-action="segment_remove">Remove segment</button></div>
@@ -1117,7 +1253,7 @@ export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
       <label class="quick-editor-field"><span>Phase name</span><input data-qe-phase-name type="text" value="${escapeHtml(phase.name)}"></label>
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-structure-action="phase_duplicate">Duplicate phase</button><button type="button" class="secondary-button" data-qe-structure-action="phase_remove">Remove phase</button></div>
       <label class="quick-editor-field"><span>Wall type</span><select data-qe-wall-type><option value="steel_sheet_pile" ${project.wall_type === "steel_sheet_pile" ? "selected" : ""}>Steel sheet pile</option><option value="diaphragm_wall" ${project.wall_type === "diaphragm_wall" ? "selected" : ""} disabled>Diaphragm wall (validation pending)</option></select></label>
-      <label class="quick-editor-field"><span>Design mode</span><select data-qe-design-mode><option value="classic" ${project.design_mode === "classic" ? "selected" : ""}>Classic</option><option value="ec7" ${project.design_mode === "ec7" ? "selected" : ""}>EC7</option></select></label>
+      <label class="quick-editor-field"><span>Design mode</span><select data-qe-design-mode><option value="classic" ${project.design_mode === "classic" ? "selected" : ""}>Classic</option><option value="ec7" ${project.design_mode === "ec7" ? "selected" : ""}>EC7 (simplified first-pass factors)</option></select></label>
       <label class="quick-editor-field"><span>Toe control</span><select data-qe-toe-mode><option value="fixed" ${toeControlMode === "fixed" ? "selected" : ""}>Fixed toe</option><option value="search" ${toeControlMode === "search" ? "selected" : ""}>Search length</option></select></label>
       <label class="quick-editor-field"><span>Top level</span><input data-qe-top-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.top_level_m)}"></label>
       <label class="quick-editor-field"><span>Toe level</span><input data-qe-toe-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.toe_level_m)}"></label>
@@ -1185,9 +1321,10 @@ export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
       <label class="quick-editor-field"><span>Capacity</span><input data-qe-support-capacity type="number" step="1" value="${escapeHtml(selectedSupport?.capacity_kN_per_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Point load</span><input data-qe-support-force type="number" step="1" value="${escapeHtml(selectedSupport?.force_kN_per_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Applied moment</span><input data-qe-support-moment type="number" step="1" value="${escapeHtml(selectedSupport?.moment_kNm_per_m ?? "")}"></label>
-      <p class="quick-editor-note">Select a wall segment, left/right soil layer, support item, or phase to edit existing staged retaining data from the structured UI. The segment editor covers EI, cracked EI, cracking moment, direct moment/shear resistances, and ${project.wall_type === "steel_sheet_pile" ? "manual steel-section metadata" : "direct diaphragm section stiffness/cracking/resistance inputs"}; the phase editor covers naming, surface, excavation, groundwater, surcharge, and vertical wall load state; the left/right soil layers cover density, friction, cohesion, stiffness, coefficient overrides, and pore offsets; the support editor covers id, type, permanence by phase, stiffness/prestress/capacity, unilateral underwater concrete blocks, point loads, and applied moments; and the workspace also exposes the required project-specific wall-displacement limit, target element length, and returned discretization metadata. JSON remains available for direct editing and future branches.</p>
+      <p class="quick-editor-note">Choose an item in its tab to edit the staged project. Use JSON for direct payload changes.${project.wall_type === "diaphragm_wall" ? " The wall uses direct diaphragm section stiffness/cracking/resistance inputs." : ""}</p>
     </div>
   `;
+    return buildTabbedQuickEditorHtml(flatMarkup);
 }
 export function reconcileQuickEditorEventPatch(changedField, patch) {
     const reconciled = { ...patch };
@@ -1425,33 +1562,80 @@ export function applyQuickEditorPatch(project, phaseIndex, patch, focus = {}) {
     }
     return nextProject;
 }
-function buildSvgPlot(levels, values, cssClass, label) {
-    const path = buildPlotPath(levels, values);
+function buildSvgPlot(levels, values, cssClass, label, unit) {
+    const pairs = levels.map((level, index) => ({ level, value: values[index] }))
+        .filter((item, index) => index < values.length && Number.isFinite(item.level) && Number.isFinite(item.value));
+    if (!pairs.length) {
+        return `<p class="plot-empty">No ${escapeHtml(label.toLowerCase())} array returned.</p>`;
+    }
+    const width = 260;
+    const height = 540;
+    const plotLeft = 48;
+    const plotRight = 248;
+    const plotTop = 62;
+    const plotBottom = 488;
+    const minLevel = Math.min(...pairs.map((item) => item.level));
+    const maxLevel = Math.max(...pairs.map((item) => item.level));
+    let minValue = Math.min(0, ...pairs.map((item) => item.value));
+    let maxValue = Math.max(0, ...pairs.map((item) => item.value));
+    if (maxValue - minValue < 1e-9) {
+        minValue = -1;
+        maxValue = 1;
+    }
+    const valuePadding = (maxValue - minValue) * 0.08;
+    minValue -= valuePadding;
+    maxValue += valuePadding;
+    const scaleX = (value) => plotLeft + ((value - minValue) / (maxValue - minValue)) * (plotRight - plotLeft);
+    const scaleY = (level) => plotTop + ((maxLevel - level) / Math.max(1e-9, maxLevel - minLevel)) * (plotBottom - plotTop);
+    const zeroX = scaleX(0);
+    const curvePoints = pairs.map((item) => `${scaleX(item.value).toFixed(2)},${scaleY(item.level).toFixed(2)}`);
+    const linePath = pairs.map((item, index) => `${index === 0 ? "M" : "L"} ${scaleX(item.value).toFixed(2)} ${scaleY(item.level).toFixed(2)}`).join(" ");
+    const fillPath = `M ${zeroX.toFixed(2)} ${scaleY(pairs[0].level).toFixed(2)} L ${curvePoints.join(" L ")} L ${zeroX.toFixed(2)} ${scaleY(pairs[pairs.length - 1].level).toFixed(2)} Z`;
+    const maxItem = pairs.reduce((extreme, item) => item.value > extreme.value ? item : extreme, pairs[0]);
+    const minItem = pairs.reduce((extreme, item) => item.value < extreme.value ? item : extreme, pairs[0]);
+    const valueDigits = unit === "mm" || unit === "mrad" ? 2 : 1;
+    const maxLabel = `Max ${formatNumber(maxItem.value, valueDigits)} ${unit} @ ${formatNumber(maxItem.level, 2)} m`;
+    const minLabel = `Min ${formatNumber(minItem.value, valueDigits)} ${unit} @ ${formatNumber(minItem.level, 2)} m`;
+    const levelTicks = Array.from({ length: 5 }, (_, index) => maxLevel - ((maxLevel - minLevel) * index) / 4);
+    const xMinimumTick = minValue + valuePadding;
+    const xMaximumTick = maxValue - valuePadding;
+    const zeroHasLabelSpace = scaleX(0) - scaleX(xMinimumTick) > 36 && scaleX(xMaximumTick) - scaleX(0) > 36;
+    const xTicks = zeroHasLabelSpace
+        ? [xMinimumTick, 0, xMaximumTick]
+        : [xMinimumTick, xMaximumTick].filter((tick, index, ticks) => ticks.findIndex((candidate) => Math.abs(candidate - tick) < 1e-8) === index);
+    const color = {
+        displacement: "#0b6e4f",
+        rotation: "#527e91",
+        moment: "#3a596a",
+        shear: "#8f3a3a",
+        pressure: "#9b6b43",
+        water: "#2f8fda",
+    }[cssClass] ?? "#0b6e4f";
     return `
-    <svg class="plot-svg" viewBox="0 0 360 180" role="img" aria-label="${escapeHtml(label)}">
-      <path class="plot-line ${cssClass}" d="${path}"></path>
+    <svg class="plot-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}">
+      <text x="4" y="18" font-size="13" font-weight="700" fill="#263235">${escapeHtml(maxLabel)}</text>
+      <text x="4" y="38" font-size="13" fill="#465154">${escapeHtml(minLabel)}</text>
+      ${levelTicks.map((level) => {
+        const y = scaleY(level);
+        return `<line x1="${plotLeft}" y1="${y.toFixed(2)}" x2="${plotRight}" y2="${y.toFixed(2)}" stroke="#d9ddda" stroke-width="1"></line><text x="${plotLeft - 5}" y="${(y + 4).toFixed(2)}" text-anchor="end" font-size="12" fill="#4f5b5e">${formatNumber(level, 1)} m</text>`;
+    }).join("")}
+      <line x1="${plotLeft}" y1="${plotTop}" x2="${plotLeft}" y2="${plotBottom}" stroke="#465154" stroke-width="1.4"></line>
+      <line x1="${zeroX.toFixed(2)}" y1="${plotTop}" x2="${zeroX.toFixed(2)}" y2="${plotBottom}" stroke="#697477" stroke-width="1.4" stroke-dasharray="4 4"></line>
+      <path d="${fillPath}" fill="${color}" fill-opacity="0.16" stroke="none"></path>
+      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path>
+      <line x1="${plotLeft}" y1="${plotBottom}" x2="${plotRight}" y2="${plotBottom}" stroke="#465154" stroke-width="1.4"></line>
+      ${xTicks.map((tick, index) => {
+        const x = scaleX(tick);
+        const anchor = index === 0 ? "start" : index === xTicks.length - 1 ? "end" : "middle";
+        return `<line x1="${x.toFixed(2)}" y1="${plotBottom}" x2="${x.toFixed(2)}" y2="${plotBottom + 5}" stroke="#465154" stroke-width="1"></line><text x="${x.toFixed(2)}" y="${plotBottom + 18}" text-anchor="${anchor}" font-size="12" fill="#4f5b5e">${formatNumber(tick, valueDigits)}</text>`;
+    }).join("")}
+      <text x="${plotRight - 1}" y="${height - 10}" text-anchor="end" font-size="12" fill="#263235">${escapeHtml(unit)}</text>
     </svg>
   `;
 }
 function buildDeformedWallSvg(levels, displacements) {
-    const width = 240;
-    const height = 300;
-    const centerX = width / 2;
-    const minLevel = Math.min(...levels);
-    const maxLevel = Math.max(...levels);
-    const maxAbsDisp = Math.max(1e-6, ...displacements.map((value) => Math.abs(value)));
-    const path = displacements.map((value, index) => {
-        const x = centerX + (value / maxAbsDisp) * 58;
-        const y = ((maxLevel - levels[index]) / Math.max(1e-9, maxLevel - minLevel)) * (height - 24) + 12;
-        return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
-    }).join(" ");
-    return `
-    <svg class="deformed-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Wall deformed shape">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="18" fill="#fdfbf6"></rect>
-      <line x1="${centerX}" y1="12" x2="${centerX}" y2="${height - 12}" stroke="#9fb1b8" stroke-width="4" stroke-dasharray="5 8"></line>
-      <path d="${path}" stroke="#0b6e4f" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-    </svg>
-  `;
+    return buildSvgPlot(levels, displacements, "displacement", "Wall deformed shape", "mm")
+        .replace('class="plot-svg"', 'class="plot-svg deformed-svg"');
 }
 function governingSupportCheck(result) {
     const supportChecks = result.design_checks?.supports;
@@ -1815,18 +1999,63 @@ export function buildResultSummaryItems(result, phaseIndex = 0) {
     }
     return summary;
 }
+/**
+ * A phase that did not converge has no equilibrium state (typically a wall
+ * that is unstable in that phase); its numbers must not be read as results,
+ * and later phases start from that invalid state.
+ */
+export function buildPhaseConvergenceAlert(result, phaseIndex) {
+    const phase = result?.phases?.[phaseIndex];
+    if (phase?.converged === false) {
+        return `<div class="phase-alert" role="alert"><strong>No equilibrium found in this phase.</strong> The solver stopped after ${escapeHtml(phase?.iterations ?? "n/a")} iterations. This usually means the wall is unstable here: insufficient embedment, or anchors/props at their capacity. The plotted values are not a valid result — lengthen the wall or add support and run again.</div>`;
+    }
+    const earlierFailure = (result?.phases ?? [])
+        .slice(0, Math.max(0, phaseIndex))
+        .find((item) => item?.converged === false);
+    if (earlierFailure) {
+        return `<div class="phase-alert" role="alert"><strong>An earlier phase did not converge</strong> (${escapeHtml(earlierFailure.name)}). This phase starts from that invalid state, so its values are not a valid result.</div>`;
+    }
+    return "";
+}
 export function buildResultHtml(result, phaseIndex) {
     const phase = result.phases[phaseIndex];
+    const convergenceAlert = buildPhaseConvergenceAlert(result, phaseIndex);
     const wallLengthSearch = result.search_evaluation;
     const plotData = buildPhasePlotData(result, phaseIndex);
     const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
+    const steppedShear = buildSteppedShearSeries(result, phaseIndex);
     const cards = buildPhaseOverview(result, phaseIndex).map((card) => `
     <article class="result-card">
       <h3>${escapeHtml(card.title)}</h3>
       <p>${escapeHtml(card.text)}</p>
     </article>
   `).join("");
+    const plotCards = [
+        { title: "Displacement · mm", values: displacement, color: "displacement", label: "Displacement plot", unit: "mm", quantity: "displacement array" },
+        { title: "Moment · kNm/m", values: moment, color: "moment", label: "Moment plot", unit: "kNm/m", quantity: "moment array" },
+        { title: "Shear · kN/m", values: steppedShear?.values ?? shear, levels: steppedShear?.levels, color: "shear", label: "Shear plot", unit: "kN/m", quantity: steppedShear ? "shear above/below each node" : "shear array" },
+        { title: "Net soil pressure · kPa", values: pressure, color: "pressure", label: "Net pressure plot", unit: "kPa", quantity: "net soil pressure array" },
+        { title: "Water pressure · kPa", values: waterPressure, color: "water", label: "Water pressure plot", unit: "kPa", quantity: "water-pressure array" },
+    ].map((plot) => `
+    <article class="depth-plot-card">
+      <h3>${escapeHtml(plot.title)}</h3>
+      <p class="plot-source sr-only">${escapeHtml(plotSourceDescription(source, plot.quantity))}</p>
+      ${buildSvgPlot(plot.levels ?? levels, plot.values, plot.color, plot.label, plot.unit)}
+    </article>
+  `).join("");
+    const rotationPlot = `
+    <details class="depth-plot-card additional-plot-card">
+      <summary>Rotation · mrad</summary>
+      <p class="plot-source sr-only">${escapeHtml(plotSourceDescription(source, "rotation array"))}</p>
+      ${buildSvgPlot(levels, rotation, "rotation", "Rotation plot", "mrad")}
+    </details>
+  `;
     return `
+    ${convergenceAlert}
+    <div class="depth-plot-grid" aria-label="Selected phase depth plots">
+      ${plotCards}
+      ${rotationPlot}
+    </div>
     <div class="result-grid">
       ${cards}
     </div>
@@ -1892,36 +2121,6 @@ export function buildResultHtml(result, phaseIndex) {
       <h3>Wall deformed shape</h3>
       <p>${escapeHtml(plotSourceDescription(source, "displacement array"))}</p>
       ${buildDeformedWallSvg(levels, displacement)}
-    </article>
-    <article class="result-card">
-      <h3>Displacement</h3>
-      <p>${escapeHtml(plotSourceDescription(source, "displacement array"))}</p>
-      ${buildSvgPlot(levels, displacement, "displacement", "Displacement plot")}
-    </article>
-    <article class="result-card">
-      <h3>Rotation</h3>
-      <p>${escapeHtml(plotSourceDescription(source, "rotation array"))}</p>
-      ${buildSvgPlot(levels, rotation, "rotation", "Rotation plot")}
-    </article>
-    <article class="result-card">
-      <h3>Bending moment</h3>
-      <p>${escapeHtml(plotSourceDescription(source, "moment array"))}</p>
-      ${buildSvgPlot(levels, moment, "moment", "Moment plot")}
-    </article>
-    <article class="result-card">
-      <h3>Shear</h3>
-      <p>${escapeHtml(plotSourceDescription(source, "shear array"))}</p>
-      ${buildSvgPlot(levels, shear, "shear", "Shear plot")}
-    </article>
-    <article class="result-card">
-      <h3>Net pressure</h3>
-      <p>${escapeHtml(plotSourceDescription(source, "net soil pressure array"))}</p>
-      ${buildSvgPlot(levels, pressure, "pressure", "Net pressure plot")}
-    </article>
-    <article class="result-card">
-      <h3>Water pressure</h3>
-      <p>${escapeHtml(plotSourceDescription(source, "water-pressure array"))}</p>
-      ${buildSvgPlot(levels, waterPressure, "water", "Water pressure plot")}
     </article>
     <article class="result-card">
       <h3>Support-force table</h3>
@@ -2067,32 +2266,32 @@ export function buildReportHtml(project, result, phaseIndex = 0, generatedAt = n
         "    <article class=\"figure-card\">",
         "      <h3>Displacement Plot</h3>",
         `      <p>${escapeHtml(plotSourceDescription(source, "displacement array"))}</p>`,
-        buildSvgPlot(levels, displacement, "displacement", "Displacement plot"),
+        buildSvgPlot(levels, displacement, "displacement", "Displacement plot", "mm"),
         "    </article>",
         "    <article class=\"figure-card\">",
         "      <h3>Rotation Plot</h3>",
         `      <p>${escapeHtml(plotSourceDescription(source, "rotation array"))}</p>`,
-        buildSvgPlot(levels, rotation, "rotation", "Rotation plot"),
+        buildSvgPlot(levels, rotation, "rotation", "Rotation plot", "mrad"),
         "    </article>",
         "    <article class=\"figure-card\">",
         "      <h3>Bending Moment Plot</h3>",
         `      <p>${escapeHtml(plotSourceDescription(source, "moment array"))}</p>`,
-        buildSvgPlot(levels, moment, "moment", "Moment plot"),
+        buildSvgPlot(levels, moment, "moment", "Moment plot", "kNm/m"),
         "    </article>",
         "    <article class=\"figure-card\">",
         "      <h3>Shear Plot</h3>",
         `      <p>${escapeHtml(plotSourceDescription(source, "shear array"))}</p>`,
-        buildSvgPlot(levels, shear, "shear", "Shear plot"),
+        buildSvgPlot(levels, shear, "shear", "Shear plot", "kN/m"),
         "    </article>",
         "    <article class=\"figure-card\">",
         "      <h3>Net Pressure Plot</h3>",
         `      <p>${escapeHtml(plotSourceDescription(source, "net soil pressure array"))}</p>`,
-        buildSvgPlot(levels, pressure, "pressure", "Net pressure plot"),
+        buildSvgPlot(levels, pressure, "pressure", "Net pressure plot", "kPa"),
         "    </article>",
         "    <article class=\"figure-card\">",
         "      <h3>Water Pressure Plot</h3>",
         `      <p>${escapeHtml(plotSourceDescription(source, "water-pressure array"))}</p>`,
-        buildSvgPlot(levels, waterPressure, "water", "Water pressure plot"),
+        buildSvgPlot(levels, waterPressure, "water", "Water pressure plot", "kPa"),
         "    </article>",
         "  </div>",
         "  <h2>Wall design check</h2>",
@@ -2203,19 +2402,59 @@ export function loadTurnstileScript(documentRef = globalThis.document, runtimeRe
     });
     return turnstileScriptPromise;
 }
-export async function runAnalysis(project, fetchImpl = fetch) {
-    const response = await fetchImpl(`${API_BASE_URL}${ANALYSIS_ROUTE}`, {
-        method: "POST",
-        headers: {
-            "content-type": "application/json",
-        },
-        body: JSON.stringify(project),
-    });
-    if (!response.ok) {
-        const body = await response.json().catch(() => ({ error: "Request failed." }));
-        throw new Error(body.error || "Request failed.");
+function unavailableServiceMessage(status) {
+    return `The calculation service is currently unavailable (HTTP ${status}). Your input is kept; you can download the JSON payload and try again later.`;
+}
+export async function runAnalysis(project, fetchImpl = fetch, apiBaseUrl = resolveApiBaseUrl(globalThis.location?.search ?? "")) {
+    let response;
+    try {
+        response = await fetchImpl(`${apiBaseUrl}${ANALYSIS_ROUTE}`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify(project),
+        });
     }
-    return response.json();
+    catch {
+        throw new Error(unavailableServiceMessage(0));
+    }
+    const status = Number.isFinite(response.status) ? response.status : response.ok ? 200 : 0;
+    let body;
+    try {
+        body = await response.json();
+    }
+    catch {
+        throw new Error(unavailableServiceMessage(status));
+    }
+    if (status === 404 || status >= 500) {
+        throw new Error(unavailableServiceMessage(status));
+    }
+    if (!response.ok) {
+        throw new Error(body?.error || "Request failed.");
+    }
+    return body;
+}
+export async function checkCalculationService(fetchImpl = fetch, apiBaseUrl = resolveApiBaseUrl(globalThis.location?.search ?? "")) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    try {
+        const response = await fetchImpl(`${apiBaseUrl}/health`, {
+            method: "GET",
+            signal: controller.signal,
+        });
+        if (!response.ok) {
+            return false;
+        }
+        const body = await response.json();
+        return body?.ok === true;
+    }
+    catch {
+        return false;
+    }
+    finally {
+        clearTimeout(timeout);
+    }
 }
 export function buildStudyRequestPayload(contactState, result, phaseIndex, turnstileToken = "", sourceUrl = globalThis.location?.href || "") {
     return {
@@ -2231,8 +2470,8 @@ export function buildStudyRequestPayload(contactState, result, phaseIndex, turns
         turnstile_token: turnstileToken,
     };
 }
-export async function submitStudyRequest(payload, fetchImpl = fetch) {
-    const response = await fetchImpl(`${API_BASE_URL}${CONTACT_ENDPOINT}`, {
+export async function submitStudyRequest(payload, fetchImpl = fetch, apiBaseUrl = resolveApiBaseUrl(globalThis.location?.search ?? "")) {
+    const response = await fetchImpl(`${apiBaseUrl}${CONTACT_ENDPOINT}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
@@ -2263,15 +2502,18 @@ function updateInputPreview(project, preview, geometry, phaseIndex) {
   `).join("");
     geometry.innerHTML = buildGeometryPreviewSvg(project, phaseIndex);
 }
-function updateProjectPhaseSelect(project, select, phaseIndex) {
+function updateWorkspacePhaseSelect(project, select, phaseIndex) {
     select.innerHTML = buildProjectPhaseOptions(project).map((option) => `
     <option value="${option.index}" ${option.index === phaseIndex ? "selected" : ""}>${escapeHtml(option.label)}</option>
   `).join("");
 }
-function updateResultPhaseSelect(result, select, phaseIndex) {
-    select.innerHTML = buildPhaseOptions(result).map((option) => `
-    <option value="${option.index}" ${option.index === phaseIndex ? "selected" : ""}>${escapeHtml(option.label)}</option>
-  `).join("");
+function resultPhaseIndexForProject(project, result, projectPhaseIndex) {
+    const projectPhase = project.phases[projectPhaseIndex];
+    if (!projectPhase || !Array.isArray(result?.phases)) {
+        return -1;
+    }
+    const matchingPhase = result.phases.findIndex((phase, index) => phase?.name === projectPhase.name || (phase?.phase_index ?? index) === projectPhaseIndex);
+    return matchingPhase;
 }
 function renderContactPanel(shell, contactState, result, phaseIndex, onPersist) {
     shell.innerHTML = buildContactPanelHtml(contactState, result, phaseIndex);
@@ -2350,6 +2592,11 @@ function bootApp() {
     const preview = document.querySelector("[data-input-preview]");
     const geometry = document.querySelector("[data-geometry-preview]");
     const previewPhase = document.querySelector("[data-preview-phase]");
+    const resultPlots = document.querySelector("[data-result-plots]");
+    const emptyPlots = document.querySelector("[data-empty-plots]");
+    const demoLabel = document.querySelector("[data-demo-label]");
+    const serviceStatus = document.querySelector("[data-service-status]");
+    const downloadInputButton = document.querySelector("[data-download-input]");
     const resultShell = document.querySelector("[data-result-shell]");
     const reportShell = document.querySelector("[data-report-shell]");
     const contactShell = document.querySelector("[data-contact-shell]");
@@ -2364,6 +2611,11 @@ function bootApp() {
         !preview ||
         !geometry ||
         !previewPhase ||
+        !resultPlots ||
+        !emptyPlots ||
+        !demoLabel ||
+        !serviceStatus ||
+        !downloadInputButton ||
         !resultShell ||
         !reportShell ||
         !contactShell ||
@@ -2374,10 +2626,18 @@ function bootApp() {
         !printButton) {
         return;
     }
+    const apiBaseUrl = resolveApiBaseUrl(globalThis.location?.search ?? "");
+    const demoEnabled = new URLSearchParams(globalThis.location?.search ?? "").get("demo") === "1";
+    void checkCalculationService(fetch, apiBaseUrl).then((online) => {
+        serviceStatus.textContent = online ? "Service online" : "Service offline";
+        serviceStatus.classList.toggle("is-online", online);
+        serviceStatus.classList.toggle("is-offline", !online);
+    });
     let currentProject = structuredClone(SAMPLE_PROJECT);
-    let currentResult = null;
-    let currentPreviewPhaseIndex = 0;
+    let currentResult = demoEnabled ? structuredClone(DEMO_RESULT ?? SAMPLE_RESULT) : null;
+    let currentPreviewPhaseIndex = demoEnabled ? Math.min(2, currentProject.phases.length - 1) : 0;
     let currentResultPhaseIndex = 0;
+    let currentEditorTabId = "general";
     let currentContactState = readStoredContactState();
     let currentEditorFocus = {
         segmentIndex: 0,
@@ -2385,14 +2645,70 @@ function bootApp() {
         rightLayerIndex: 0,
         supportIndex: 0,
     };
-    const renderPreview = () => {
+    const renderPreview = (rebuildEditor = true) => {
         currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
-        updateProjectPhaseSelect(currentProject, previewPhase, currentPreviewPhaseIndex);
+        updateWorkspacePhaseSelect(currentProject, previewPhase, currentPreviewPhaseIndex);
         updateInputPreview(currentProject, preview, geometry, currentPreviewPhaseIndex);
-        quickEditor.innerHTML = buildQuickEditorHtml(currentProject, currentPreviewPhaseIndex, currentEditorFocus);
-        bindQuickEditor();
+        if (rebuildEditor) {
+            quickEditor.innerHTML = buildQuickEditorHtml(currentProject, currentPreviewPhaseIndex, currentEditorFocus);
+            const jsonInputMount = quickEditor.querySelector("[data-json-input-mount]");
+            if (jsonInputMount) {
+                jsonInputMount.append(input);
+                input.hidden = false;
+            }
+            bindQuickEditor();
+        }
     };
     const bindQuickEditor = () => {
+        const tabs = Array.from(quickEditor.querySelectorAll("[role='tab']"));
+        const activateTab = (selectedTab) => {
+            currentEditorTabId = selectedTab.dataset.editorTab ?? "general";
+            tabs.forEach((tab) => {
+                const active = tab === selectedTab;
+                tab.setAttribute("aria-selected", String(active));
+                tab.tabIndex = active ? 0 : -1;
+                const panel = quickEditor.querySelector(`#${tab.getAttribute("aria-controls")}`);
+                if (panel) {
+                    panel.hidden = !active;
+                }
+            });
+        };
+        const selectTab = (tab) => {
+            const leavingJson = currentEditorTabId === "json" && tab.dataset.editorTab !== "json";
+            currentEditorTabId = tab.dataset.editorTab ?? "general";
+            if (leavingJson) {
+                renderPreview();
+                return;
+            }
+            activateTab(tab);
+        };
+        tabs.forEach((tab, index) => {
+            tab.addEventListener("click", () => selectTab(tab));
+            tab.addEventListener("keydown", (event) => {
+                const keyEvent = event;
+                let nextIndex = index;
+                if (keyEvent.key === "ArrowRight") {
+                    nextIndex = (index + 1) % tabs.length;
+                }
+                else if (keyEvent.key === "ArrowLeft") {
+                    nextIndex = (index - 1 + tabs.length) % tabs.length;
+                }
+                else if (keyEvent.key === "Home") {
+                    nextIndex = 0;
+                }
+                else if (keyEvent.key === "End") {
+                    nextIndex = tabs.length - 1;
+                }
+                else {
+                    return;
+                }
+                keyEvent.preventDefault();
+                const targetTabId = tabs[nextIndex].dataset.editorTab;
+                selectTab(tabs[nextIndex]);
+                quickEditor.querySelector(`[data-editor-tab="${targetTabId}"]`)?.focus();
+            });
+        });
+        activateTab(tabs.find((tab) => tab.dataset.editorTab === currentEditorTabId) ?? tabs[0]);
         quickEditor.querySelectorAll("[data-qe-structure-action]").forEach((button) => {
             button.addEventListener("click", () => {
                 const action = button.dataset.qeStructureAction;
@@ -2563,14 +2879,33 @@ function bootApp() {
         });
     };
     const renderResults = () => {
+        demoLabel.hidden = !demoEnabled;
+        downloadJsonButton.disabled = !currentResult;
+        downloadHtmlButton.disabled = !currentResult;
+        printButton.disabled = !currentResult;
         if (!currentResult) {
             resultShell.innerHTML = "";
+            resultPlots.innerHTML = "";
+            emptyPlots.hidden = false;
             reportShell.innerHTML = `<article class="report-card"><h3>Exports</h3><p>Run the analysis to enable JSON download, HTML report export, and the inline study request flow.</p></article>`;
             contactShell.innerHTML = "";
             return;
         }
-        updateResultPhaseSelect(currentResult, phaseSelect, currentResultPhaseIndex);
+        currentResultPhaseIndex = resultPhaseIndexForProject(currentProject, currentResult, currentPreviewPhaseIndex);
+        updateWorkspacePhaseSelect(currentProject, phaseSelect, currentPreviewPhaseIndex);
+        if (currentResultPhaseIndex < 0) {
+            resultShell.innerHTML = `<article class="result-card"><h3>No matching result phase</h3><p>The selected input phase is not present in this result. Choose a phase that was included in the calculation.</p></article>`;
+            resultPlots.innerHTML = "";
+            emptyPlots.hidden = false;
+            reportShell.innerHTML = "";
+            contactShell.innerHTML = "";
+            return;
+        }
         resultShell.innerHTML = buildResultHtml(currentResult, currentResultPhaseIndex);
+        const plotGrid = resultShell.querySelector(".depth-plot-grid");
+        resultPlots.innerHTML = plotGrid?.outerHTML ?? "";
+        plotGrid?.remove();
+        emptyPlots.hidden = Boolean(plotGrid);
         reportShell.innerHTML = buildReportPreviewHtml(currentProject, currentResult, currentResultPhaseIndex);
         renderContactPanel(contactShell, currentContactState, currentResult, currentResultPhaseIndex, (nextState) => {
             currentContactState = nextState;
@@ -2580,13 +2915,18 @@ function bootApp() {
     input.value = formatJson(currentProject);
     renderPreview();
     renderResults();
+    if (demoEnabled) {
+        status.textContent = "Demo result — not a calculation.";
+    }
     input.addEventListener("input", () => {
         try {
             currentProject = JSON.parse(input.value);
             currentPreviewPhaseIndex = Math.min(currentPreviewPhaseIndex, Math.max(0, currentProject.phases.length - 1));
             currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
-            renderPreview();
-            status.textContent = "Payload parsed. Ready to run.";
+            renderPreview(false);
+            status.textContent = currentResult
+                ? "Payload parsed. Rerun the analysis to refresh results."
+                : "Payload parsed. Ready to run.";
             status.classList.remove("status-error");
         }
         catch {
@@ -2594,15 +2934,13 @@ function bootApp() {
             status.classList.add("status-error");
         }
     });
-    previewPhase.addEventListener("change", () => {
-        currentPreviewPhaseIndex = Number(previewPhase.value);
-        renderPreview();
-    });
     phaseSelect.addEventListener("change", () => {
-        if (!currentResult) {
-            return;
-        }
-        currentResultPhaseIndex = Number(phaseSelect.value);
+        currentPreviewPhaseIndex = Number(phaseSelect.value);
+        currentResultPhaseIndex = currentResult
+            ? resultPhaseIndexForProject(currentProject, currentResult, currentPreviewPhaseIndex)
+            : 0;
+        currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
+        renderPreview();
         renderResults();
     });
     runButton.addEventListener("click", async () => {
@@ -2610,19 +2948,20 @@ function bootApp() {
             status.textContent = "Running phased analysis...";
             status.classList.remove("status-error");
             currentProject = JSON.parse(input.value);
-            currentResult = await runAnalysis(currentProject);
-            currentResultPhaseIndex = 0;
+            currentResult = await runAnalysis(currentProject, fetch, apiBaseUrl);
+            currentPreviewPhaseIndex = governingPhaseIndex(currentResult, currentProject.phases.length);
+            currentResultPhaseIndex = resultPhaseIndexForProject(currentProject, currentResult, currentPreviewPhaseIndex);
             renderPreview();
             renderResults();
-            downloadJsonButton.disabled = false;
-            downloadHtmlButton.disabled = false;
-            printButton.disabled = false;
             status.textContent = `Solved ${currentResult.phases.length} phase(s). Governing |M|max: ${formatNumber(currentResult.governing.max_abs_moment_kNm_per_m, 2)} kNm/m.`;
         }
         catch (error) {
             status.textContent = error instanceof Error ? error.message : "Analysis failed.";
             status.classList.add("status-error");
         }
+    });
+    downloadInputButton.addEventListener("click", () => {
+        triggerDownload(buildResultFilename(currentProject).replace(/\.json$/, "-input.json"), input.value, "application/json");
     });
     downloadJsonButton.addEventListener("click", () => {
         if (!currentResult) {
