@@ -9,9 +9,15 @@ import {
   SAMPLE_CONTACT_STATE,
   SAMPLE_PROJECT,
   SAMPLE_RESULT,
+  EC7_PARTIAL_FACTOR_DEFAULTS,
   STEEL_SHEET_PILE_LIBRARY,
   applyQuickEditorStructureAction,
   applyQuickEditorPatch,
+  buildAnalysisPayload,
+  buildEc7VerificationHtml,
+  ec7FactorEditorValuesToState,
+  resetEc7PartialFactors,
+  readableWarningMessage,
   reconcileQuickEditorEventPatch,
   resolveAnalyzedProject,
   buildContactPanelHtml,
@@ -36,6 +42,10 @@ import {
   resolveApiBaseUrl,
   submitStudyRequest,
 } from "../app.js";
+
+const EC7_SAMPLE_RESULT = JSON.parse(
+  await readFile(new URL("./fixtures/ec7_sample_result.json", import.meta.url), "utf8")
+);
 
 test("frontend is configured for retaining domain and API", async () => {
   const cname = await readFile(new URL("../CNAME", import.meta.url), "utf8");
@@ -298,6 +308,106 @@ test("quick editor shows design-mode gamma M0 defaults when manual steel gamma i
   );
 });
 
+test("EC7 partial factors show API defaults, store edits and reset to defaults", () => {
+  const classicHtml = buildQuickEditorHtml(SAMPLE_PROJECT, 1);
+  const ec7Project = applyQuickEditorPatch(SAMPLE_PROJECT, 1, { design_mode: "ec7" });
+  const ec7Html = buildQuickEditorHtml(ec7Project, 1);
+
+  assert.doesNotMatch(classicHtml, /Partial factors \(EC7-BE, design approach 1\)/);
+  assert.match(ec7Html, /Partial factors \(EC7-BE, design approach 1\)/);
+  assert.match(ec7Html, /Reset to defaults/);
+  assert.match(ec7Html, /Default values for EC7-BE \(design approach 1\)\. Every factor can be changed; the engineer remains responsible for the partial factors\./);
+  assert.equal((ec7Html.match(/data-qe-ec7-factor=/g) ?? []).length, 20);
+
+  for (const setName of ["set1", "set2"]) {
+    for (const [key, value] of Object.entries(EC7_PARTIAL_FACTOR_DEFAULTS[setName])) {
+      const shown = key === "overdig_fraction" ? value * 100 : value;
+      assert.match(ec7Html, new RegExp(`data-qe-ec7-factor="${setName}\\.${key}"[^>]*value="${shown}"`));
+    }
+  }
+
+  const editedValues = ec7FactorEditorValuesToState({
+    set1: { effect: 1.8, overdig_fraction: 12 },
+    set2: { tan_phi: 1.4, overdig_fraction: 5 },
+  });
+  assert.equal(editedValues.set1.overdig_fraction, 0.12);
+  assert.equal(editedValues.set2.overdig_fraction, 0.05);
+  const edited = applyQuickEditorPatch(ec7Project, 1, { ec7_partial_factors: editedValues });
+  assert.equal(edited.ec7_partial_factors.set1.effect, 1.8);
+  assert.equal(edited.ec7_partial_factors.set1.overdig_fraction, 0.12);
+  assert.equal(edited.ec7_partial_factors.set2.tan_phi, 1.4);
+  assert.equal(edited.ec7_partial_factors.set2.overdig_fraction, 0.05);
+
+  const reset = resetEc7PartialFactors(edited);
+  assert.deepEqual(reset.ec7_partial_factors, EC7_PARTIAL_FACTOR_DEFAULTS);
+  assert.equal(reset.ec7_partial_factors.set1.overdig_fraction, 0.1);
+});
+
+test("EC7 action types are explicit in phase and point-load requests", async () => {
+  const ec7Project = applyQuickEditorPatch(SAMPLE_PROJECT, 1, {
+    design_mode: "ec7",
+    support_type: "point_load",
+    surcharge_left_action: "permanent_favourable",
+    surcharge_right_action: "variable_favourable",
+    vertical_line_load_action: "permanent_unfavourable",
+    support_action_type: "permanent_favourable",
+  });
+  const editorHtml = buildQuickEditorHtml(ec7Project, 1);
+  for (const attribute of [
+    "data-qe-surcharge-left-action",
+    "data-qe-surcharge-right-action",
+    "data-qe-vertical-line-load-action",
+    "data-qe-support-action-type",
+  ]) {
+    assert.match(editorHtml, new RegExp(attribute));
+  }
+
+  let payload;
+  await runAnalysis(ec7Project, async (_url, options) => {
+    payload = JSON.parse(options.body);
+    return { ok: true, json: async () => ({ phases: [] }) };
+  });
+  assert.equal(payload.phases[1].surcharge_left_action, "permanent_favourable");
+  assert.equal(payload.phases[1].surcharge_right_action, "variable_favourable");
+  assert.equal(payload.phases[1].vertical_line_load_action, "permanent_unfavourable");
+  assert.equal(payload.supports[0].action_type, "permanent_favourable");
+  assert.equal(payload.ec7_partial_factors.set1.overdig_fraction, 0.1);
+  assert.equal(payload.ec7_partial_factors.set2.overdig_fraction, 0.1);
+
+  const classicPayload = buildAnalysisPayload({ ...ec7Project, design_mode: "classic" });
+  assert.equal("ec7_partial_factors" in classicPayload, false);
+  assert.equal("surcharge_left_action" in classicPayload.phases[1], false);
+  assert.equal("action_type" in classicPayload.supports[0], false);
+});
+
+test("diaphragm wall editor and payload use direct design resistance without a steel section", () => {
+  const diaphragm = applyQuickEditorPatch(SAMPLE_PROJECT, 1, {
+    wall_type: "diaphragm_wall",
+    segment_ei_kNm2_per_m: 88000,
+    segment_cracked_ei_kNm2_per_m: 32000,
+    segment_cracking_moment_kNm_per_m: 210,
+    segment_moment_resistance_kNm_per_m: 640,
+    segment_shear_resistance_kN_per_m: 410,
+  });
+  const editorHtml = buildQuickEditorHtml(diaphragm, 1);
+  assert.match(editorHtml, /<option value="diaphragm_wall"[^>]*>Diaphragm wall<\/option>/);
+  assert.doesNotMatch(editorHtml, /value="diaphragm_wall"[^>]*disabled/);
+  assert.match(editorHtml, /data-qe-segment-ei/);
+  assert.match(editorHtml, /data-qe-segment-mr/);
+  assert.match(editorHtml, /data-qe-segment-vr/);
+  assert.match(editorHtml, /Constant bending stiffness EI \(optionally the cracked EI above the cracking moment\); a moment-curvature relation is not modelled yet\./);
+  assert.doesNotMatch(editorHtml, /data-qe-library|data-qe-wpl|data-qe-av|data-qe-fy|data-qe-gamma-m0/);
+
+  const payload = buildAnalysisPayload(diaphragm);
+  const segment = payload.wall_geometry.segments[0];
+  assert.equal(segment.ei_kNm2_per_m, 88000);
+  assert.equal(segment.moment_resistance_kNm_per_m, 640);
+  assert.equal(segment.shear_resistance_kN_per_m, 410);
+  assert.equal(segment.cracked_ei_kNm2_per_m, 32000);
+  assert.equal(segment.cracking_moment_kNm_per_m, 210);
+  assert.equal("steel_section" in segment, false);
+});
+
 test("quick editor exposes six keyboard-ready input tabs", () => {
   const html = buildQuickEditorHtml(SAMPLE_PROJECT, 1);
   for (const label of ["General", "Wall", "Soils", "Phases", "Supports", "JSON"]) {
@@ -387,7 +497,6 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /6 nodes · 5 elements/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Solver provenance/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /retaining-ts-sample-v1/);
-  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Benchmark-backed validation remains pending/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /plan\.md screenshot acceptance workflow/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Direct API visualization displacement array/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Max 16\.40 mm @ -4\.00 m/);
@@ -496,6 +605,68 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(mailto, /Wall shear demand\/capacity: 102.30 \/ 249.51 kN\/m/);
   assert.match(mailto, /Wall governing level: -4.00 m/);
   assert.match(mailto, /Governing support demand\/capacity: 91.40 \/ 144.89 kN\/m · axial 94.62 \/ 150.00 kN\/m/);
+});
+
+test("EC7 fixture renders factors, overdig, design plots, report export and failed-phase alerts", () => {
+  const set1 = EC7_SAMPLE_RESULT.ec7_verification.sets.find((item) => item.set === "set1");
+  const set2 = EC7_SAMPLE_RESULT.ec7_verification.sets.find((item) => item.set === "set2");
+  const failedIndex = set2.phases.findIndex((phase) => phase.converged === false);
+  const sectionHtml = buildEc7VerificationHtml(EC7_SAMPLE_RESULT);
+  const characteristicHtml = buildResultHtml(EC7_SAMPLE_RESULT, 2);
+  const set1Html = buildResultHtml(EC7_SAMPLE_RESULT, 2, "set1");
+  const set2Html = buildResultHtml(EC7_SAMPLE_RESULT, failedIndex, "set2");
+
+  assert.match(sectionHtml, /EC7 verification/);
+  assert.match(sectionHtml, /<th>Factor<\/th><th>Set 1<\/th><th>Set 2<\/th>/);
+  assert.match(sectionHtml, /Permanent load, unfavourable/);
+  assert.match(sectionHtml, /Factor on effects M, V, support forces/);
+  assert.match(sectionHtml, /Overdig by phase/);
+  assert.match(sectionHtml, /<th>Phase<\/th><th>Side<\/th><th>H \(m\)<\/th><th>Δa Set 1 \(m\)<\/th><th>Δa Set 2 \(m\)<\/th>/);
+  assert.match(sectionHtml, /0\.240/);
+  assert.match(sectionHtml, /0\.340/);
+  assert.match(sectionHtml, /One or more phases did not converge/);
+  assert.match(sectionHtml, /class="phase-alert" role="alert"><strong>EC7 set 2: phase &ldquo;Excavate left side to -4\.0 m&rdquo; has no equilibrium &mdash; ULS verification fails/);
+
+  assert.match(characteristicHtml, /Characteristic \(SLS\)/);
+  assert.match(characteristicHtml, /EC7 set 1/);
+  assert.match(characteristicHtml, /EC7 set 2/);
+  assert.match(set1Html, /Moment design value/);
+  assert.match(set1Html, /Shear design value/);
+  assert.match(set1Html, /displacements remain unfactored/i);
+  assert.match(set2Html, /EC7 set 2: phase &ldquo;Excavate left side to -4\.0 m&rdquo; has no equilibrium &mdash; ULS verification fails/);
+
+  const characteristicMaximum = Math.max(...EC7_SAMPLE_RESULT.phases[2].sampled_results.map((item) => item.moment_kNm_per_m));
+  const set1Maximum = Math.max(...set1.phases[2].sampled_results.map((item) => item.moment_kNm_per_m));
+  assert.match(characteristicHtml, new RegExp(`Max ${characteristicMaximum.toFixed(1)} kNm/m`));
+  assert.match(set1Html, new RegExp(`Max ${set1Maximum.toFixed(1)} kNm/m`));
+  assert.notEqual(characteristicMaximum, set1Maximum);
+  assert.match(set1Html, new RegExp(`<td>${set1.phases[2].sampled_results[0].moment_kNm_per_m.toFixed(2)}<\/td>`));
+
+  const report = buildReportHtml(SAMPLE_PROJECT, EC7_SAMPLE_RESULT, 2);
+  assert.match(report, /EC7 verification/);
+  assert.match(report, /Overdig by phase/);
+  const downloaded = JSON.parse(buildResultDownloadText(SAMPLE_PROJECT, EC7_SAMPLE_RESULT));
+  assert.ok(downloaded.result.ec7_verification);
+  assert.match(downloaded.ec7_verification_summary, /EC7 verification/);
+  assert.equal(downloaded.result.ec7_verification.procedure, "EC7-BE design approach 1, sets 1 and 2.");
+  assert.doesNotMatch(buildResultHtml(SAMPLE_RESULT, 2), /EC7 verification|data-result-design-view/);
+});
+
+test("new EC7 and diaphragm warning codes have readable messages and removed codes are silent", () => {
+  assert.equal(
+    readableWarningMessage("EC7_PHASE_DID_NOT_CONVERGE:set2:Phase B"),
+    "EC7 set 2: phase “Phase B” has no equilibrium — ULS verification fails",
+  );
+  assert.equal(
+    readableWarningMessage("EC7_ULS_NOT_EVALUATED_FOR_SEEDED_PHASE:Seed phase"),
+    "EC7 ULS verification was not evaluated for seeded phase “Seed phase”.",
+  );
+  assert.equal(
+    readableWarningMessage("DIAPHRAGM_WALL_CONSTANT_EI"),
+    "Diaphragm wall uses constant bending stiffness EI; a moment-curvature relation is not modelled.",
+  );
+  assert.equal(readableWarningMessage("FIRST_PASS_EC7_FACTORS"), "");
+  assert.equal(readableWarningMessage("BENCHMARK_IMPORTS_PENDING"), "");
 });
 
 test("study-request helpers build and submit the retained contact payload", async () => {
@@ -819,7 +990,7 @@ test("diaphragm wall editor and reports use diaphragm-section language instead o
   assert.doesNotMatch(diaphragmEditor, /Steel section/);
   assert.doesNotMatch(diaphragmEditor, /Manual Wpl/);
   assert.doesNotMatch(diaphragmEditor, /Gamma M0/);
-  assert.match(diaphragmEditor, /Diaphragm wall mode uses the direct EI, cracked EI, cracking moment, and direct moment\/shear resistance fields above/);
+  assert.match(diaphragmEditor, /Constant bending stiffness EI \(optionally the cracked EI above the cracking moment\); a moment-curvature relation is not modelled yet\./);
   assert.match(diaphragmEditor, /direct diaphragm section stiffness\/cracking\/resistance inputs/);
 
   assert.match(diaphragmPreview, /Diaphragm section: 800 mm panel/);

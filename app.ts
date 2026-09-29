@@ -58,6 +58,57 @@ type SteelSectionInput = {
   shear_area_cm2_per_m?: number;
 };
 
+export type Ec7ActionType =
+  | "permanent_unfavourable"
+  | "permanent_favourable"
+  | "variable_unfavourable"
+  | "variable_favourable";
+
+export const EC7_PARTIAL_FACTOR_DEFAULTS = {
+  set1: {
+    permanent_unfavourable: 1.0,
+    permanent_favourable: 1.0,
+    variable_unfavourable: 1.2,
+    variable_favourable: 0.0,
+    tan_phi: 1.0,
+    cohesion: 1.0,
+    subgrade_modulus: 1.0,
+    effect: 1.5,
+    overdig_fraction: 0.10,
+    overdig_max_m: 0.5,
+  },
+  set2: {
+    permanent_unfavourable: 1.0,
+    permanent_favourable: 1.0,
+    variable_unfavourable: 1.1,
+    variable_favourable: 0.0,
+    tan_phi: 1.25,
+    cohesion: 1.25,
+    subgrade_modulus: 1.0,
+    effect: 1.0,
+    overdig_fraction: 0.10,
+    overdig_max_m: 0.5,
+  },
+} as const;
+
+type Ec7PartialFactorSet = {
+  permanent_unfavourable?: number;
+  permanent_favourable?: number;
+  variable_unfavourable?: number;
+  variable_favourable?: number;
+  tan_phi?: number;
+  cohesion?: number;
+  subgrade_modulus?: number;
+  effect?: number;
+  overdig_fraction?: number;
+  overdig_max_m?: number;
+};
+
+type Ec7PartialFactors = {
+  set1?: Ec7PartialFactorSet;
+  set2?: Ec7PartialFactorSet;
+};
+
 type WallSegmentInput = {
   label?: string;
   top_level_m: number;
@@ -80,7 +131,10 @@ type PhaseInput = {
   groundwater_level_right_m: number;
   surcharge_left_kPa?: number;
   surcharge_right_kPa?: number;
+  surcharge_left_action?: Ec7ActionType;
+  surcharge_right_action?: Ec7ActionType;
   vertical_line_load_kN_per_m?: number;
+  vertical_line_load_action?: Ec7ActionType;
   include_vertical_line_second_order?: boolean;
 };
 
@@ -117,12 +171,14 @@ type SupportInput = {
   capacity_kN_per_m?: number;
   force_kN_per_m?: number;
   moment_kNm_per_m?: number;
+  action_type?: Ec7ActionType;
   active_from_phase?: number;
   active_to_phase?: number;
 };
 
 type ProjectInput = {
   design_mode: "classic" | "ec7";
+  ec7_partial_factors?: Ec7PartialFactors;
   wall_type: "steel_sheet_pile" | "diaphragm_wall";
   wall_geometry: {
     top_level_m: number;
@@ -331,9 +387,7 @@ export const SAMPLE_RESULT: any = {
       },
     ],
   },
-  warnings: [
-    "Benchmark-backed validation remains pending until the named reference source files are available locally.",
-  ],
+  warnings: [],
   assumptions: [
     "Sample retaining result for frontend rendering and screenshot generation.",
     "Plots are rendered directly from backend visualization arrays when available.",
@@ -417,8 +471,8 @@ export const SAMPLE_RESULT: any = {
   ],
 };
 
-// BEGIN GENERATED DEMO_RESULT (scripts/build_demo_result.mjs, engine formula ea-suys-retaining-formulas-2026-09-28-a)
-export const DEMO_RESULT: any = {"calculator_id":"retaining_flexible_wall_analysis","version":"0.1.0","formula_version":"ea-suys-retaining-formulas-2026-09-28-a","normalized_input":{"design_mode":"classic","wall_type":"steel_sheet_pile","wall_geometry":{"top_level_m":0,"toe_level_m":-9,"inclination_degrees":4,"segments":[{"label":"AZ 18 sample","top_level_m":0,"bottom_level_m":-9,"ei_kNm2_per_m":52000,"steel_section":{"library_section_id":"AZ_18","steel_grade_mpa":355,"gamma_m0":1}}]},"phases":[{"name":"Initial at-rest state","excavation_level_left_m":0,"excavation_level_right_m":0,"groundwater_level_left_m":-2,"groundwater_level_right_m":-2,"surcharge_left_kPa":0,"surcharge_right_kPa":12},{"name":"Excavate left side to -4.0 m","excavation_level_left_m":-4,"excavation_level_right_m":0,"groundwater_level_left_m":-2,"groundwater_level_right_m":-2,"surcharge_left_kPa":0,"surcharge_right_kPa":18,"vertical_line_load_kN_per_m":35,"include_vertical_line_second_order":true},{"name":"Deepen excavation to -5.0 m","excavation_level_left_m":-5,"excavation_level_right_m":0,"groundwater_level_left_m":-2,"groundwater_level_right_m":-2,"surcharge_left_kPa":0,"surcharge_right_kPa":18,"vertical_line_load_kN_per_m":35,"include_vertical_line_second_order":true}],"soil_profiles":{"left":{"layers":[{"top_level_m":0,"bottom_level_m":-12,"unit_weight_dry_kN_m3":17,"unit_weight_wet_kN_m3":20,"friction_angle_deg":30,"cohesion_kPa":0,"subgrade_modulus_kN_m3":22000}]},"right":{"layers":[{"top_level_m":0,"bottom_level_m":-12,"unit_weight_dry_kN_m3":18,"unit_weight_wet_kN_m3":20,"friction_angle_deg":33,"cohesion_kPa":0,"subgrade_modulus_kN_m3":28000}]}},"supports":[{"id":"A1","type":"anchor","depth_m":1.6,"side":"right","inclination_degrees":15,"stiffness_kN_per_m":9000,"prestress_kN_per_m":55,"capacity_kN_per_m":150,"active_from_phase":1}],"design_options":{"target_element_length_m":0.5,"max_wall_displacement_mm":30}},"discretization":{"node_levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"element_lengths_m":[0.5,0.5,0.5,0.1,0.4,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]},"phases":[{"name":"Initial at-rest state","phase_index":0,"converged":true,"iterations":3,"sampled_results":[{"level_m":0,"depth_m":0,"displacement_mm":-0.152435,"rotation_mrad":0.0347493,"moment_kNm_per_m":-1.24345e-14,"shear_kN_per_m":-0.882248,"shear_above_kN_per_m":0,"shear_below_kN_per_m":-0.882248,"net_soil_pressure_kPa":-3.53761,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":3.53761,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-0.5,"depth_m":0.5,"displacement_mm":-0.135414,"rotation_mrad":0.0326285,"moment_kNm_per_m":-0.441124,"shear_kN_per_m":-0.882248,"shear_above_kN_per_m":-0.882248,"shear_below_kN_per_m":-0.364373,"net_soil_pressure_kPa":1.03828,"left_soil_pressure_kPa":7.2291,"right_soil_pressure_kPa":6.19082,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-1,"depth_m":1,"displacement_mm":-0.120306,"rotation_mrad":0.027511,"moment_kNm_per_m":-0.623311,"shear_kN_per_m":-0.364373,"shear_above_kN_per_m":-0.364373,"shear_below_kN_per_m":0.0618141,"net_soil_pressure_kPa":0.854456,"left_soil_pressure_kPa":11.1467,"right_soil_pressure_kPa":10.2923,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-1.5,"depth_m":1.5,"displacement_mm":-0.108024,"rotation_mrad":0.0216663,"moment_kNm_per_m":-0.592404,"shear_kN_per_m":0.179161,"shear_above_kN_per_m":0.0618141,"shear_below_kN_per_m":0.179161,"net_soil_pressure_kPa":0.39211,"left_soil_pressure_kPa":15.1265,"right_soil_pressure_kPa":14.7344,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-1.6,"depth_m":1.6,"displacement_mm":-0.105914,"rotation_mrad":0.0205443,"moment_kNm_per_m":-0.574488,"shear_kN_per_m":0.258205,"shear_above_kN_per_m":0.179161,"shear_below_kN_per_m":0.258205,"net_soil_pressure_kPa":0.316948,"left_soil_pressure_kPa":15.9301,"right_soil_pressure_kPa":15.6131,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-2,"depth_m":2,"displacement_mm":-0.0985267,"rotation_mrad":0.0165224,"moment_kNm_per_m":-0.471206,"shear_kN_per_m":0.289182,"shear_above_kN_per_m":0.258205,"shear_below_kN_per_m":0.289182,"net_soil_pressure_kPa":0.0690071,"left_soil_pressure_kPa":19.1676,"right_soil_pressure_kPa":19.0986,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-2.5,"depth_m":2.5,"displacement_mm":-0.0912823,"rotation_mrad":0.0126867,"moment_kNm_per_m":-0.326615,"shear_kN_per_m":0.289182,"shear_above_kN_per_m":0.289182,"shear_below_kN_per_m":0.256375,"net_soil_pressure_kPa":-0.0657735,"left_soil_pressure_kPa":21.5557,"right_soil_pressure_kPa":21.6215,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-3,"depth_m":3,"displacement_mm":-0.0856214,"rotation_mrad":0.0101624,"moment_kNm_per_m":-0.198427,"shear_kN_per_m":0.256375,"shear_above_kN_per_m":0.256375,"shear_below_kN_per_m":0.195831,"net_soil_pressure_kPa":-0.121384,"left_soil_pressure_kPa":23.9787,"right_soil_pressure_kPa":24.1001,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-3.5,"depth_m":3.5,"displacement_mm":-0.0809387,"rotation_mrad":0.00872524,"moment_kNm_per_m":-0.100511,"shear_kN_per_m":0.195831,"shear_above_kN_per_m":0.195831,"shear_below_kN_per_m":0.131946,"net_soil_pressure_kPa":-0.128083,"left_soil_pressure_kPa":26.4232,"right_soil_pressure_kPa":26.5512,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-4,"depth_m":4,"displacement_mm":-0.0767649,"rotation_mrad":0.00807596,"moment_kNm_per_m":-0.0345382,"shear_kN_per_m":0.131946,"shear_above_kN_per_m":0.131946,"shear_below_kN_per_m":0.0774092,"net_soil_pressure_kPa":-0.10934,"left_soil_pressure_kPa":28.8788,"right_soil_pressure_kPa":28.9882,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-4.5,"depth_m":4.5,"displacement_mm":-0.0727789,"rotation_mrad":0.00792994,"moment_kNm_per_m":0.00416637,"shear_kN_per_m":0.0774092,"shear_above_kN_per_m":0.0774092,"shear_below_kN_per_m":0.0369068,"net_soil_pressure_kPa":-0.0812027,"left_soil_pressure_kPa":31.3386,"right_soil_pressure_kPa":31.4198,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-5,"depth_m":5,"displacement_mm":-0.0687891,"rotation_mrad":0.00805872,"moment_kNm_per_m":0.0226198,"shear_kN_per_m":0.0369068,"shear_above_kN_per_m":0.0369068,"shear_below_kN_per_m":0.0103439,"net_soil_pressure_kPa":-0.0532555,"left_soil_pressure_kPa":33.7984,"right_soil_pressure_kPa":33.8516,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-5.5,"depth_m":5.5,"displacement_mm":-0.0647012,"rotation_mrad":0.00830109,"moment_kNm_per_m":0.0277917,"shear_kN_per_m":0.0103439,"shear_above_kN_per_m":0.0103439,"shear_below_kN_per_m":-0.00472618,"net_soil_pressure_kPa":-0.0302137,"left_soil_pressure_kPa":36.2559,"right_soil_pressure_kPa":36.2861,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-6,"depth_m":6,"displacement_mm":-0.0604858,"rotation_mrad":0.00855695,"moment_kNm_per_m":0.0254286,"shear_kN_per_m":-0.011485,"shear_above_kN_per_m":-0.00472618,"shear_below_kN_per_m":-0.011485,"net_soil_pressure_kPa":-0.0135506,"left_soil_pressure_kPa":38.7107,"right_soil_pressure_kPa":38.7242,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-6.5,"depth_m":6.5,"displacement_mm":-0.0561508,"rotation_mrad":0.00877385,"moment_kNm_per_m":0.0196861,"shear_kN_per_m":-0.0129139,"shear_above_kN_per_m":-0.011485,"shear_below_kN_per_m":-0.0129139,"net_soil_pressure_kPa":-0.00286485,"left_soil_pressure_kPa":41.1628,"right_soil_pressure_kPa":41.1657,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-7,"depth_m":7,"displacement_mm":-0.0517217,"rotation_mrad":0.0089321,"moment_kNm_per_m":0.0132291,"shear_kN_per_m":-0.0129139,"shear_above_kN_per_m":-0.0129139,"shear_below_kN_per_m":-0.0113591,"net_soil_pressure_kPa":0.00311733,"left_soil_pressure_kPa":43.6129,"right_soil_pressure_kPa":43.6098,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-7.5,"depth_m":7.5,"displacement_mm":-0.0472284,"rotation_mrad":0.009032,"moment_kNm_per_m":0.00754962,"shear_kN_per_m":-0.0113591,"shear_above_kN_per_m":-0.0113591,"shear_below_kN_per_m":-0.00842209,"net_soil_pressure_kPa":0.00588828,"left_soil_pressure_kPa":46.0615,"right_soil_pressure_kPa":46.0556,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-8,"depth_m":8,"displacement_mm":-0.0426976,"rotation_mrad":0.00908434,"moment_kNm_per_m":0.00333857,"shear_kN_per_m":-0.00842209,"shear_above_kN_per_m":-0.00842209,"shear_below_kN_per_m":-0.00503756,"net_soil_pressure_kPa":0.00678558,"left_soil_pressure_kPa":48.5093,"right_soil_pressure_kPa":48.5026,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-8.5,"depth_m":8.5,"displacement_mm":-0.0381494,"rotation_mrad":0.00910433,"moment_kNm_per_m":0.000819794,"shear_kN_per_m":-0.00503756,"shear_above_kN_per_m":-0.00503756,"shear_below_kN_per_m":-0.00163959,"net_soil_pressure_kPa":0.00681254,"left_soil_pressure_kPa":50.9568,"right_soil_pressure_kPa":50.95,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-9,"depth_m":9,"displacement_mm":-0.033596,"rotation_mrad":0.00910828,"moment_kNm_per_m":-4.88498e-15,"shear_kN_per_m":-0.00163959,"shear_above_kN_per_m":-0.00163959,"shear_below_kN_per_m":0,"net_soil_pressure_kPa":0.00657437,"left_soil_pressure_kPa":53.4041,"right_soil_pressure_kPa":53.3975,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"}],"support_reactions":[{"id":"A1","type":"anchor","side":"right","depth_m":1.6,"reaction_kN_per_m":0,"branch_state":"inactive"}],"envelope":{"max_abs_displacement_mm":0.152435,"max_abs_moment_kNm_per_m":0.623311,"max_abs_shear_kN_per_m":0.882248,"max_abs_plastic_offset_mm":0.152435}},{"name":"Excavate left side to -4.0 m","phase_index":1,"converged":true,"iterations":4,"sampled_results":[{"level_m":0,"depth_m":0,"displacement_mm":0.0859281,"rotation_mrad":-0.471517,"moment_kNm_per_m":-2.84217e-14,"shear_kN_per_m":-3.2281,"shear_above_kN_per_m":0,"shear_below_kN_per_m":-3.2281,"net_soil_pressure_kPa":-12.9439,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":12.9439,"water_pressure_kPa":0,"branch_state":"inactive/neutral","left_branch":"inactive","right_branch":"neutral"},{"level_m":-0.5,"depth_m":0.5,"displacement_mm":-0.151117,"rotation_mrad":-0.479237,"moment_kNm_per_m":-1.60575,"shear_kN_per_m":-7.45941,"shear_above_kN_per_m":-3.2281,"shear_below_kN_per_m":-7.45941,"net_soil_pressure_kPa":-8.48329,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":8.48329,"water_pressure_kPa":0,"branch_state":"inactive/neutral","left_branch":"inactive","right_branch":"neutral"},{"level_m":-1,"depth_m":1,"displacement_mm":-0.397577,"rotation_mrad":-0.512567,"moment_kNm_per_m":-5.32683,"shear_kN_per_m":-12.7529,"shear_above_kN_per_m":-7.45941,"shear_below_kN_per_m":-12.7529,"net_soil_pressure_kPa":-10.6128,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":10.6128,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.5,"depth_m":1.5,"displacement_mm":-0.671768,"rotation_mrad":-0.594398,"moment_kNm_per_m":-11.6937,"shear_kN_per_m":-16.723,"shear_above_kN_per_m":-12.7529,"shear_below_kN_per_m":-16.723,"net_soil_pressure_kPa":-13.266,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.266,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.6,"depth_m":1.6,"displacement_mm":-0.732386,"rotation_mrad":-0.618492,"moment_kNm_per_m":-13.3639,"shear_kN_per_m":32.9621,"shear_above_kN_per_m":-16.723,"shear_below_kN_per_m":32.9621,"net_soil_pressure_kPa":-13.7967,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.7967,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2,"depth_m":2,"displacement_mm":-0.993576,"rotation_mrad":-0.670545,"moment_kNm_per_m":-0.169873,"shear_kN_per_m":32.9621,"shear_above_kN_per_m":32.9621,"shear_below_kN_per_m":25.8159,"net_soil_pressure_kPa":-15.9192,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":15.9192,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2.5,"depth_m":2.5,"displacement_mm":-1.3189,"rotation_mrad":-0.610065,"moment_kNm_per_m":12.7495,"shear_kN_per_m":25.8159,"shear_above_kN_per_m":25.8159,"shear_below_kN_per_m":17.1265,"net_soil_pressure_kPa":-17.4213,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":17.4213,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3,"depth_m":3,"displacement_mm":-1.58642,"rotation_mrad":-0.446257,"moment_kNm_per_m":21.3221,"shear_kN_per_m":17.1265,"shear_above_kN_per_m":17.1265,"shear_below_kN_per_m":7.68792,"net_soil_pressure_kPa":-18.9233,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":18.9233,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3.5,"depth_m":3.5,"displacement_mm":-1.75521,"rotation_mrad":-0.222725,"moment_kNm_per_m":25.172,"shear_kN_per_m":7.68792,"shear_above_kN_per_m":7.68792,"shear_below_kN_per_m":-2.49984,"net_soil_pressure_kPa":-20.4253,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":20.4253,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-4,"depth_m":4,"displacement_mm":-1.80706,"rotation_mrad":0.0133157,"moment_kNm_per_m":23.9239,"shear_kN_per_m":-13.4368,"shear_above_kN_per_m":-2.49984,"shear_below_kN_per_m":-13.4368,"net_soil_pressure_kPa":-21.9273,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":21.9273,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-4.5,"depth_m":4.5,"displacement_mm":-1.74828,"rotation_mrad":0.211046,"moment_kNm_per_m":17.2034,"shear_kN_per_m":-17.499,"shear_above_kN_per_m":-13.4368,"shear_below_kN_per_m":-17.499,"net_soil_pressure_kPa":-8.1443,"left_soil_pressure_kPa":15.285,"right_soil_pressure_kPa":23.4293,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-5,"depth_m":5,"displacement_mm":-1.60841,"rotation_mrad":0.334376,"moment_kNm_per_m":8.44901,"shear_kN_per_m":-17.499,"shear_above_kN_per_m":-17.499,"shear_below_kN_per_m":-14.6865,"net_soil_pressure_kPa":5.63869,"left_soil_pressure_kPa":30.57,"right_soil_pressure_kPa":24.9313,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-5.5,"depth_m":5.5,"displacement_mm":-1.42681,"rotation_mrad":0.380283,"moment_kNm_per_m":1.09939,"shear_kN_per_m":-14.6865,"shear_above_kN_per_m":-14.6865,"shear_below_kN_per_m":-8.40243,"net_soil_pressure_kPa":12.5989,"left_soil_pressure_kPa":39.0322,"right_soil_pressure_kPa":26.4333,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-6,"depth_m":6,"displacement_mm":-1.23739,"rotation_mrad":0.370624,"moment_kNm_per_m":-3.10845,"shear_kN_per_m":-8.40243,"shear_above_kN_per_m":-8.40243,"shear_below_kN_per_m":-3.67532,"net_soil_pressure_kPa":9.4773,"left_soil_pressure_kPa":37.4126,"right_soil_pressure_kPa":27.9353,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-6.5,"depth_m":6.5,"displacement_mm":-1.06103,"rotation_mrad":0.33187,"moment_kNm_per_m":-4.95229,"shear_kN_per_m":-3.67532,"shear_above_kN_per_m":-3.67532,"shear_below_kN_per_m":-0.362001,"net_soil_pressure_kPa":6.64283,"left_soil_pressure_kPa":36.0802,"right_soil_pressure_kPa":29.4373,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-7,"depth_m":7,"displacement_mm":-0.90715,"rotation_mrad":0.283355,"moment_kNm_per_m":-5.13867,"shear_kN_per_m":1.78423,"shear_above_kN_per_m":-0.362001,"shear_below_kN_per_m":1.78423,"net_soil_pressure_kPa":4.30294,"left_soil_pressure_kPa":35.2423,"right_soil_pressure_kPa":30.9394,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-7.5,"depth_m":7.5,"displacement_mm":-0.777114,"rotation_mrad":0.238211,"moment_kNm_per_m":-4.25111,"shear_kN_per_m":3.02502,"shear_above_kN_per_m":1.78423,"shear_below_kN_per_m":3.02502,"net_soil_pressure_kPa":2.48764,"left_soil_pressure_kPa":34.929,"right_soil_pressure_kPa":32.4414,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8,"depth_m":8,"displacement_mm":-0.667018,"rotation_mrad":0.204588,"moment_kNm_per_m":-2.74246,"shear_kN_per_m":3.57918,"shear_above_kN_per_m":3.02502,"shear_below_kN_per_m":3.57918,"net_soil_pressure_kPa":1.11103,"left_soil_pressure_kPa":35.0544,"right_soil_pressure_kPa":33.9434,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8.5,"depth_m":8.5,"displacement_mm":-0.569886,"rotation_mrad":0.186805,"moment_kNm_per_m":-0.956267,"shear_kN_per_m":3.57918,"shear_above_kN_per_m":3.57918,"shear_below_kN_per_m":1.91896,"net_soil_pressure_kPa":-3.32853,"left_soil_pressure_kPa":35.465,"right_soil_pressure_kPa":38.7935,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-9,"depth_m":9,"displacement_mm":-0.478016,"rotation_mrad":0.182208,"moment_kNm_per_m":0,"shear_kN_per_m":1.91896,"shear_above_kN_per_m":1.91896,"shear_below_kN_per_m":0,"net_soil_pressure_kPa":-7.6946,"left_soil_pressure_kPa":35.9913,"right_soil_pressure_kPa":43.6859,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"}],"support_reactions":[{"id":"A1","type":"anchor","side":"right","depth_m":1.6,"reaction_kN_per_m":53.126,"axial_force_kN_per_m":55,"utilization_ratio":0.367,"branch_state":"elastic"}],"envelope":{"max_abs_displacement_mm":1.80706,"max_abs_moment_kNm_per_m":25.172,"max_abs_shear_kN_per_m":32.9621,"max_abs_plastic_offset_mm":1.80706}},{"name":"Deepen excavation to -5.0 m","phase_index":2,"converged":true,"iterations":3,"sampled_results":[{"level_m":0,"depth_m":0,"displacement_mm":0.15974,"rotation_mrad":-1.44858,"moment_kNm_per_m":-1.13687e-13,"shear_kN_per_m":-3.74353,"shear_above_kN_per_m":0,"shear_below_kN_per_m":-3.74353,"net_soil_pressure_kPa":-15.0107,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":15.0107,"water_pressure_kPa":0,"branch_state":"inactive/neutral","left_branch":"inactive","right_branch":"neutral"},{"level_m":-0.5,"depth_m":0.5,"displacement_mm":-0.566027,"rotation_mrad":-1.45745,"moment_kNm_per_m":-1.84636,"shear_kN_per_m":-7.71365,"shear_above_kN_per_m":-3.74353,"shear_below_kN_per_m":-7.71365,"net_soil_pressure_kPa":-7.95962,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":7.95962,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1,"depth_m":1,"displacement_mm":-1.30226,"rotation_mrad":-1.49362,"moment_kNm_per_m":-5.67742,"shear_kN_per_m":-13.0071,"shear_above_kN_per_m":-7.71365,"shear_below_kN_per_m":-13.0071,"net_soil_pressure_kPa":-10.6128,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":10.6128,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.5,"depth_m":1.5,"displacement_mm":-2.06791,"rotation_mrad":-1.57935,"moment_kNm_per_m":-12.1542,"shear_kN_per_m":-16.9773,"shear_above_kN_per_m":-13.0071,"shear_below_kN_per_m":-16.9773,"net_soil_pressure_kPa":-13.266,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.266,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.6,"depth_m":1.6,"displacement_mm":-2.22707,"rotation_mrad":-1.60436,"moment_kNm_per_m":-13.8463,"shear_kN_per_m":45.259,"shear_above_kN_per_m":-16.9773,"shear_below_kN_per_m":45.259,"net_soil_pressure_kPa":-13.7967,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.7967,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2,"depth_m":2,"displacement_mm":-2.88082,"rotation_mrad":-1.64115,"moment_kNm_per_m":4.28014,"shear_kN_per_m":45.259,"shear_above_kN_per_m":45.259,"shear_below_kN_per_m":38.1128,"net_soil_pressure_kPa":-15.9192,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":15.9192,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2.5,"depth_m":2.5,"displacement_mm":-3.67581,"rotation_mrad":-1.50824,"moment_kNm_per_m":23.3644,"shear_kN_per_m":38.1128,"shear_above_kN_per_m":38.1128,"shear_below_kN_per_m":29.4234,"net_soil_pressure_kPa":-17.4213,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":17.4213,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3,"depth_m":3,"displacement_mm":-4.36196,"rotation_mrad":-1.21273,"moment_kNm_per_m":38.1001,"shear_kN_per_m":29.4234,"shear_above_kN_per_m":29.4234,"shear_below_kN_per_m":19.9848,"net_soil_pressure_kPa":-18.9233,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":18.9233,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3.5,"depth_m":3.5,"displacement_mm":-4.86872,"rotation_mrad":-0.798256,"moment_kNm_per_m":48.1102,"shear_kN_per_m":19.9848,"shear_above_kN_per_m":19.9848,"shear_below_kN_per_m":9.79703,"net_soil_pressure_kPa":-20.4253,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":20.4253,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-4,"depth_m":4,"displacement_mm":-5.14826,"rotation_mrad":-0.312053,"moment_kNm_per_m":53.0185,"shear_kN_per_m":9.79703,"shear_above_kN_per_m":9.79703,"shear_below_kN_per_m":-1.1399,"net_soil_pressure_kPa":-21.9273,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":21.9273,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-4.5,"depth_m":4.5,"displacement_mm":-5.17729,"rotation_mrad":0.195012,"moment_kNm_per_m":52.4496,"shear_kN_per_m":-12.826,"shear_above_kN_per_m":-1.1399,"shear_below_kN_per_m":-12.826,"net_soil_pressure_kPa":-23.4293,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":23.4293,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-5,"depth_m":5,"displacement_mm":-4.95885,"rotation_mrad":0.668473,"moment_kNm_per_m":46.0289,"shear_kN_per_m":-25.2613,"shear_above_kN_per_m":-12.826,"shear_below_kN_per_m":-25.2613,"net_soil_pressure_kPa":-24.9313,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":24.9313,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-5.5,"depth_m":5.5,"displacement_mm":-4.5241,"rotation_mrad":1.05027,"moment_kNm_per_m":33.383,"shear_kN_per_m":-30.8219,"shear_above_kN_per_m":-25.2613,"shear_below_kN_per_m":-30.8219,"net_soil_pressure_kPa":-11.1483,"left_soil_pressure_kPa":15.285,"right_soil_pressure_kPa":26.4333,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-6,"depth_m":6,"displacement_mm":-3.93108,"rotation_mrad":1.29707,"moment_kNm_per_m":17.9513,"shear_kN_per_m":-30.8219,"shear_above_kN_per_m":-30.8219,"shear_below_kN_per_m":-29.5078,"net_soil_pressure_kPa":2.63467,"left_soil_pressure_kPa":30.57,"right_soil_pressure_kPa":27.9353,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-6.5,"depth_m":6.5,"displacement_mm":-3.25123,"rotation_mrad":1.39863,"moment_kNm_per_m":3.17367,"shear_kN_per_m":-29.5078,"shear_above_kN_per_m":-29.5078,"shear_below_kN_per_m":-21.3189,"net_soil_pressure_kPa":16.4177,"left_soil_pressure_kPa":45.855,"right_soil_pressure_kPa":29.4373,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-7,"depth_m":7,"displacement_mm":-2.55285,"rotation_mrad":1.37778,"moment_kNm_per_m":-7.51024,"shear_kN_per_m":-21.3189,"shear_above_kN_per_m":-21.3189,"shear_below_kN_per_m":-6.25539,"net_soil_pressure_kPa":30.2006,"left_soil_pressure_kPa":61.14,"right_soil_pressure_kPa":30.9394,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-7.5,"depth_m":7.5,"displacement_mm":-1.88454,"rotation_mrad":1.29042,"moment_kNm_per_m":-10.6613,"shear_kN_per_m":-6.25539,"shear_above_kN_per_m":-6.25539,"shear_below_kN_per_m":4.59607,"net_soil_pressure_kPa":21.7559,"left_soil_pressure_kPa":54.1973,"right_soil_pressure_kPa":32.4414,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8,"depth_m":8,"displacement_mm":-1.26313,"rotation_mrad":1.19885,"moment_kNm_per_m":-8.38504,"shear_kN_per_m":9.15021,"shear_above_kN_per_m":4.59607,"shear_below_kN_per_m":9.15021,"net_soil_pressure_kPa":9.1305,"left_soil_pressure_kPa":43.0739,"right_soil_pressure_kPa":33.9434,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8.5,"depth_m":8.5,"displacement_mm":-0.680213,"rotation_mrad":1.14012,"moment_kNm_per_m":-3.83034,"shear_kN_per_m":9.15021,"shear_above_kN_per_m":9.15021,"shear_below_kN_per_m":7.70016,"net_soil_pressure_kPa":-2.90718,"left_soil_pressure_kPa":32.7972,"right_soil_pressure_kPa":35.7044,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-9,"depth_m":9,"displacement_mm":-0.116291,"rotation_mrad":1.12171,"moment_kNm_per_m":5.68434e-14,"shear_kN_per_m":7.70016,"shear_above_kN_per_m":7.70016,"shear_below_kN_per_m":0,"net_soil_pressure_kPa":-30.8758,"left_soil_pressure_kPa":22.9384,"right_soil_pressure_kPa":53.8142,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"}],"support_reactions":[{"id":"A1","type":"anchor","side":"right","depth_m":1.6,"reaction_kN_per_m":65.677,"axial_force_kN_per_m":67.994,"utilization_ratio":0.453,"branch_state":"elastic"}],"envelope":{"max_abs_displacement_mm":5.17729,"max_abs_moment_kNm_per_m":53.0185,"max_abs_shear_kN_per_m":45.259,"max_abs_plastic_offset_mm":3.94512}}],"governing":{"max_abs_displacement_mm":5.177,"max_abs_displacement_phase":"Deepen excavation to -5.0 m","max_displacement_mm":0.16,"max_displacement_phase":"Deepen excavation to -5.0 m","min_displacement_mm":-5.177,"min_displacement_phase":"Deepen excavation to -5.0 m","max_abs_rotation_mrad":1.641,"max_abs_rotation_phase":"Deepen excavation to -5.0 m","max_rotation_mrad":1.399,"max_rotation_phase":"Deepen excavation to -5.0 m","min_rotation_mrad":-1.641,"min_rotation_phase":"Deepen excavation to -5.0 m","max_abs_moment_kNm_per_m":53.019,"max_abs_moment_phase":"Deepen excavation to -5.0 m","max_moment_kNm_per_m":53.019,"max_moment_phase":"Deepen excavation to -5.0 m","min_moment_kNm_per_m":-13.846,"min_moment_phase":"Deepen excavation to -5.0 m","max_abs_shear_kN_per_m":45.259,"max_abs_shear_phase":"Deepen excavation to -5.0 m","max_shear_kN_per_m":45.259,"max_shear_phase":"Deepen excavation to -5.0 m","min_shear_kN_per_m":-30.822,"min_shear_phase":"Deepen excavation to -5.0 m"},"design_checks":{"wall":{"wall_type":"steel_sheet_pile","governing_check":"shear","governing_phase":"Deepen excavation to -5.0 m","governing_level_m":-2,"bending_governing_phase":"Deepen excavation to -5.0 m","bending_governing_level_m":-4,"bending_demand_kNm_per_m":53.019,"bending_capacity_kNm_per_m":419.965,"bending_utilization":0.126,"shear_governing_phase":"Deepen excavation to -5.0 m","shear_governing_level_m":-2,"shear_demand_kN_per_m":45.259,"shear_capacity_kN_per_m":280.794,"shear_utilization":0.161,"cracked_stiffness_state":"not_applicable","pass":true},"supports":[{"support_id":"A1","support_type":"anchor","governing_phase":"Deepen excavation to -5.0 m","demand_kN_per_m":65.677,"capacity_kN_per_m":144.889,"axial_demand_kN_per_m":67.994,"axial_capacity_kN_per_m":150,"utilization_ratio":0.453,"pass":true}],"serviceability":{"assessed":true,"max_abs_displacement_mm":5.177,"limit_mm":30,"pass":true},"overall_pass":true},"visualization":{"phases":[{"name":"Initial at-rest state","phase_index":0,"converged":true,"iterations":3,"levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"displacement_mm":[-0.152435,-0.135414,-0.120306,-0.108024,-0.105914,-0.0985267,-0.0912823,-0.0856214,-0.0809387,-0.0767649,-0.0727789,-0.0687891,-0.0647012,-0.0604858,-0.0561508,-0.0517217,-0.0472284,-0.0426976,-0.0381494,-0.033596],"rotation_mrad":[0.0347493,0.0326285,0.027511,0.0216663,0.0205443,0.0165224,0.0126867,0.0101624,0.00872524,0.00807596,0.00792994,0.00805872,0.00830109,0.00855695,0.00877385,0.0089321,0.009032,0.00908434,0.00910433,0.00910828],"moment_kNm_per_m":[-1.24345e-14,-0.441124,-0.623311,-0.592404,-0.574488,-0.471206,-0.326615,-0.198427,-0.100511,-0.0345382,0.00416637,0.0226198,0.0277917,0.0254286,0.0196861,0.0132291,0.00754962,0.00333857,0.000819794,-4.88498e-15],"shear_kN_per_m":[-0.882248,-0.882248,-0.364373,0.179161,0.258205,0.289182,0.289182,0.256375,0.195831,0.131946,0.0774092,0.0369068,0.0103439,-0.011485,-0.0129139,-0.0129139,-0.0113591,-0.00842209,-0.00503756,-0.00163959],"shear_above_kN_per_m":[0,-0.882248,-0.364373,0.0618141,0.179161,0.258205,0.289182,0.256375,0.195831,0.131946,0.0774092,0.0369068,0.0103439,-0.00472618,-0.011485,-0.0129139,-0.0113591,-0.00842209,-0.00503756,-0.00163959],"shear_below_kN_per_m":[-0.882248,-0.364373,0.0618141,0.179161,0.258205,0.289182,0.256375,0.195831,0.131946,0.0774092,0.0369068,0.0103439,-0.00472618,-0.011485,-0.0129139,-0.0113591,-0.00842209,-0.00503756,-0.00163959,0],"net_soil_pressure_kPa":[-3.53761,1.03828,0.854456,0.39211,0.316948,0.0690071,-0.0657735,-0.121384,-0.128083,-0.10934,-0.0812027,-0.0532555,-0.0302137,-0.0135506,-0.00286485,0.00311733,0.00588828,0.00678558,0.00681254,0.00657437],"left_soil_pressure_kPa":[0,7.2291,11.1467,15.1265,15.9301,19.1676,21.5557,23.9787,26.4232,28.8788,31.3386,33.7984,36.2559,38.7107,41.1628,43.6129,46.0615,48.5093,50.9568,53.4041],"right_soil_pressure_kPa":[3.53761,6.19082,10.2923,14.7344,15.6131,19.0986,21.6215,24.1001,26.5512,28.9882,31.4198,33.8516,36.2861,38.7242,41.1657,43.6098,46.0556,48.5026,50.95,53.3975],"water_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branch_state":["passive/active","neutral/active","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral"],"left_branch":["passive","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral"],"right_branch":["active","active","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral"]},{"name":"Excavate left side to -4.0 m","phase_index":1,"converged":true,"iterations":4,"levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"displacement_mm":[0.0859281,-0.151117,-0.397577,-0.671768,-0.732386,-0.993576,-1.3189,-1.58642,-1.75521,-1.80706,-1.74828,-1.60841,-1.42681,-1.23739,-1.06103,-0.90715,-0.777114,-0.667018,-0.569886,-0.478016],"rotation_mrad":[-0.471517,-0.479237,-0.512567,-0.594398,-0.618492,-0.670545,-0.610065,-0.446257,-0.222725,0.0133157,0.211046,0.334376,0.380283,0.370624,0.33187,0.283355,0.238211,0.204588,0.186805,0.182208],"moment_kNm_per_m":[-2.84217e-14,-1.60575,-5.32683,-11.6937,-13.3639,-0.169873,12.7495,21.3221,25.172,23.9239,17.2034,8.44901,1.09939,-3.10845,-4.95229,-5.13867,-4.25111,-2.74246,-0.956267,0],"shear_kN_per_m":[-3.2281,-7.45941,-12.7529,-16.723,32.9621,32.9621,25.8159,17.1265,7.68792,-13.4368,-17.499,-17.499,-14.6865,-8.40243,-3.67532,1.78423,3.02502,3.57918,3.57918,1.91896],"shear_above_kN_per_m":[0,-3.2281,-7.45941,-12.7529,-16.723,32.9621,25.8159,17.1265,7.68792,-2.49984,-13.4368,-17.499,-14.6865,-8.40243,-3.67532,-0.362001,1.78423,3.02502,3.57918,1.91896],"shear_below_kN_per_m":[-3.2281,-7.45941,-12.7529,-16.723,32.9621,25.8159,17.1265,7.68792,-2.49984,-13.4368,-17.499,-14.6865,-8.40243,-3.67532,-0.362001,1.78423,3.02502,3.57918,1.91896,0],"net_soil_pressure_kPa":[-12.9439,-8.48329,-10.6128,-13.266,-13.7967,-15.9192,-17.4213,-18.9233,-20.4253,-21.9273,-8.1443,5.63869,12.5989,9.4773,6.64283,4.30294,2.48764,1.11103,-3.32853,-7.6946],"left_soil_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,15.285,30.57,39.0322,37.4126,36.0802,35.2423,34.929,35.0544,35.465,35.9913],"right_soil_pressure_kPa":[12.9439,8.48329,10.6128,13.266,13.7967,15.9192,17.4213,18.9233,20.4253,21.9273,23.4293,24.9313,26.4333,27.9353,29.4373,30.9394,32.4414,33.9434,38.7935,43.6859],"water_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branch_state":["inactive/neutral","inactive/neutral","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","passive/active","passive/active","passive/active","neutral/active","neutral/active","neutral/active","neutral/active","neutral/active","neutral/active","neutral/neutral","neutral/neutral"],"left_branch":["inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","passive","passive","passive","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral"],"right_branch":["neutral","neutral","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","neutral","neutral"]},{"name":"Deepen excavation to -5.0 m","phase_index":2,"converged":true,"iterations":3,"levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"displacement_mm":[0.15974,-0.566027,-1.30226,-2.06791,-2.22707,-2.88082,-3.67581,-4.36196,-4.86872,-5.14826,-5.17729,-4.95885,-4.5241,-3.93108,-3.25123,-2.55285,-1.88454,-1.26313,-0.680213,-0.116291],"rotation_mrad":[-1.44858,-1.45745,-1.49362,-1.57935,-1.60436,-1.64115,-1.50824,-1.21273,-0.798256,-0.312053,0.195012,0.668473,1.05027,1.29707,1.39863,1.37778,1.29042,1.19885,1.14012,1.12171],"moment_kNm_per_m":[-1.13687e-13,-1.84636,-5.67742,-12.1542,-13.8463,4.28014,23.3644,38.1001,48.1102,53.0185,52.4496,46.0289,33.383,17.9513,3.17367,-7.51024,-10.6613,-8.38504,-3.83034,5.68434e-14],"shear_kN_per_m":[-3.74353,-7.71365,-13.0071,-16.9773,45.259,45.259,38.1128,29.4234,19.9848,9.79703,-12.826,-25.2613,-30.8219,-30.8219,-29.5078,-21.3189,-6.25539,9.15021,9.15021,7.70016],"shear_above_kN_per_m":[0,-3.74353,-7.71365,-13.0071,-16.9773,45.259,38.1128,29.4234,19.9848,9.79703,-1.1399,-12.826,-25.2613,-30.8219,-29.5078,-21.3189,-6.25539,4.59607,9.15021,7.70016],"shear_below_kN_per_m":[-3.74353,-7.71365,-13.0071,-16.9773,45.259,38.1128,29.4234,19.9848,9.79703,-1.1399,-12.826,-25.2613,-30.8219,-29.5078,-21.3189,-6.25539,4.59607,9.15021,7.70016,0],"net_soil_pressure_kPa":[-15.0107,-7.95962,-10.6128,-13.266,-13.7967,-15.9192,-17.4213,-18.9233,-20.4253,-21.9273,-23.4293,-24.9313,-11.1483,2.63467,16.4177,30.2006,21.7559,9.1305,-2.90718,-30.8758],"left_soil_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,15.285,30.57,45.855,61.14,54.1973,43.0739,32.7972,22.9384],"right_soil_pressure_kPa":[15.0107,7.95962,10.6128,13.266,13.7967,15.9192,17.4213,18.9233,20.4253,21.9273,23.4293,24.9313,26.4333,27.9353,29.4373,30.9394,32.4414,33.9434,35.7044,53.8142],"water_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branch_state":["inactive/neutral","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","passive/active","passive/active","passive/active","passive/active","passive/active","neutral/active","neutral/active","neutral/neutral","neutral/neutral"],"left_branch":["inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","passive","passive","passive","passive","passive","neutral","neutral","neutral","neutral"],"right_branch":["neutral","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","neutral","neutral"]}]},"assumptions":["Wall solved as a 2 DOF Euler-Bernoulli beam line.","Soil response represented by left/right capped Winkler-type springs with carried offsets.","EC7 mode currently uses simplified deterministic factors inside the public worker solver.","Inclined walls use an approximate horizontal-component treatment for soil and water loads based on the wall angle from vertical."],"source_refs":["/home/user/plan.md","/home/user/projects/Engineering-Scripts/RetainingWall/README.md","/home/user/projects/Engineering-Scripts/RetainingWall/reference/solver_notes.md"],"warnings":["BENCHMARK_IMPORTS_PENDING","FIRST_PASS_EC7_FACTORS","NODAL_PRESSURE_LUMPING"]};
+// BEGIN GENERATED DEMO_RESULT (scripts/build_demo_result.mjs, engine formula ea-suys-retaining-formulas-2026-09-29-b)
+export const DEMO_RESULT: any = {"calculator_id":"retaining_flexible_wall_analysis","version":"0.1.0","formula_version":"ea-suys-retaining-formulas-2026-09-29-b","normalized_input":{"design_mode":"classic","wall_type":"steel_sheet_pile","wall_geometry":{"top_level_m":0,"toe_level_m":-9,"inclination_degrees":4,"segments":[{"label":"AZ 18 sample","top_level_m":0,"bottom_level_m":-9,"ei_kNm2_per_m":52000,"steel_section":{"library_section_id":"AZ_18","steel_grade_mpa":355,"gamma_m0":1}}]},"phases":[{"name":"Initial at-rest state","excavation_level_left_m":0,"excavation_level_right_m":0,"groundwater_level_left_m":-2,"groundwater_level_right_m":-2,"surcharge_left_kPa":0,"surcharge_right_kPa":12},{"name":"Excavate left side to -4.0 m","excavation_level_left_m":-4,"excavation_level_right_m":0,"groundwater_level_left_m":-2,"groundwater_level_right_m":-2,"surcharge_left_kPa":0,"surcharge_right_kPa":18,"vertical_line_load_kN_per_m":35,"include_vertical_line_second_order":true},{"name":"Deepen excavation to -5.0 m","excavation_level_left_m":-5,"excavation_level_right_m":0,"groundwater_level_left_m":-2,"groundwater_level_right_m":-2,"surcharge_left_kPa":0,"surcharge_right_kPa":18,"vertical_line_load_kN_per_m":35,"include_vertical_line_second_order":true}],"soil_profiles":{"left":{"layers":[{"top_level_m":0,"bottom_level_m":-12,"unit_weight_dry_kN_m3":17,"unit_weight_wet_kN_m3":20,"friction_angle_deg":30,"cohesion_kPa":0,"subgrade_modulus_kN_m3":22000}]},"right":{"layers":[{"top_level_m":0,"bottom_level_m":-12,"unit_weight_dry_kN_m3":18,"unit_weight_wet_kN_m3":20,"friction_angle_deg":33,"cohesion_kPa":0,"subgrade_modulus_kN_m3":28000}]}},"supports":[{"id":"A1","type":"anchor","depth_m":1.6,"side":"right","inclination_degrees":15,"stiffness_kN_per_m":9000,"prestress_kN_per_m":55,"capacity_kN_per_m":150,"active_from_phase":1}],"design_options":{"target_element_length_m":0.5,"max_wall_displacement_mm":30}},"discretization":{"node_levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"element_lengths_m":[0.5,0.5,0.5,0.1,0.4,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]},"phases":[{"name":"Initial at-rest state","phase_index":0,"converged":true,"iterations":3,"sampled_results":[{"level_m":0,"depth_m":0,"displacement_mm":-0.152428,"rotation_mrad":0.0347453,"moment_kNm_per_m":1.24345e-14,"shear_kN_per_m":1.52448e-10,"shear_above_kN_per_m":0,"shear_below_kN_per_m":1.52448e-10,"net_soil_pressure_kPa":-3.53715,"left_soil_pressure_kPa":0.00051,"right_soil_pressure_kPa":3.53766,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-0.5,"depth_m":0.5,"displacement_mm":-0.135409,"rotation_mrad":0.0326248,"moment_kNm_per_m":-0.441067,"shear_kN_per_m":-0.623228,"shear_above_kN_per_m":-0.623228,"shear_below_kN_per_m":-0.623228,"net_soil_pressure_kPa":1.03822,"left_soil_pressure_kPa":7.22909,"right_soil_pressure_kPa":6.19087,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-1,"depth_m":1,"displacement_mm":-0.120303,"rotation_mrad":0.027508,"moment_kNm_per_m":-0.62322,"shear_kN_per_m":-0.151246,"shear_above_kN_per_m":-0.151246,"shear_below_kN_per_m":-0.151246,"net_soil_pressure_kPa":0.854328,"left_soil_pressure_kPa":11.1468,"right_soil_pressure_kPa":10.2924,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-1.5,"depth_m":1.5,"displacement_mm":-0.108022,"rotation_mrad":0.0216641,"moment_kNm_per_m":-0.592313,"shear_kN_per_m":0.159587,"shear_above_kN_per_m":0.159587,"shear_below_kN_per_m":0.159587,"net_soil_pressure_kPa":0.392047,"left_soil_pressure_kPa":15.1266,"right_soil_pressure_kPa":14.7345,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-1.6,"depth_m":1.6,"displacement_mm":-0.105912,"rotation_mrad":0.0205423,"moment_kNm_per_m":-0.574398,"shear_kN_per_m":0.194948,"shear_above_kN_per_m":0.194948,"shear_below_kN_per_m":0.194948,"net_soil_pressure_kPa":0.316896,"left_soil_pressure_kPa":15.9302,"right_soil_pressure_kPa":15.6133,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-2,"depth_m":2,"displacement_mm":-0.0985262,"rotation_mrad":0.016521,"moment_kNm_per_m":-0.471129,"shear_kN_per_m":0.271935,"shear_above_kN_per_m":0.271935,"shear_below_kN_per_m":0.271935,"net_soil_pressure_kPa":0.0689896,"left_soil_pressure_kPa":19.1676,"right_soil_pressure_kPa":19.0986,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-2.5,"depth_m":2.5,"displacement_mm":-0.0912824,"rotation_mrad":0.012686,"moment_kNm_per_m":-0.326559,"shear_kN_per_m":0.272737,"shear_above_kN_per_m":0.272737,"shear_below_kN_per_m":0.272737,"net_soil_pressure_kPa":-0.0657656,"left_soil_pressure_kPa":21.5558,"right_soil_pressure_kPa":21.6215,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-3,"depth_m":3,"displacement_mm":-0.0856217,"rotation_mrad":0.0101622,"moment_kNm_per_m":-0.198391,"shear_kN_per_m":0.226066,"shear_above_kN_per_m":0.226066,"shear_below_kN_per_m":0.226066,"net_soil_pressure_kPa":-0.121364,"left_soil_pressure_kPa":23.9787,"right_soil_pressure_kPa":24.1001,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-3.5,"depth_m":3.5,"displacement_mm":-0.0809391,"rotation_mrad":0.00872523,"moment_kNm_per_m":-0.100492,"shear_kN_per_m":0.16386,"shear_above_kN_per_m":0.16386,"shear_below_kN_per_m":0.16386,"net_soil_pressure_kPa":-0.128059,"left_soil_pressure_kPa":26.4232,"right_soil_pressure_kPa":26.5513,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-4,"depth_m":4,"displacement_mm":-0.0767652,"rotation_mrad":0.00807609,"moment_kNm_per_m":-0.0345299,"shear_kN_per_m":0.104658,"shear_above_kN_per_m":0.104658,"shear_below_kN_per_m":0.104658,"net_soil_pressure_kPa":-0.109318,"left_soil_pressure_kPa":28.8789,"right_soil_pressure_kPa":28.9882,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-4.5,"depth_m":4.5,"displacement_mm":-0.0727792,"rotation_mrad":0.00793011,"moment_kNm_per_m":0.00416759,"shear_kN_per_m":0.057146,"shear_above_kN_per_m":0.057146,"shear_below_kN_per_m":0.057146,"net_soil_pressure_kPa":-0.0811848,"left_soil_pressure_kPa":31.3387,"right_soil_pressure_kPa":31.4199,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-5,"depth_m":5,"displacement_mm":-0.0687893,"rotation_mrad":0.00805889,"moment_kNm_per_m":0.0226172,"shear_kN_per_m":0.023619,"shear_above_kN_per_m":0.023619,"shear_below_kN_per_m":0.023619,"net_soil_pressure_kPa":-0.0532418,"left_soil_pressure_kPa":33.7984,"right_soil_pressure_kPa":33.8517,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-5.5,"depth_m":5.5,"displacement_mm":-0.0647013,"rotation_mrad":0.00830122,"moment_kNm_per_m":0.0277877,"shear_kN_per_m":0.00280619,"shear_above_kN_per_m":0.00280619,"shear_below_kN_per_m":0.00280619,"net_soil_pressure_kPa":-0.0302036,"left_soil_pressure_kPa":36.256,"right_soil_pressure_kPa":36.2862,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-6,"depth_m":6,"displacement_mm":-0.0604858,"rotation_mrad":0.00855705,"moment_kNm_per_m":0.0254246,"shear_kN_per_m":-0.00810618,"shear_above_kN_per_m":-0.00810618,"shear_below_kN_per_m":-0.00810618,"net_soil_pressure_kPa":-0.0135433,"left_soil_pressure_kPa":38.7107,"right_soil_pressure_kPa":38.7243,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-6.5,"depth_m":6.5,"displacement_mm":-0.0561508,"rotation_mrad":0.00877391,"moment_kNm_per_m":0.0196827,"shear_kN_per_m":-0.0121991,"shear_above_kN_per_m":-0.0121991,"shear_below_kN_per_m":-0.0121991,"net_soil_pressure_kPa":-0.00285939,"left_soil_pressure_kPa":41.1629,"right_soil_pressure_kPa":41.1657,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-7,"depth_m":7,"displacement_mm":-0.0517217,"rotation_mrad":0.00893212,"moment_kNm_per_m":0.0132266,"shear_kN_per_m":-0.012136,"shear_above_kN_per_m":-0.012136,"shear_below_kN_per_m":-0.012136,"net_soil_pressure_kPa":0.00312177,"left_soil_pressure_kPa":43.6129,"right_soil_pressure_kPa":43.6098,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-7.5,"depth_m":7.5,"displacement_mm":-0.0472284,"rotation_mrad":0.009032,"moment_kNm_per_m":0.00754783,"shear_kN_per_m":-0.00989021,"shear_above_kN_per_m":-0.00989021,"shear_below_kN_per_m":-0.00989021,"net_soil_pressure_kPa":0.00589232,"left_soil_pressure_kPa":46.0616,"right_soil_pressure_kPa":46.0557,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-8,"depth_m":8,"displacement_mm":-0.0426976,"rotation_mrad":0.00908433,"moment_kNm_per_m":0.00333747,"shear_kN_per_m":-0.00672971,"shear_above_kN_per_m":-0.00672971,"shear_below_kN_per_m":-0.00672971,"net_soil_pressure_kPa":0.00678967,"left_soil_pressure_kPa":48.5094,"right_soil_pressure_kPa":48.5026,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-8.5,"depth_m":8.5,"displacement_mm":-0.0381494,"rotation_mrad":0.00910432,"moment_kNm_per_m":0.000819263,"shear_kN_per_m":-0.00333861,"shear_above_kN_per_m":-0.00333861,"shear_below_kN_per_m":-0.00333861,"net_soil_pressure_kPa":0.00681694,"left_soil_pressure_kPa":50.9568,"right_soil_pressure_kPa":50.95,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-9,"depth_m":9,"displacement_mm":-0.033596,"rotation_mrad":0.00910826,"moment_kNm_per_m":4.44089e-16,"shear_kN_per_m":-3.36199e-11,"shear_above_kN_per_m":-3.36199e-11,"shear_below_kN_per_m":0,"net_soil_pressure_kPa":0.00657011,"left_soil_pressure_kPa":53.4041,"right_soil_pressure_kPa":53.3975,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"}],"support_reactions":[{"id":"A1","type":"anchor","side":"right","depth_m":1.6,"reaction_kN_per_m":0,"branch_state":"inactive"}],"envelope":{"max_abs_displacement_mm":0.152428,"max_abs_moment_kNm_per_m":0.62322,"max_abs_shear_kN_per_m":0.623228,"max_abs_plastic_offset_mm":0}},{"name":"Excavate left side to -4.0 m","phase_index":1,"converged":true,"iterations":4,"sampled_results":[{"level_m":0,"depth_m":0,"displacement_mm":0.0859331,"rotation_mrad":-0.471516,"moment_kNm_per_m":2.84217e-14,"shear_kN_per_m":-8.59148e-11,"shear_above_kN_per_m":0,"shear_below_kN_per_m":-8.59148e-11,"net_soil_pressure_kPa":-12.944,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":12.944,"water_pressure_kPa":0,"branch_state":"inactive/neutral","left_branch":"inactive","right_branch":"neutral"},{"level_m":-0.5,"depth_m":0.5,"displacement_mm":-0.151112,"rotation_mrad":-0.479236,"moment_kNm_per_m":-1.60576,"shear_kN_per_m":-5.34376,"shear_above_kN_per_m":-5.34376,"shear_below_kN_per_m":-5.34376,"net_soil_pressure_kPa":-8.48337,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":8.48337,"water_pressure_kPa":0,"branch_state":"inactive/neutral","left_branch":"inactive","right_branch":"neutral"},{"level_m":-1,"depth_m":1,"displacement_mm":-0.397571,"rotation_mrad":-0.512566,"moment_kNm_per_m":-5.32685,"shear_kN_per_m":-10.1062,"shear_above_kN_per_m":-10.1062,"shear_below_kN_per_m":-10.1062,"net_soil_pressure_kPa":-10.6129,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":10.6129,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.5,"depth_m":1.5,"displacement_mm":-0.671761,"rotation_mrad":-0.594397,"moment_kNm_per_m":-11.6937,"shear_kN_per_m":-16.0613,"shear_above_kN_per_m":-16.0613,"shear_below_kN_per_m":-16.0613,"net_soil_pressure_kPa":-13.2661,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.2661,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.6,"depth_m":1.6,"displacement_mm":-0.732379,"rotation_mrad":-0.618491,"moment_kNm_per_m":-13.3639,"shear_kN_per_m":35.7147,"shear_above_kN_per_m":-17.4112,"shear_below_kN_per_m":35.7147,"net_soil_pressure_kPa":-13.7967,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.7967,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2,"depth_m":2,"displacement_mm":-0.993569,"rotation_mrad":-0.670545,"moment_kNm_per_m":-0.169907,"shear_kN_per_m":29.786,"shear_above_kN_per_m":29.786,"shear_below_kN_per_m":29.786,"net_soil_pressure_kPa":-15.9193,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":15.9193,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2.5,"depth_m":2.5,"displacement_mm":-1.3189,"rotation_mrad":-0.610065,"moment_kNm_per_m":12.7494,"shear_kN_per_m":21.4712,"shear_above_kN_per_m":21.4712,"shear_below_kN_per_m":21.4712,"net_soil_pressure_kPa":-17.4213,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":17.4213,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3,"depth_m":3,"displacement_mm":-1.58641,"rotation_mrad":-0.446258,"moment_kNm_per_m":21.322,"shear_kN_per_m":12.4072,"shear_above_kN_per_m":12.4072,"shear_below_kN_per_m":12.4072,"net_soil_pressure_kPa":-18.9233,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":18.9233,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3.5,"depth_m":3.5,"displacement_mm":-1.7552,"rotation_mrad":-0.222726,"moment_kNm_per_m":25.1719,"shear_kN_per_m":2.59403,"shear_above_kN_per_m":2.59403,"shear_below_kN_per_m":2.59403,"net_soil_pressure_kPa":-20.4253,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":20.4253,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-4,"depth_m":4,"displacement_mm":-1.80705,"rotation_mrad":0.0133143,"moment_kNm_per_m":23.9238,"shear_kN_per_m":-7.96832,"shear_above_kN_per_m":-7.96832,"shear_below_kN_per_m":-7.96832,"net_soil_pressure_kPa":-21.927,"left_soil_pressure_kPa":0.0003057,"right_soil_pressure_kPa":21.9273,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-4.5,"depth_m":4.5,"displacement_mm":-1.74827,"rotation_mrad":0.211044,"moment_kNm_per_m":17.2034,"shear_kN_per_m":-15.4679,"shear_above_kN_per_m":-15.4679,"shear_below_kN_per_m":-15.4679,"net_soil_pressure_kPa":-8.14403,"left_soil_pressure_kPa":15.2853,"right_soil_pressure_kPa":23.4293,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-5,"depth_m":5,"displacement_mm":-1.60841,"rotation_mrad":0.334374,"moment_kNm_per_m":8.44901,"shear_kN_per_m":-16.0928,"shear_above_kN_per_m":-16.0928,"shear_below_kN_per_m":-16.0928,"net_soil_pressure_kPa":5.63896,"left_soil_pressure_kPa":30.5703,"right_soil_pressure_kPa":24.9313,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-5.5,"depth_m":5.5,"displacement_mm":-1.4268,"rotation_mrad":0.380281,"moment_kNm_per_m":1.09942,"shear_kN_per_m":-11.5444,"shear_above_kN_per_m":-11.5444,"shear_below_kN_per_m":-11.5444,"net_soil_pressure_kPa":12.5988,"left_soil_pressure_kPa":39.0322,"right_soil_pressure_kPa":26.4334,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-6,"depth_m":6,"displacement_mm":-1.23739,"rotation_mrad":0.370622,"moment_kNm_per_m":-3.10842,"shear_kN_per_m":-6.03887,"shear_above_kN_per_m":-6.03887,"shear_below_kN_per_m":-6.03887,"net_soil_pressure_kPa":9.47728,"left_soil_pressure_kPa":37.4126,"right_soil_pressure_kPa":27.9354,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-6.5,"depth_m":6.5,"displacement_mm":-1.06103,"rotation_mrad":0.331868,"moment_kNm_per_m":-4.95225,"shear_kN_per_m":-2.01867,"shear_above_kN_per_m":-2.01867,"shear_below_kN_per_m":-2.01867,"net_soil_pressure_kPa":6.64282,"left_soil_pressure_kPa":36.0802,"right_soil_pressure_kPa":29.4374,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-7,"depth_m":7,"displacement_mm":-0.907149,"rotation_mrad":0.283354,"moment_kNm_per_m":-5.13864,"shear_kN_per_m":0.711093,"shear_above_kN_per_m":0.711093,"shear_below_kN_per_m":0.711093,"net_soil_pressure_kPa":4.30294,"left_soil_pressure_kPa":35.2423,"right_soil_pressure_kPa":30.9394,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-7.5,"depth_m":7.5,"displacement_mm":-0.777113,"rotation_mrad":0.23821,"moment_kNm_per_m":-4.25109,"shear_kN_per_m":2.4046,"shear_above_kN_per_m":2.4046,"shear_below_kN_per_m":2.4046,"net_soil_pressure_kPa":2.48765,"left_soil_pressure_kPa":34.929,"right_soil_pressure_kPa":32.4414,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8,"depth_m":8,"displacement_mm":-0.667019,"rotation_mrad":0.204587,"moment_kNm_per_m":-2.74244,"shear_kN_per_m":3.30207,"shear_above_kN_per_m":3.30207,"shear_below_kN_per_m":3.30207,"net_soil_pressure_kPa":1.11105,"left_soil_pressure_kPa":35.0545,"right_soil_pressure_kPa":33.9434,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8.5,"depth_m":8.5,"displacement_mm":-0.569886,"rotation_mrad":0.186805,"moment_kNm_per_m":-0.956263,"shear_kN_per_m":2.74906,"shear_above_kN_per_m":2.74906,"shear_below_kN_per_m":2.74906,"net_soil_pressure_kPa":-3.32851,"left_soil_pressure_kPa":35.465,"right_soil_pressure_kPa":38.7936,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-9,"depth_m":9,"displacement_mm":-0.478016,"rotation_mrad":0.182207,"moment_kNm_per_m":1.27898e-13,"shear_kN_per_m":-4.78456e-10,"shear_above_kN_per_m":-4.78456e-10,"shear_below_kN_per_m":0,"net_soil_pressure_kPa":-7.69457,"left_soil_pressure_kPa":35.9913,"right_soil_pressure_kPa":43.6859,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"}],"support_reactions":[{"id":"A1","type":"anchor","side":"right","depth_m":1.6,"reaction_kN_per_m":53.126,"axial_force_kN_per_m":55,"utilization_ratio":0.367,"branch_state":"elastic"}],"envelope":{"max_abs_displacement_mm":1.80705,"max_abs_moment_kNm_per_m":25.1719,"max_abs_shear_kN_per_m":35.7147,"max_abs_plastic_offset_mm":0.152428}},{"name":"Deepen excavation to -5.0 m","phase_index":2,"converged":true,"iterations":4,"sampled_results":[{"level_m":0,"depth_m":0,"displacement_mm":0.159746,"rotation_mrad":-1.44857,"moment_kNm_per_m":-5.68434e-14,"shear_kN_per_m":-1.59597e-10,"shear_above_kN_per_m":0,"shear_below_kN_per_m":-1.59597e-10,"net_soil_pressure_kPa":-15.0107,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":15.0107,"water_pressure_kPa":0,"branch_state":"inactive/neutral","left_branch":"inactive","right_branch":"neutral"},{"level_m":-0.5,"depth_m":0.5,"displacement_mm":-0.56602,"rotation_mrad":-1.45745,"moment_kNm_per_m":-1.84637,"shear_kN_per_m":-5.72858,"shear_above_kN_per_m":-5.72858,"shear_below_kN_per_m":-5.72858,"net_soil_pressure_kPa":-7.95968,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":7.95968,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1,"depth_m":1,"displacement_mm":-1.30225,"rotation_mrad":-1.49362,"moment_kNm_per_m":-5.67743,"shear_kN_per_m":-10.3604,"shear_above_kN_per_m":-10.3604,"shear_below_kN_per_m":-10.3604,"net_soil_pressure_kPa":-10.6129,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":10.6129,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.5,"depth_m":1.5,"displacement_mm":-2.0679,"rotation_mrad":-1.57935,"moment_kNm_per_m":-12.1542,"shear_kN_per_m":-16.3156,"shear_above_kN_per_m":-16.3156,"shear_below_kN_per_m":-16.3156,"net_soil_pressure_kPa":-13.2661,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.2661,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-1.6,"depth_m":1.6,"displacement_mm":-2.22706,"rotation_mrad":-1.60435,"moment_kNm_per_m":-13.8464,"shear_kN_per_m":48.0116,"shear_above_kN_per_m":-17.6654,"shear_below_kN_per_m":48.0116,"net_soil_pressure_kPa":-13.7967,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":13.7967,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2,"depth_m":2,"displacement_mm":-2.88081,"rotation_mrad":-1.64115,"moment_kNm_per_m":4.28011,"shear_kN_per_m":42.0829,"shear_above_kN_per_m":42.0829,"shear_below_kN_per_m":42.0829,"net_soil_pressure_kPa":-15.9193,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":15.9193,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-2.5,"depth_m":2.5,"displacement_mm":-3.6758,"rotation_mrad":-1.50824,"moment_kNm_per_m":23.3643,"shear_kN_per_m":33.7681,"shear_above_kN_per_m":33.7681,"shear_below_kN_per_m":33.7681,"net_soil_pressure_kPa":-17.4213,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":17.4213,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3,"depth_m":3,"displacement_mm":-4.36195,"rotation_mrad":-1.21273,"moment_kNm_per_m":38.1,"shear_kN_per_m":24.7041,"shear_above_kN_per_m":24.7041,"shear_below_kN_per_m":24.7041,"net_soil_pressure_kPa":-18.9233,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":18.9233,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-3.5,"depth_m":3.5,"displacement_mm":-4.8687,"rotation_mrad":-0.798255,"moment_kNm_per_m":48.1101,"shear_kN_per_m":14.8909,"shear_above_kN_per_m":14.8909,"shear_below_kN_per_m":14.8909,"net_soil_pressure_kPa":-20.4253,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":20.4253,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-4,"depth_m":4,"displacement_mm":-5.14825,"rotation_mrad":-0.312053,"moment_kNm_per_m":53.0184,"shear_kN_per_m":4.32855,"shear_above_kN_per_m":4.32855,"shear_below_kN_per_m":4.32855,"net_soil_pressure_kPa":-21.9273,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":21.9273,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-4.5,"depth_m":4.5,"displacement_mm":-5.17728,"rotation_mrad":0.195011,"moment_kNm_per_m":52.4495,"shear_kN_per_m":-6.98298,"shear_above_kN_per_m":-6.98298,"shear_below_kN_per_m":-6.98298,"net_soil_pressure_kPa":-23.4293,"left_soil_pressure_kPa":0,"right_soil_pressure_kPa":23.4293,"water_pressure_kPa":0,"branch_state":"inactive/active","left_branch":"inactive","right_branch":"active"},{"level_m":-5,"depth_m":5,"displacement_mm":-4.95884,"rotation_mrad":0.668471,"moment_kNm_per_m":46.0288,"shear_kN_per_m":-19.0437,"shear_above_kN_per_m":-19.0437,"shear_below_kN_per_m":-19.0437,"net_soil_pressure_kPa":-24.931,"left_soil_pressure_kPa":0.0003057,"right_soil_pressure_kPa":24.9313,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-5.5,"depth_m":5.5,"displacement_mm":-4.52409,"rotation_mrad":1.05026,"moment_kNm_per_m":33.383,"shear_kN_per_m":-28.0416,"shear_above_kN_per_m":-28.0416,"shear_below_kN_per_m":-28.0416,"net_soil_pressure_kPa":-11.148,"left_soil_pressure_kPa":15.2853,"right_soil_pressure_kPa":26.4334,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-6,"depth_m":6,"displacement_mm":-3.93107,"rotation_mrad":1.29707,"moment_kNm_per_m":17.9513,"shear_kN_per_m":-30.1648,"shear_above_kN_per_m":-30.1648,"shear_below_kN_per_m":-30.1648,"net_soil_pressure_kPa":2.63494,"left_soil_pressure_kPa":30.5703,"right_soil_pressure_kPa":27.9354,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-6.5,"depth_m":6.5,"displacement_mm":-3.25123,"rotation_mrad":1.39863,"moment_kNm_per_m":3.17363,"shear_kN_per_m":-25.4134,"shear_above_kN_per_m":-25.4134,"shear_below_kN_per_m":-25.4134,"net_soil_pressure_kPa":16.4179,"left_soil_pressure_kPa":45.8553,"right_soil_pressure_kPa":29.4374,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-7,"depth_m":7,"displacement_mm":-2.55284,"rotation_mrad":1.37778,"moment_kNm_per_m":-7.51025,"shear_kN_per_m":-13.7872,"shear_above_kN_per_m":-13.7872,"shear_below_kN_per_m":-13.7872,"net_soil_pressure_kPa":30.2009,"left_soil_pressure_kPa":61.1403,"right_soil_pressure_kPa":30.9394,"water_pressure_kPa":0,"branch_state":"passive/active","left_branch":"passive","right_branch":"active"},{"level_m":-7.5,"depth_m":7.5,"displacement_mm":-1.88453,"rotation_mrad":1.29042,"moment_kNm_per_m":-10.6613,"shear_kN_per_m":-0.829638,"shear_above_kN_per_m":-0.829638,"shear_below_kN_per_m":-0.829638,"net_soil_pressure_kPa":21.7559,"left_soil_pressure_kPa":54.1973,"right_soil_pressure_kPa":32.4414,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8,"depth_m":8,"displacement_mm":-1.26313,"rotation_mrad":1.19885,"moment_kNm_per_m":-8.38502,"shear_kN_per_m":6.87313,"shear_above_kN_per_m":6.87313,"shear_below_kN_per_m":6.87313,"net_soil_pressure_kPa":9.13048,"left_soil_pressure_kPa":43.0739,"right_soil_pressure_kPa":33.9434,"water_pressure_kPa":0,"branch_state":"neutral/active","left_branch":"neutral","right_branch":"active"},{"level_m":-8.5,"depth_m":8.5,"displacement_mm":-0.680213,"rotation_mrad":1.14012,"moment_kNm_per_m":-3.83033,"shear_kN_per_m":8.42516,"shear_above_kN_per_m":8.42516,"shear_below_kN_per_m":8.42516,"net_soil_pressure_kPa":-2.90718,"left_soil_pressure_kPa":32.7972,"right_soil_pressure_kPa":35.7044,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"},{"level_m":-9,"depth_m":9,"displacement_mm":-0.116293,"rotation_mrad":1.1217,"moment_kNm_per_m":-5.68434e-14,"shear_kN_per_m":-1.15664e-10,"shear_above_kN_per_m":-1.15664e-10,"shear_below_kN_per_m":0,"net_soil_pressure_kPa":-30.8758,"left_soil_pressure_kPa":22.9384,"right_soil_pressure_kPa":53.8142,"water_pressure_kPa":0,"branch_state":"neutral/neutral","left_branch":"neutral","right_branch":"neutral"}],"support_reactions":[{"id":"A1","type":"anchor","side":"right","depth_m":1.6,"reaction_kN_per_m":65.677,"axial_force_kN_per_m":67.994,"utilization_ratio":0.453,"branch_state":"elastic"}],"envelope":{"max_abs_displacement_mm":5.17728,"max_abs_moment_kNm_per_m":53.0184,"max_abs_shear_kN_per_m":48.0116,"max_abs_plastic_offset_mm":1.80705}}],"governing":{"max_abs_displacement_mm":5.177,"max_abs_displacement_phase":"Deepen excavation to -5.0 m","max_displacement_mm":0.16,"max_displacement_phase":"Deepen excavation to -5.0 m","min_displacement_mm":-5.177,"min_displacement_phase":"Deepen excavation to -5.0 m","max_abs_rotation_mrad":1.641,"max_abs_rotation_phase":"Deepen excavation to -5.0 m","max_rotation_mrad":1.399,"max_rotation_phase":"Deepen excavation to -5.0 m","min_rotation_mrad":-1.641,"min_rotation_phase":"Deepen excavation to -5.0 m","max_abs_moment_kNm_per_m":53.018,"max_abs_moment_phase":"Deepen excavation to -5.0 m","max_moment_kNm_per_m":53.018,"max_moment_phase":"Deepen excavation to -5.0 m","min_moment_kNm_per_m":-13.846,"min_moment_phase":"Deepen excavation to -5.0 m","max_abs_shear_kN_per_m":48.012,"max_abs_shear_phase":"Deepen excavation to -5.0 m","max_shear_kN_per_m":48.012,"max_shear_phase":"Deepen excavation to -5.0 m","min_shear_kN_per_m":-30.165,"min_shear_phase":"Deepen excavation to -5.0 m"},"design_checks":{"wall":{"wall_type":"steel_sheet_pile","governing_check":"shear","governing_phase":"Deepen excavation to -5.0 m","governing_level_m":-1.6,"bending_governing_phase":"Deepen excavation to -5.0 m","bending_governing_level_m":-4,"bending_demand_kNm_per_m":53.018,"bending_capacity_kNm_per_m":419.965,"bending_utilization":0.126,"shear_governing_phase":"Deepen excavation to -5.0 m","shear_governing_level_m":-1.6,"shear_demand_kN_per_m":48.012,"shear_capacity_kN_per_m":280.794,"shear_utilization":0.171,"cracked_stiffness_state":"not_applicable","pass":true},"supports":[{"support_id":"A1","support_type":"anchor","governing_phase":"Deepen excavation to -5.0 m","demand_kN_per_m":65.677,"capacity_kN_per_m":144.889,"axial_demand_kN_per_m":67.994,"axial_capacity_kN_per_m":150,"utilization_ratio":0.453,"pass":true}],"serviceability":{"assessed":true,"max_abs_displacement_mm":5.177,"limit_mm":30,"pass":true},"overall_pass":true},"visualization":{"phases":[{"name":"Initial at-rest state","phase_index":0,"converged":true,"iterations":3,"levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"displacement_mm":[-0.152428,-0.135409,-0.120303,-0.108022,-0.105912,-0.0985262,-0.0912824,-0.0856217,-0.0809391,-0.0767652,-0.0727792,-0.0687893,-0.0647013,-0.0604858,-0.0561508,-0.0517217,-0.0472284,-0.0426976,-0.0381494,-0.033596],"rotation_mrad":[0.0347453,0.0326248,0.027508,0.0216641,0.0205423,0.016521,0.012686,0.0101622,0.00872523,0.00807609,0.00793011,0.00805889,0.00830122,0.00855705,0.00877391,0.00893212,0.009032,0.00908433,0.00910432,0.00910826],"moment_kNm_per_m":[1.24345e-14,-0.441067,-0.62322,-0.592313,-0.574398,-0.471129,-0.326559,-0.198391,-0.100492,-0.0345299,0.00416759,0.0226172,0.0277877,0.0254246,0.0196827,0.0132266,0.00754783,0.00333747,0.000819263,4.44089e-16],"shear_kN_per_m":[1.52448e-10,-0.623228,-0.151246,0.159587,0.194948,0.271935,0.272737,0.226066,0.16386,0.104658,0.057146,0.023619,0.00280619,-0.00810618,-0.0121991,-0.012136,-0.00989021,-0.00672971,-0.00333861,-3.36199e-11],"shear_above_kN_per_m":[0,-0.623228,-0.151246,0.159587,0.194948,0.271935,0.272737,0.226066,0.16386,0.104658,0.057146,0.023619,0.00280619,-0.00810618,-0.0121991,-0.012136,-0.00989021,-0.00672971,-0.00333861,-3.36199e-11],"shear_below_kN_per_m":[1.52448e-10,-0.623228,-0.151246,0.159587,0.194948,0.271935,0.272737,0.226066,0.16386,0.104658,0.057146,0.023619,0.00280619,-0.00810618,-0.0121991,-0.012136,-0.00989021,-0.00672971,-0.00333861,0],"net_soil_pressure_kPa":[-3.53715,1.03822,0.854328,0.392047,0.316896,0.0689896,-0.0657656,-0.121364,-0.128059,-0.109318,-0.0811848,-0.0532418,-0.0302036,-0.0135433,-0.00285939,0.00312177,0.00589232,0.00678967,0.00681694,0.00657011],"left_soil_pressure_kPa":[0.00051,7.22909,11.1468,15.1266,15.9302,19.1676,21.5558,23.9787,26.4232,28.8789,31.3387,33.7984,36.256,38.7107,41.1629,43.6129,46.0616,48.5094,50.9568,53.4041],"right_soil_pressure_kPa":[3.53766,6.19087,10.2924,14.7345,15.6133,19.0986,21.6215,24.1001,26.5513,28.9882,31.4199,33.8517,36.2862,38.7243,41.1657,43.6098,46.0557,48.5026,50.95,53.3975],"water_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branch_state":["passive/active","neutral/active","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral","neutral/neutral"],"left_branch":["passive","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral"],"right_branch":["active","active","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral"]},{"name":"Excavate left side to -4.0 m","phase_index":1,"converged":true,"iterations":4,"levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"displacement_mm":[0.0859331,-0.151112,-0.397571,-0.671761,-0.732379,-0.993569,-1.3189,-1.58641,-1.7552,-1.80705,-1.74827,-1.60841,-1.4268,-1.23739,-1.06103,-0.907149,-0.777113,-0.667019,-0.569886,-0.478016],"rotation_mrad":[-0.471516,-0.479236,-0.512566,-0.594397,-0.618491,-0.670545,-0.610065,-0.446258,-0.222726,0.0133143,0.211044,0.334374,0.380281,0.370622,0.331868,0.283354,0.23821,0.204587,0.186805,0.182207],"moment_kNm_per_m":[2.84217e-14,-1.60576,-5.32685,-11.6937,-13.3639,-0.169907,12.7494,21.322,25.1719,23.9238,17.2034,8.44901,1.09942,-3.10842,-4.95225,-5.13864,-4.25109,-2.74244,-0.956263,1.27898e-13],"shear_kN_per_m":[-8.59148e-11,-5.34376,-10.1062,-16.0613,35.7147,29.786,21.4712,12.4072,2.59403,-7.96832,-15.4679,-16.0928,-11.5444,-6.03887,-2.01867,0.711093,2.4046,3.30207,2.74906,-4.78456e-10],"shear_above_kN_per_m":[0,-5.34376,-10.1062,-16.0613,-17.4112,29.786,21.4712,12.4072,2.59403,-7.96832,-15.4679,-16.0928,-11.5444,-6.03887,-2.01867,0.711093,2.4046,3.30207,2.74906,-4.78456e-10],"shear_below_kN_per_m":[-8.59148e-11,-5.34376,-10.1062,-16.0613,35.7147,29.786,21.4712,12.4072,2.59403,-7.96832,-15.4679,-16.0928,-11.5444,-6.03887,-2.01867,0.711093,2.4046,3.30207,2.74906,0],"net_soil_pressure_kPa":[-12.944,-8.48337,-10.6129,-13.2661,-13.7967,-15.9193,-17.4213,-18.9233,-20.4253,-21.927,-8.14403,5.63896,12.5988,9.47728,6.64282,4.30294,2.48765,1.11105,-3.32851,-7.69457],"left_soil_pressure_kPa":[0,0,0,0,0,0,0,0,0,0.0003057,15.2853,30.5703,39.0322,37.4126,36.0802,35.2423,34.929,35.0545,35.465,35.9913],"right_soil_pressure_kPa":[12.944,8.48337,10.6129,13.2661,13.7967,15.9193,17.4213,18.9233,20.4253,21.9273,23.4293,24.9313,26.4334,27.9354,29.4374,30.9394,32.4414,33.9434,38.7936,43.6859],"water_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branch_state":["inactive/neutral","inactive/neutral","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","passive/active","passive/active","passive/active","neutral/active","neutral/active","neutral/active","neutral/active","neutral/active","neutral/active","neutral/neutral","neutral/neutral"],"left_branch":["inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","passive","passive","passive","neutral","neutral","neutral","neutral","neutral","neutral","neutral","neutral"],"right_branch":["neutral","neutral","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","neutral","neutral"]},{"name":"Deepen excavation to -5.0 m","phase_index":2,"converged":true,"iterations":4,"levels_m":[0,-0.5,-1,-1.5,-1.6,-2,-2.5,-3,-3.5,-4,-4.5,-5,-5.5,-6,-6.5,-7,-7.5,-8,-8.5,-9],"displacement_mm":[0.159746,-0.56602,-1.30225,-2.0679,-2.22706,-2.88081,-3.6758,-4.36195,-4.8687,-5.14825,-5.17728,-4.95884,-4.52409,-3.93107,-3.25123,-2.55284,-1.88453,-1.26313,-0.680213,-0.116293],"rotation_mrad":[-1.44857,-1.45745,-1.49362,-1.57935,-1.60435,-1.64115,-1.50824,-1.21273,-0.798255,-0.312053,0.195011,0.668471,1.05026,1.29707,1.39863,1.37778,1.29042,1.19885,1.14012,1.1217],"moment_kNm_per_m":[-5.68434e-14,-1.84637,-5.67743,-12.1542,-13.8464,4.28011,23.3643,38.1,48.1101,53.0184,52.4495,46.0288,33.383,17.9513,3.17363,-7.51025,-10.6613,-8.38502,-3.83033,-5.68434e-14],"shear_kN_per_m":[-1.59597e-10,-5.72858,-10.3604,-16.3156,48.0116,42.0829,33.7681,24.7041,14.8909,4.32855,-6.98298,-19.0437,-28.0416,-30.1648,-25.4134,-13.7872,-0.829638,6.87313,8.42516,-1.15664e-10],"shear_above_kN_per_m":[0,-5.72858,-10.3604,-16.3156,-17.6654,42.0829,33.7681,24.7041,14.8909,4.32855,-6.98298,-19.0437,-28.0416,-30.1648,-25.4134,-13.7872,-0.829638,6.87313,8.42516,-1.15664e-10],"shear_below_kN_per_m":[-1.59597e-10,-5.72858,-10.3604,-16.3156,48.0116,42.0829,33.7681,24.7041,14.8909,4.32855,-6.98298,-19.0437,-28.0416,-30.1648,-25.4134,-13.7872,-0.829638,6.87313,8.42516,0],"net_soil_pressure_kPa":[-15.0107,-7.95968,-10.6129,-13.2661,-13.7967,-15.9193,-17.4213,-18.9233,-20.4253,-21.9273,-23.4293,-24.931,-11.148,2.63494,16.4179,30.2009,21.7559,9.13048,-2.90718,-30.8758],"left_soil_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0.0003057,15.2853,30.5703,45.8553,61.1403,54.1973,43.0739,32.7972,22.9384],"right_soil_pressure_kPa":[15.0107,7.95968,10.6129,13.2661,13.7967,15.9193,17.4213,18.9233,20.4253,21.9273,23.4293,24.9313,26.4334,27.9354,29.4374,30.9394,32.4414,33.9434,35.7044,53.8142],"water_pressure_kPa":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"branch_state":["inactive/neutral","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","inactive/active","passive/active","passive/active","passive/active","passive/active","passive/active","neutral/active","neutral/active","neutral/neutral","neutral/neutral"],"left_branch":["inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","inactive","passive","passive","passive","passive","passive","neutral","neutral","neutral","neutral"],"right_branch":["neutral","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","active","neutral","neutral"]}]},"assumptions":["Wall solved as a 2 DOF Euler-Bernoulli beam line.","Soil response represented by left/right capped Winkler-type springs with carried offsets.","Inclined walls use an approximate horizontal-component treatment for soil and water loads based on the wall angle from vertical."],"source_refs":["/home/user/plan.md","/home/user/projects/Engineering-Scripts/RetainingWall/README.md","/home/user/projects/Engineering-Scripts/RetainingWall/reference/solver_notes.md"],"warnings":["NODAL_PRESSURE_LUMPING"]};
 // END GENERATED DEMO_RESULT
 
 SAMPLE_RESULT.normalized_input = structuredClone(SAMPLE_PROJECT);
@@ -564,8 +618,18 @@ function isPlotArray(value: unknown, expectedLength: number) {
   return Array.isArray(value) && value.length === expectedLength;
 }
 
-function buildPhasePlotData(result: any, phaseIndex: number) {
-  const phase = result?.phases?.[phaseIndex];
+export type ResultDesignView = "characteristic" | "set1" | "set2";
+
+function resultPhaseForView(result: any, phaseIndex: number, view: ResultDesignView = "characteristic") {
+  if (view !== "characteristic" && result?.ec7_verification?.sets) {
+    const setResult = result.ec7_verification.sets.find((item: any) => item?.set === view);
+    return setResult?.phases?.[phaseIndex] ?? result?.phases?.[phaseIndex];
+  }
+  return result?.phases?.[phaseIndex];
+}
+
+function buildPhasePlotData(result: any, phaseIndex: number, view: ResultDesignView = "characteristic") {
+  const phase = resultPhaseForView(result, phaseIndex, view);
   const sampledResults = phase?.sampled_results ?? [];
   const sampled = {
     levels: sampledResults.map((item: any) => item.level_m),
@@ -578,7 +642,7 @@ function buildPhasePlotData(result: any, phaseIndex: number) {
     branchState: sampledResults.map((item: any) => item.branch_state),
     source: "sampled_results" as const,
   };
-  const visualizationPhase = visualizationPhaseForResult(result, phaseIndex);
+  const visualizationPhase = view === "characteristic" ? visualizationPhaseForResult(result, phaseIndex) : null;
   const expectedLength = visualizationPhase?.levels_m?.length ?? 0;
   if (
     visualizationPhase &&
@@ -611,9 +675,9 @@ function buildPhasePlotData(result: any, phaseIndex: number) {
  * anchors and props). When the API returns the shear just above and just
  * below each node, plot it as a stepped diagram; otherwise use the nodal value.
  */
-export function buildSteppedShearSeries(result: any, phaseIndex: number) {
-  const visualizationPhase = visualizationPhaseForResult(result, phaseIndex);
-  const sampledResults = result?.phases?.[phaseIndex]?.sampled_results ?? [];
+export function buildSteppedShearSeries(result: any, phaseIndex: number, phaseOverride?: any) {
+  const visualizationPhase = phaseOverride ? null : visualizationPhaseForResult(result, phaseIndex);
+  const sampledResults = phaseOverride?.sampled_results ?? result?.phases?.[phaseIndex]?.sampled_results ?? [];
   const levels: number[] = visualizationPhase?.levels_m ?? sampledResults.map((item: any) => item.level_m);
   const above: unknown = visualizationPhase?.shear_above_kN_per_m ??
     (sampledResults.length ? sampledResults.map((item: any) => item.shear_above_kN_per_m) : undefined);
@@ -777,6 +841,131 @@ function wallLengthSearchForProject(project: ProjectInput) {
 
 function defaultSteelGammaM0(designMode: ProjectInput["design_mode"] | undefined) {
   return designMode === "ec7" ? 1.1 : 1;
+}
+
+function ec7PartialFactorsForProject(project: ProjectInput): Required<Ec7PartialFactors> {
+  return {
+    set1: { ...EC7_PARTIAL_FACTOR_DEFAULTS.set1, ...(project.ec7_partial_factors?.set1 ?? {}) },
+    set2: { ...EC7_PARTIAL_FACTOR_DEFAULTS.set2, ...(project.ec7_partial_factors?.set2 ?? {}) },
+  };
+}
+
+export function resetEc7PartialFactors(project: ProjectInput) {
+  return {
+    ...structuredClone(project),
+    ec7_partial_factors: structuredClone(EC7_PARTIAL_FACTOR_DEFAULTS),
+  };
+}
+
+const EC7_ACTION_TYPES: Array<{ value: Ec7ActionType; label: string }> = [
+  { value: "permanent_unfavourable", label: "Permanent – unfavourable" },
+  { value: "permanent_favourable", label: "Permanent – favourable" },
+  { value: "variable_unfavourable", label: "Variable – unfavourable" },
+  { value: "variable_favourable", label: "Variable – favourable" },
+];
+
+function ec7ActionTypeSelect(attribute: string, selected?: Ec7ActionType) {
+  const value = selected ?? "variable_unfavourable";
+  return `<select ${attribute} aria-label="${attribute.replaceAll("data-qe-", "").replaceAll("-", " ")}">${EC7_ACTION_TYPES.map((item) => `<option value="${item.value}" ${item.value === value ? "selected" : ""}>${item.label}</option>`).join("")}</select>`;
+}
+
+export function ec7FactorEditorValuesToState(values: { set1: Record<string, number>; set2: Record<string, number> }) {
+  const state = structuredClone(values);
+  for (const setName of ["set1", "set2"] as const) {
+    if (typeof state[setName].overdig_fraction === "number") {
+      state[setName].overdig_fraction /= 100;
+    }
+  }
+  return state;
+}
+
+function readEc7FactorInputs(root: ParentNode) {
+  const factors: { set1: Record<string, number>; set2: Record<string, number> } = { set1: {}, set2: {} };
+  root.querySelectorAll<HTMLInputElement>("[data-qe-ec7-factor]").forEach((input) => {
+    const [setName, fieldName] = (input.dataset.qeEc7Factor ?? "").split(".");
+    const value = numberOrUndefined(input.value);
+    if ((setName === "set1" || setName === "set2") && fieldName && value !== undefined) {
+      factors[setName][fieldName] = value;
+    }
+  });
+  return ec7FactorEditorValuesToState(factors);
+}
+
+function ec7FactorBlock(project: ProjectInput) {
+  if (project.design_mode !== "ec7") return "";
+  const factors = ec7PartialFactorsForProject(project);
+  const rows: Array<{ key: keyof typeof EC7_PARTIAL_FACTOR_DEFAULTS.set1; label: string; percent?: boolean }> = [
+    { key: "permanent_unfavourable", label: "Permanent load, unfavourable (×)" },
+    { key: "permanent_favourable", label: "Permanent load, favourable (×)" },
+    { key: "variable_unfavourable", label: "Variable load, unfavourable (×)" },
+    { key: "variable_favourable", label: "Variable load, favourable (×)" },
+    { key: "tan_phi", label: "tan φ′ (÷)" },
+    { key: "cohesion", label: "Cohesion (÷)" },
+    { key: "subgrade_modulus", label: "Subgrade modulus (÷)" },
+    { key: "effect", label: "Factor on effects M, V, support forces (×)" },
+    { key: "overdig_fraction", label: "Overdig (% of H)", percent: true },
+    { key: "overdig_max_m", label: "Overdig maximum (m)" },
+  ];
+  const inputs = (setName: "set1" | "set2", field: keyof typeof EC7_PARTIAL_FACTOR_DEFAULTS.set1, percent = false) => {
+    const value = factors[setName][field];
+    const shown = percent ? value * 100 : value;
+    const readableSet = setName === "set1" ? "Set 1" : "Set 2";
+    return `<label class="ec7-factor-input"><span class="sr-only">${readableSet} ${field.replaceAll("_", " ")}</span><input type="number" step="any" data-qe-ec7-factor="${setName}.${field}" aria-label="${readableSet} ${field.replaceAll("_", " ")}" value="${escapeHtml(shown)}"></label>`;
+  };
+  return `
+    <section class="ec7-factor-block" data-qe-ec7-factors aria-labelledby="ec7-factor-title">
+      <h3 id="ec7-factor-title">Partial factors (EC7-BE, design approach 1)</h3>
+      <div class="table-shell ec7-factor-table-shell">
+        <table class="ec7-factor-table"><thead><tr><th>Factor</th><th>Set 1</th><th>Set 2</th></tr></thead>
+          <tbody>${rows.map((row) => `<tr><th scope="row">${row.label}</th><td>${inputs("set1", row.key, row.percent)}</td><td>${inputs("set2", row.key, row.percent)}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+      <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-ec7-reset>Reset to defaults</button></div>
+      <p class="quick-editor-note">Default values for EC7-BE (design approach 1). Every factor can be changed; the engineer remains responsible for the partial factors.</p>
+    </section>`;
+}
+
+export function buildAnalysisPayload(project: ProjectInput): ProjectInput {
+  const payload = structuredClone(project);
+  if (payload.design_mode !== "ec7") {
+    delete payload.ec7_partial_factors;
+    payload.phases = payload.phases.map((phase) => {
+      const cleanPhase = { ...phase };
+      delete cleanPhase.surcharge_left_action;
+      delete cleanPhase.surcharge_right_action;
+      delete cleanPhase.vertical_line_load_action;
+      return cleanPhase;
+    });
+    payload.supports = payload.supports.map((support) => {
+      const cleanSupport = { ...support };
+      delete cleanSupport.action_type;
+      return cleanSupport;
+    });
+  } else {
+    payload.ec7_partial_factors = ec7PartialFactorsForProject(payload);
+    payload.phases = payload.phases.map((phase) => ({
+      ...phase,
+      surcharge_left_action: phase.surcharge_left_action ?? "variable_unfavourable",
+      surcharge_right_action: phase.surcharge_right_action ?? "variable_unfavourable",
+      vertical_line_load_action: phase.vertical_line_load_action ?? "permanent_unfavourable",
+    }));
+    payload.supports = payload.supports.map((support) => {
+      const nextSupport = { ...support };
+      if (nextSupport.type === "point_load" || nextSupport.type === "moment") {
+        nextSupport.action_type = nextSupport.action_type ?? "variable_unfavourable";
+      } else {
+        delete nextSupport.action_type;
+      }
+      return nextSupport;
+    });
+  }
+  if (payload.wall_type === "diaphragm_wall") {
+    payload.wall_geometry.segments = payload.wall_geometry.segments.map((segment) => {
+      const { steel_section: _steelSection, ...diaphragmSegment } = segment;
+      return diaphragmSegment;
+    });
+  }
+  return payload;
 }
 
 function targetElementLengthForProject(project: ProjectInput | undefined) {
@@ -1405,20 +1594,23 @@ function buildTabbedQuickEditorHtml(flatMarkup: string) {
     { id: "json", label: "JSON" },
   ];
   const grouped = new Map(tabDefinitions.map((tab) => [tab.id, [] as string[]]));
-  const items = flatMarkup.match(/<label class="quick-editor-field">[\s\S]*?<\/label>|<div class="quick-editor-actions">[\s\S]*?<\/div>|<p class="quick-editor-note">[\s\S]*?<\/p>/g) ?? [];
+  const ec7Block = flatMarkup.match(/<section class="ec7-factor-block"[\s\S]*?<\/section>/)?.[0];
+  const markupWithoutEc7Block = ec7Block ? flatMarkup.replace(ec7Block, "") : flatMarkup;
+  const items = markupWithoutEc7Block.match(/<label class="quick-editor-field">[\s\S]*?<\/label>|<div class="quick-editor-actions">[\s\S]*?<\/div>|<p class="quick-editor-note">[\s\S]*?<\/p>/g) ?? [];
   for (const item of items) {
     let group = "general";
-    if (/data-qe-support-(?:index|id|type|side|depth|active|inclination|stiffness|prestress|capacity|force|moment)|anchor-inclination|support_(?:add|remove)/.test(item)) {
+    if (/data-qe-support-(?:index|id|type|side|depth|active|inclination|stiffness|prestress|capacity|force|moment|action-type)|anchor-inclination|support_(?:add|remove)/.test(item)) {
       group = "supports";
     } else if (/data-qe-(?:left-|right-)|left_layer_|right_layer_/.test(item)) {
       group = "soils";
-    } else if (/data-qe-phase-name|phase_(?:duplicate|remove)|data-qe-(?:surface|exc-|gw-|sur-|vertical-load|second-order)/.test(item)) {
+    } else if (/data-qe-phase-name|phase_(?:duplicate|remove)|data-qe-(?:surface|exc-|gw-|sur-|vertical-load|vertical-line-load-action|second-order|surcharge-.*-action)/.test(item)) {
       group = "phases";
     } else if (/data-qe-(?:segment|library|section-name|wpl|av|fy|gamma-m0)|segment_(?:split|remove)/.test(item)) {
       group = "wall";
     }
     grouped.get(group)?.push(item);
   }
+  if (ec7Block) grouped.get("general")?.push(ec7Block);
 
   const tabButtons = tabDefinitions.map((tab, index) => `
     <button type="button" class="editor-tab" id="editor-tab-${tab.id}" role="tab" aria-controls="editor-panel-${tab.id}" aria-selected="${index === 0}" tabindex="${index === 0 ? "0" : "-1"}" data-editor-tab="${tab.id}">${tab.label}</button>
@@ -1458,7 +1650,7 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <label class="quick-editor-field"><span>Gamma M0</span><input data-qe-gamma-m0 type="number" step="0.01" min="0.1" value="${escapeHtml(section.gamma_m0 ?? gammaM0Default)}"></label>
     `
     : `
-      <p class="quick-editor-note">Diaphragm wall mode uses the direct EI, cracked EI, cracking moment, and direct moment/shear resistance fields above. Steel-library Wpl/Av/fy/gamma inputs are hidden in this mode.</p>
+      <p class="quick-editor-note">Constant bending stiffness EI (optionally the cracked EI above the cracking moment); a moment-curvature relation is not modelled yet.</p>
     `;
   const segmentOptions = project.wall_geometry.segments.length
     ? project.wall_geometry.segments.map((segment, index) => `
@@ -1492,8 +1684,8 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-structure-action="support_add">Add support</button><button type="button" class="secondary-button" data-qe-structure-action="support_remove">Remove support</button></div>
       <label class="quick-editor-field"><span>Phase name</span><input data-qe-phase-name type="text" value="${escapeHtml(phase.name)}"></label>
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-structure-action="phase_duplicate">Duplicate phase</button><button type="button" class="secondary-button" data-qe-structure-action="phase_remove">Remove phase</button></div>
-      <label class="quick-editor-field"><span>Wall type</span><select data-qe-wall-type><option value="steel_sheet_pile" ${project.wall_type === "steel_sheet_pile" ? "selected" : ""}>Steel sheet pile</option><option value="diaphragm_wall" ${project.wall_type === "diaphragm_wall" ? "selected" : ""} disabled>Diaphragm wall (validation pending)</option></select></label>
-      <label class="quick-editor-field"><span>Design mode</span><select data-qe-design-mode><option value="classic" ${project.design_mode === "classic" ? "selected" : ""}>Classic</option><option value="ec7" ${project.design_mode === "ec7" ? "selected" : ""}>EC7 (simplified first-pass factors)</option></select></label>
+      <label class="quick-editor-field"><span>Wall type</span><select data-qe-wall-type><option value="steel_sheet_pile" ${project.wall_type === "steel_sheet_pile" ? "selected" : ""}>Steel sheet pile</option><option value="diaphragm_wall" ${project.wall_type === "diaphragm_wall" ? "selected" : ""}>Diaphragm wall</option></select></label>
+      <label class="quick-editor-field"><span>Design mode</span><select data-qe-design-mode><option value="classic" ${project.design_mode === "classic" ? "selected" : ""}>Classic</option><option value="ec7" ${project.design_mode === "ec7" ? "selected" : ""}>EC7-BE (design approach 1)</option></select></label>
       <label class="quick-editor-field"><span>Toe control</span><select data-qe-toe-mode><option value="fixed" ${toeControlMode === "fixed" ? "selected" : ""}>Fixed toe</option><option value="search" ${toeControlMode === "search" ? "selected" : ""}>Search length</option></select></label>
       <label class="quick-editor-field"><span>Top level</span><input data-qe-top-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.top_level_m)}"></label>
       <label class="quick-editor-field"><span>Toe level</span><input data-qe-toe-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.toe_level_m)}"></label>
@@ -1507,11 +1699,11 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <label class="quick-editor-field"><span>Segment top</span><input data-qe-segment-top type="number" step="0.1" value="${escapeHtml(selectedSegment?.top_level_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Segment bottom</span><input data-qe-segment-bottom type="number" step="0.1" value="${escapeHtml(selectedSegment?.bottom_level_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Wall inclination</span><input data-qe-inclination type="number" step="0.1" value="${escapeHtml(project.wall_geometry.inclination_degrees ?? 0)}"></label>
-      <label class="quick-editor-field"><span>Segment EI</span><input data-qe-segment-ei type="number" step="1" value="${escapeHtml(selectedSegment?.ei_kNm2_per_m ?? "")}"></label>
+      <label class="quick-editor-field"><span>Segment EI</span><input data-qe-segment-ei type="number" step="1" value="${escapeHtml(selectedSegment?.ei_kNm2_per_m ?? "")}" ${project.wall_type === "diaphragm_wall" ? "required" : ""}></label>
       <label class="quick-editor-field"><span>Cracked EI</span><input data-qe-segment-cracked-ei type="number" step="1" value="${escapeHtml(selectedSegment?.cracked_ei_kNm2_per_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Cracking moment</span><input data-qe-segment-cracking-moment type="number" step="1" value="${escapeHtml(selectedSegment?.cracking_moment_kNm_per_m ?? "")}"></label>
-      <label class="quick-editor-field"><span>Direct M resistance</span><input data-qe-segment-mr type="number" step="1" value="${escapeHtml(selectedSegment?.moment_resistance_kNm_per_m ?? "")}"></label>
-      <label class="quick-editor-field"><span>Direct V resistance</span><input data-qe-segment-vr type="number" step="1" value="${escapeHtml(selectedSegment?.shear_resistance_kN_per_m ?? "")}"></label>
+      <label class="quick-editor-field"><span>Design moment resistance</span><input data-qe-segment-mr type="number" step="1" value="${escapeHtml(selectedSegment?.moment_resistance_kNm_per_m ?? "")}" ${project.wall_type === "diaphragm_wall" ? "required" : ""}></label>
+      <label class="quick-editor-field"><span>Design shear resistance</span><input data-qe-segment-vr type="number" step="1" value="${escapeHtml(selectedSegment?.shear_resistance_kN_per_m ?? "")}" ${project.wall_type === "diaphragm_wall" ? "required" : ""}></label>
       ${wallTypeSpecificSectionControls}
       <label class="quick-editor-field"><span>Surface left</span><input data-qe-surface-left type="number" step="0.1" value="${escapeHtml(phase.surface_level_left_m ?? project.wall_geometry.top_level_m)}"></label>
       <label class="quick-editor-field"><span>Surface right</span><input data-qe-surface-right type="number" step="0.1" value="${escapeHtml(phase.surface_level_right_m ?? project.wall_geometry.top_level_m)}"></label>
@@ -1520,8 +1712,11 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <label class="quick-editor-field"><span>Groundwater left</span><input data-qe-gw-left type="number" step="0.1" value="${escapeHtml(phase.groundwater_level_left_m)}"></label>
       <label class="quick-editor-field"><span>Groundwater right</span><input data-qe-gw-right type="number" step="0.1" value="${escapeHtml(phase.groundwater_level_right_m)}"></label>
       <label class="quick-editor-field"><span>Surcharge left</span><input data-qe-sur-left type="number" step="0.1" value="${escapeHtml(phase.surcharge_left_kPa ?? 0)}"></label>
+      ${project.design_mode === "ec7" ? `<label class="quick-editor-field"><span>Left surcharge action</span>${ec7ActionTypeSelect("data-qe-surcharge-left-action", phase.surcharge_left_action)}</label>` : ""}
       <label class="quick-editor-field"><span>Surcharge right</span><input data-qe-sur-right type="number" step="0.1" value="${escapeHtml(phase.surcharge_right_kPa ?? 0)}"></label>
+      ${project.design_mode === "ec7" ? `<label class="quick-editor-field"><span>Right surcharge action</span>${ec7ActionTypeSelect("data-qe-surcharge-right-action", phase.surcharge_right_action)}</label>` : ""}
       <label class="quick-editor-field"><span>Phase vertical load</span><input data-qe-vertical-load type="number" step="1" value="${escapeHtml(project.phases[phaseIndex]?.vertical_line_load_kN_per_m ?? 0)}"></label>
+      ${project.design_mode === "ec7" ? `<label class="quick-editor-field"><span>Vertical line load action</span>${ec7ActionTypeSelect("data-qe-vertical-line-load-action", phase.vertical_line_load_action ?? "permanent_unfavourable")}</label>` : ""}
       <label class="quick-editor-field"><span>2nd order</span><select data-qe-second-order><option value="false" ${project.phases[phaseIndex]?.include_vertical_line_second_order ? "" : "selected"}>Off</option><option value="true" ${project.phases[phaseIndex]?.include_vertical_line_second_order ? "selected" : ""}>On</option></select></label>
       <label class="quick-editor-field"><span>Left layer top</span><input data-qe-left-top type="number" step="0.1" value="${escapeHtml(leftLayer?.top_level_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Left layer bottom</span><input data-qe-left-bottom type="number" step="0.1" value="${escapeHtml(leftLayer?.bottom_level_m ?? "")}"></label>
@@ -1561,7 +1756,11 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <label class="quick-editor-field"><span>Capacity</span><input data-qe-support-capacity type="number" step="1" value="${escapeHtml(selectedSupport?.capacity_kN_per_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Point load</span><input data-qe-support-force type="number" step="1" value="${escapeHtml(selectedSupport?.force_kN_per_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Applied moment</span><input data-qe-support-moment type="number" step="1" value="${escapeHtml(selectedSupport?.moment_kNm_per_m ?? "")}"></label>
+      ${project.design_mode === "ec7" && (selectedSupport?.type === "point_load" || selectedSupport?.type === "moment")
+        ? `<label class="quick-editor-field"><span>Support action type</span>${ec7ActionTypeSelect("data-qe-support-action-type", selectedSupport.action_type)}</label>`
+        : ""}
       <p class="quick-editor-note">Choose an item in its tab to edit the staged project. Use JSON for direct payload changes.${project.wall_type === "diaphragm_wall" ? " The wall uses direct diaphragm section stiffness/cracking/resistance inputs." : ""}</p>
+      ${ec7FactorBlock(project)}
     </div>
   `;
   return buildTabbedQuickEditorHtml(flatMarkup);
@@ -1599,6 +1798,20 @@ export function applyQuickEditorPatch(project: ProjectInput, phaseIndex: number,
   const nextWallLengthSearch = nextProject.design_options?.wall_length_search;
   nextProject.wall_type = patch.wall_type ?? nextProject.wall_type;
   nextProject.design_mode = patch.design_mode ?? nextProject.design_mode;
+  if (nextProject.design_mode === "ec7") {
+    nextProject.ec7_partial_factors = {
+      ...ec7PartialFactorsForProject(nextProject),
+      ...(patch.ec7_partial_factors ?? {}),
+      set1: {
+        ...ec7PartialFactorsForProject(nextProject).set1,
+        ...(patch.ec7_partial_factors?.set1 ?? {}),
+      },
+      set2: {
+        ...ec7PartialFactorsForProject(nextProject).set2,
+        ...(patch.ec7_partial_factors?.set2 ?? {}),
+      },
+    };
+  }
   nextProject.wall_geometry.top_level_m = patch.top_level_m ?? nextProject.wall_geometry.top_level_m;
   nextProject.wall_geometry.toe_level_m = patch.toe_level_m ?? nextProject.wall_geometry.toe_level_m;
   nextProject.wall_geometry.inclination_degrees = patch.inclination_degrees ?? nextProject.wall_geometry.inclination_degrees;
@@ -1706,8 +1919,14 @@ export function applyQuickEditorPatch(project: ProjectInput, phaseIndex: number,
       patch.surcharge_left_kPa ?? nextProject.phases[phaseIndex].surcharge_left_kPa;
     nextProject.phases[phaseIndex].surcharge_right_kPa =
       patch.surcharge_right_kPa ?? nextProject.phases[phaseIndex].surcharge_right_kPa;
+    nextProject.phases[phaseIndex].surcharge_left_action =
+      patch.surcharge_left_action ?? nextProject.phases[phaseIndex].surcharge_left_action;
+    nextProject.phases[phaseIndex].surcharge_right_action =
+      patch.surcharge_right_action ?? nextProject.phases[phaseIndex].surcharge_right_action;
     nextProject.phases[phaseIndex].vertical_line_load_kN_per_m =
       patch.vertical_line_load_kN_per_m ?? nextProject.phases[phaseIndex].vertical_line_load_kN_per_m;
+    nextProject.phases[phaseIndex].vertical_line_load_action =
+      patch.vertical_line_load_action ?? nextProject.phases[phaseIndex].vertical_line_load_action;
     nextProject.phases[phaseIndex].include_vertical_line_second_order =
       patch.include_vertical_line_second_order ?? nextProject.phases[phaseIndex].include_vertical_line_second_order;
   }
@@ -1811,6 +2030,8 @@ export function applyQuickEditorPatch(project: ProjectInput, phaseIndex: number,
       patch.support_force_kN_per_m ?? selectedSupport.force_kN_per_m;
     selectedSupport.moment_kNm_per_m =
       patch.support_moment_kNm_per_m ?? selectedSupport.moment_kNm_per_m;
+    selectedSupport.action_type =
+      patch.support_action_type ?? selectedSupport.action_type;
   }
   return nextProject;
 }
@@ -2187,20 +2408,47 @@ function buildSampledResultRows(phase: any) {
   `).join("");
 }
 
+const REMOVED_WARNING_CODES = new Set(["FIRST_PASS_EC7_FACTORS", "BENCHMARK_IMPORTS_PENDING"]);
+
+export function readableWarningMessage(code: string) {
+  if (REMOVED_WARNING_CODES.has(code)) return "";
+  const nonConverged = /^EC7_PHASE_DID_NOT_CONVERGE:(set1|set2):(.+)$/.exec(code);
+  if (nonConverged) {
+    const setNumber = nonConverged[1] === "set1" ? 1 : 2;
+    return `EC7 set ${setNumber}: phase “${nonConverged[2]}” has no equilibrium — ULS verification fails`;
+  }
+  const seededPhase = /^EC7_ULS_NOT_EVALUATED_FOR_SEEDED_PHASE:(.+)$/.exec(code);
+  if (seededPhase) {
+    return `EC7 ULS verification was not evaluated for seeded phase “${seededPhase[1]}”.`;
+  }
+  if (code === "DIAPHRAGM_WALL_CONSTANT_EI") {
+    return "Diaphragm wall uses constant bending stiffness EI; a moment-curvature relation is not modelled.";
+  }
+  return code;
+}
+
+function readableWarnings(warnings: unknown) {
+  return (Array.isArray(warnings) ? warnings : [])
+    .map((item) => readableWarningMessage(String(item)))
+    .filter(Boolean);
+}
+
 function buildResultProvenanceList(result: any) {
   const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
-  const assumptions = Array.isArray(result?.assumptions) ? result.assumptions : [];
-  const sourceRefs = Array.isArray(result?.source_refs) ? result.source_refs : [];
+  const assumptions = result?.ec7_verification
+    ? ["See the EC7 verification tables for partial factors, design effects and overdig."]
+    : Array.isArray(result?.assumptions) ? result.assumptions : [];
+  const sourceRefs = result?.ec7_verification ? [] : Array.isArray(result?.source_refs) ? result.source_refs : [];
   return [
     `<li>Formula version: ${escapeHtml(result?.formula_version || "n/a")}</li>`,
-    `<li>Warnings: ${warnings.length ? warnings.map((item: string) => escapeHtml(item)).join(", ") : "none"}</li>`,
+    `<li>Warnings: ${readableWarnings(warnings).length ? readableWarnings(warnings).map((item) => escapeHtml(item)).join(", ") : "none"}</li>`,
     `<li>Assumptions: ${assumptions.length ? assumptions.map((item: string) => escapeHtml(item)).join(" | ") : "none"}</li>`,
     `<li>Source refs: ${sourceRefs.length ? sourceRefs.map((item: string) => escapeHtml(item)).join(" | ") : "none"}</li>`,
   ].join("");
 }
 
-export function buildPhaseOverview(result: any, phaseIndex: number) {
-  const phase = result.phases[phaseIndex];
+export function buildPhaseOverview(result: any, phaseIndex: number, view: ResultDesignView = "characteristic") {
+  const phase = resultPhaseForView(result, phaseIndex, view);
   const overallPass = assessmentStatus(result.design_checks?.overall_pass);
   const serviceability = result.design_checks?.serviceability;
   const supportCheck = governingSupportCheck(result);
@@ -2284,6 +2532,15 @@ export function buildResultSummaryItems(result: any, phaseIndex = 0) {
       `Wall-length search stop reason: ${result.search_evaluation.stop_reason}`
     );
   }
+  for (const [index, setResult] of (result?.ec7_verification?.sets ?? []).entries()) {
+    const number = setResult.set === "set1" ? 1 : setResult.set === "set2" ? 2 : index + 1;
+    summary.push(
+      `EC7 set ${number}: governing |M| ${formatNumber(setResult.governing?.max_abs_moment_kNm_per_m ?? 0, 2)} kNm/m; governing |V| ${formatNumber(setResult.governing?.max_abs_shear_kN_per_m ?? 0, 2)} kN/m; ${setResult.converged === true ? "all phases converged" : "one or more phases did not converge"}`
+    );
+    for (const failedPhase of (setResult.phases ?? []).filter((item: any) => item?.converged === false)) {
+      summary.push(readableWarningMessage(`EC7_PHASE_DID_NOT_CONVERGE:set${number}:${failedPhase.name ?? "n/a"}`));
+    }
+  }
   return summary;
 }
 
@@ -2306,15 +2563,105 @@ export function buildPhaseConvergenceAlert(result: any, phaseIndex: number) {
   return "";
 }
 
-export function buildResultHtml(result: any, phaseIndex: number) {
-  const phase = result.phases[phaseIndex];
-  const convergenceAlert = buildPhaseConvergenceAlert(result, phaseIndex);
-  const wallLengthSearch = result.search_evaluation;
-  const plotData = buildPhasePlotData(result, phaseIndex);
-  const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
-  const steppedShear = buildSteppedShearSeries(result, phaseIndex);
+const EC7_FACTOR_DISPLAY_ROWS: Array<{ key: keyof typeof EC7_PARTIAL_FACTOR_DEFAULTS.set1; label: string; percent?: boolean }> = [
+  { key: "permanent_unfavourable", label: "Permanent load, unfavourable (×)" },
+  { key: "permanent_favourable", label: "Permanent load, favourable (×)" },
+  { key: "variable_unfavourable", label: "Variable load, unfavourable (×)" },
+  { key: "variable_favourable", label: "Variable load, favourable (×)" },
+  { key: "tan_phi", label: "tan φ′ (÷)" },
+  { key: "cohesion", label: "Cohesion (÷)" },
+  { key: "subgrade_modulus", label: "Subgrade modulus (÷)" },
+  { key: "effect", label: "Factor on effects M, V, support forces (×)" },
+  { key: "overdig_fraction", label: "Overdig (% of H)", percent: true },
+  { key: "overdig_max_m", label: "Overdig maximum (m)" },
+];
 
-  const cards = buildPhaseOverview(result, phaseIndex).map((card) => `
+function ec7FactorValue(factors: any, row: (typeof EC7_FACTOR_DISPLAY_ROWS)[number]) {
+  const value = Number(factors?.[row.key] ?? 0);
+  return formatNumber(row.percent ? value * 100 : value, row.percent ? 1 : 2);
+}
+
+function ec7SupportForceEnvelope(setResult: any) {
+  const maximums = new Map<string, { force: number; axial?: number; moment?: number; phase: string }>();
+  for (const phase of setResult?.phases ?? []) {
+    if (phase?.converged === false) continue;
+    for (const reaction of phase?.support_reactions ?? []) {
+      const id = String(reaction?.id ?? "Support");
+      const force = Number(reaction?.reaction_kN_per_m ?? 0);
+      const axial = typeof reaction?.axial_force_kN_per_m === "number" ? reaction.axial_force_kN_per_m : undefined;
+      const moment = supportReactionMoment(reaction);
+      const previous = maximums.get(id);
+      if (!previous || Math.abs(force) > Math.abs(previous.force)) {
+        maximums.set(id, { force, axial, moment, phase: phase.name ?? "n/a" });
+      }
+    }
+  }
+  if (!maximums.size) return "No converged support-force results";
+  return [...maximums.entries()].map(([id, item]) => {
+    const details = [`${formatNumber(item.force, 2)} kN/m`];
+    if (item.axial !== undefined) details.push(`axial ${formatNumber(item.axial, 2)} kN/m`);
+    if (item.moment !== undefined) details.push(`${formatNumber(item.moment, 2)} kNm/m`);
+    return `${id}: ${details.join(" · ")} (${item.phase})`;
+  }).join("; ");
+}
+
+export function buildEc7VerificationHtml(result: any) {
+  const verification = result?.ec7_verification;
+  if (!verification) return "";
+  const sets = ["set1", "set2"].map((setName) =>
+    verification.sets?.find((item: any) => item?.set === setName) ?? null
+  );
+  const partialFactors = verification.partial_factors ?? {};
+  const factorRows = EC7_FACTOR_DISPLAY_ROWS.map((row) => `
+    <tr><th scope="row">${row.label}</th><td>${ec7FactorValue(partialFactors.set1, row)}</td><td>${ec7FactorValue(partialFactors.set2, row)}</td></tr>
+  `).join("");
+  const summaryRows = sets.map((setResult: any, index: number) => {
+    const governing = setResult?.governing ?? {};
+    const setNumber = index + 1;
+    const allConverged = setResult?.converged === true && (setResult?.phases ?? []).every((phase: any) => phase?.converged !== false);
+    return `<tr><th scope="row">Set ${setNumber}</th><td>${formatNumber(governing.max_abs_moment_kNm_per_m ?? 0, 2)} kNm/m (${escapeHtml(governing.max_abs_moment_phase ?? "n/a")})</td><td>${formatNumber(governing.max_abs_shear_kN_per_m ?? 0, 2)} kN/m (${escapeHtml(governing.max_abs_shear_phase ?? "n/a")})</td><td>${escapeHtml(ec7SupportForceEnvelope(setResult))}</td><td>${allConverged ? "All phases converged" : "One or more phases did not converge"}</td></tr>`;
+  }).join("");
+  const phaseNames = [...new Set(sets.flatMap((setResult: any) => (setResult?.overdig ?? []).map((item: any) => item.phase)))];
+  const overdigRows = phaseNames.map((phaseName) => {
+    const first = sets[0]?.overdig?.find((item: any) => item.phase === phaseName);
+    const second = sets[1]?.overdig?.find((item: any) => item.phase === phaseName);
+    const side = first?.side ?? second?.side ?? "—";
+    const height = first?.height_m ?? second?.height_m;
+    return `<tr><td>${escapeHtml(phaseName)}</td><td>${escapeHtml(side)}</td><td>${height === undefined ? "—" : formatNumber(height, 2)}</td><td>${first ? formatNumber(first.overdig_m ?? 0, 3) : "—"}</td><td>${second ? formatNumber(second.overdig_m ?? 0, 3) : "—"}</td></tr>`;
+  }).join("");
+  const failureAlerts = sets.flatMap((setResult: any, index: number) =>
+    (setResult?.phases ?? []).filter((phase: any) => phase?.converged === false).map((phase: any) =>
+      `<div class="phase-alert" role="alert"><strong>EC7 set ${index + 1}: phase &ldquo;${escapeHtml(phase.name ?? "n/a")}&rdquo; has no equilibrium &mdash; ULS verification fails</strong></div>`
+    )
+  ).join("");
+  return `
+    <article class="result-card result-card-wide ec7-verification" aria-labelledby="ec7-verification-title">
+      <h3 id="ec7-verification-title">EC7 verification</h3>
+      <p>EC7-BE design approach 1 with sets 1 and 2. Moments, shear and support forces use the factor on effects; displacements remain unfactored.</p>
+      ${failureAlerts}
+      <h4>Partial factors used</h4>
+      <div class="table-shell"><table><thead><tr><th>Factor</th><th>Set 1</th><th>Set 2</th></tr></thead><tbody>${factorRows}</tbody></table></div>
+      <h4>Governing design effects and convergence</h4>
+      <div class="table-shell"><table><thead><tr><th>Set</th><th>Governing |M|</th><th>Governing |V|</th><th>Governing support forces</th><th>Convergence</th></tr></thead><tbody>${summaryRows}</tbody></table></div>
+      <h4>Overdig by phase</h4>
+      <div class="table-shell"><table><thead><tr><th>Phase</th><th>Side</th><th>H (m)</th><th>Δa Set 1 (m)</th><th>Δa Set 2 (m)</th></tr></thead><tbody>${overdigRows || `<tr><td colspan="5">No overdig rows returned.</td></tr>`}</tbody></table></div>
+    </article>`;
+}
+
+function buildResultViewToolbar(result: any, view: ResultDesignView) {
+  if (!result?.ec7_verification) return "";
+  return `<div class="result-view-toolbar"><label class="phase-control"><span>Results view</span><select class="phase-select" data-result-design-view aria-label="Results view"><option value="characteristic" ${view === "characteristic" ? "selected" : ""}>Characteristic (SLS)</option><option value="set1" ${view === "set1" ? "selected" : ""}>EC7 set 1</option><option value="set2" ${view === "set2" ? "selected" : ""}>EC7 set 2</option></select></label>${view === "characteristic" ? "" : `<p class="result-status">Moment and shear values are design values; displacements are unfactored.</p>`}</div>`;
+}
+
+export function buildResultHtml(result: any, phaseIndex: number, view: ResultDesignView = "characteristic") {
+  const phase = resultPhaseForView(result, phaseIndex, view);
+  const convergenceAlert = view === "characteristic" ? buildPhaseConvergenceAlert(result, phaseIndex) : "";
+  const wallLengthSearch = result.search_evaluation;
+  const plotData = buildPhasePlotData(result, phaseIndex, view);
+  const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
+  const steppedShear = buildSteppedShearSeries(result, phaseIndex, view === "characteristic" ? undefined : phase);
+
+  const cards = buildPhaseOverview(result, phaseIndex, view).map((card) => `
     <article class="result-card">
       <h3>${escapeHtml(card.title)}</h3>
       <p>${escapeHtml(card.text)}</p>
@@ -2328,9 +2675,9 @@ export function buildResultHtml(result: any, phaseIndex: number) {
     { title: "Water pressure · kPa", values: waterPressure, color: "water", label: "Water pressure plot", unit: "kPa", quantity: "water-pressure array" },
   ].map((plot) => `
     <article class="depth-plot-card">
-      <h3>${escapeHtml(plot.title)}</h3>
+      <h3>${escapeHtml(view !== "characteristic" && (plot.color === "moment" || plot.color === "shear") ? `${plot.color === "moment" ? "Moment" : "Shear"} design value · ${plot.color === "moment" ? "kNm/m" : "kN/m"}` : plot.title)}</h3>
       <p class="plot-source sr-only">${escapeHtml(plotSourceDescription(source, plot.quantity))}</p>
-      ${buildSvgPlot((plot as { levels?: number[] }).levels ?? levels, plot.values, plot.color, plot.label, plot.unit)}
+      ${buildSvgPlot((plot as { levels?: number[] }).levels ?? levels, plot.values, plot.color, view !== "characteristic" && (plot.color === "moment" || plot.color === "shear") ? `${plot.color === "moment" ? "Moment" : "Shear"} design value plot` : plot.label, plot.unit)}
     </article>
   `).join("");
   const rotationPlot = `
@@ -2342,6 +2689,7 @@ export function buildResultHtml(result: any, phaseIndex: number) {
   `;
 
   return `
+    ${buildResultViewToolbar(result, view)}
     ${convergenceAlert}
     <div class="depth-plot-grid" aria-label="Selected phase depth plots">
       ${plotCards}
@@ -2350,6 +2698,7 @@ export function buildResultHtml(result: any, phaseIndex: number) {
     <div class="result-grid">
       ${cards}
     </div>
+    ${buildEc7VerificationHtml(result)}
     ${wallLengthSearch ? `
     <article class="result-card result-card-wide">
       <h3>Wall-length search</h3>
@@ -2442,9 +2791,28 @@ export function buildResultHtml(result: any, phaseIndex: number) {
 
 export function buildResultDownloadText(project: ProjectInput, result: any) {
   const analyzedProject = resolveAnalyzedProject(project, result);
+  const downloadableResult = structuredClone(result);
+  if (downloadableResult?.ec7_verification) {
+    downloadableResult.ec7_verification.procedure = "EC7-BE design approach 1, sets 1 and 2.";
+    downloadableResult.assumptions = (downloadableResult.assumptions ?? []).filter((item: string) =>
+      !/^EC7 verification:|^The partial factors can be changed/.test(item)
+    );
+  }
   return formatJson({
     project: analyzedProject,
-    result,
+    result: downloadableResult,
+    ...(downloadableResult?.ec7_verification
+      ? {
+          ec7_verification_summary: buildEc7VerificationHtml(downloadableResult)
+            .replace(/<[^>]*>/g, " ")
+            .replaceAll("&ldquo;", "“")
+            .replaceAll("&rdquo;", "”")
+            .replaceAll("&mdash;", "—")
+            .replaceAll("&amp;", "&")
+            .replace(/\s+/g, " ")
+            .trim(),
+        }
+      : {}),
   });
 }
 
@@ -2488,7 +2856,7 @@ export function buildReportPreviewHtml(project: ProjectInput, result: any, phase
         <li>Wall governing level: ${formatNumber(wallCheck?.governing_level_m ?? 0, 2)} m</li>
         <li>Wall governing check: ${escapeHtml(wallCheck?.governing_check ?? "n/a")} · demand/capacity ${formatNumber(wallCheck?.governing_check === "shear" ? wallCheck?.shear_demand_kN_per_m ?? 0 : wallCheck?.bending_demand_kNm_per_m ?? 0, 2)} / ${formatNumber(wallCheck?.governing_check === "shear" ? wallCheck?.shear_capacity_kN_per_m ?? 0 : wallCheck?.bending_capacity_kNm_per_m ?? 0, 2)} ${wallCheck?.governing_check === "shear" ? "kN/m" : "kNm/m"}</li>
         <li>Governing support check: ${supportCheck ? `${escapeHtml(supportCheck.support_id)} · demand/capacity ${escapeHtml(formatSupportCheckDemandCapacity(supportCheck))} · utilization ${formatNumber(supportCheck.utilization_ratio ?? 0, 2)} · ${escapeHtml(supportCheck.governing_phase ?? phase.name)}` : "none"}</li>
-        <li>Warnings: ${escapeHtml((result.warnings || []).join(", ") || "none")}</li>
+        <li>Warnings: ${escapeHtml(readableWarnings(result.warnings).join(", ") || "none")}</li>
       </ul>
       <p class="report-note">Selected phase: ${escapeHtml(phase.name)}</p>
     </article>
@@ -2499,15 +2867,16 @@ export function buildReportHtml(
   project: ProjectInput,
   result: any,
   phaseIndex = 0,
-  generatedAt = new Date()
+  generatedAt = new Date(),
+  resultView: ResultDesignView = "characteristic"
 ) {
   const displayProject = resolveAnalyzedProject(project, result);
   const wallSection = buildWallSectionMetadata(displayProject);
-  const phase = result.phases[phaseIndex];
+  const phase = resultPhaseForView(result, phaseIndex, resultView);
   const summary = buildResultSummaryItems(result, phaseIndex);
   const supportItems = buildSupportReactionListItems(phase);
   const wallLengthSearch = result.search_evaluation;
-  const plotData = buildPhasePlotData(result, phaseIndex);
+  const plotData = buildPhasePlotData(result, phaseIndex, resultView);
   const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
   return [
     "<!DOCTYPE html>",
@@ -2530,6 +2899,9 @@ export function buildReportHtml(
     "    .figure-card p { margin: 0 0 10px; color: #596265; }",
     "    .figure-card svg { width: 100%; height: auto; display: block; }",
     "    .figure-card-wide { grid-column: 1 / -1; }",
+    "    .ec7-verification { border: 1px solid rgba(24, 32, 34, 0.16); border-radius: 12px; padding: 14px; break-inside: avoid; }",
+    "    .phase-alert { margin: 10px 0; padding: 10px 12px; border: 1px solid #b42318; border-left-width: 5px; border-radius: 8px; background: #fdecea; color: #5c1411; }",
+    "    .phase-alert strong { color: #8a1c14; }",
     "    table { width: 100%; border-collapse: collapse; margin-top: 10px; }",
     "    th, td { border-bottom: 1px solid rgba(24, 32, 34, 0.12); padding: 8px 6px; text-align: left; }",
     "    th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: #596265; }",
@@ -2546,6 +2918,7 @@ export function buildReportHtml(
     `  <ul>${summary.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`,
     "  <h2>Global Governing Envelope</h2>",
     `  <table><thead><tr><th>Quantity</th><th>Min</th><th>Max</th><th>Max |abs|</th><th>Min phase</th><th>Max phase</th><th>Abs phase</th></tr></thead><tbody>${buildGlobalGoverningRows(result)}</tbody></table>`,
+    result?.ec7_verification ? buildEc7VerificationHtml(result) : "",
     wallLengthSearch
       ? `  <h2>Wall-Length Search</h2>\n  <ul><li>Start toe: ${escapeHtml(formatNumber(wallLengthSearch.start_toe_level_m, 1))} m</li><li>Minimum toe: ${escapeHtml(formatNumber(wallLengthSearch.minimum_toe_level_m, 1))} m</li><li>Step: ${escapeHtml(formatNumber(wallLengthSearch.step_m, 2))} m</li><li>Target max head displacement: ${escapeHtml(formatNumber(wallLengthSearch.max_head_displacement_mm, 1))} mm</li><li>Selected toe: ${escapeHtml(formatNumber(wallLengthSearch.selected_toe_level_m, 1))} m</li><li>Achieved max head displacement: ${escapeHtml(formatNumber(wallLengthSearch.achieved_max_head_displacement_mm, 2))} mm</li><li>Stop reason: ${escapeHtml(wallLengthSearch.stop_reason)}</li></ul>`
       : "",
@@ -2606,11 +2979,11 @@ export function buildReportHtml(
     "  <h2>Sampled numerical output</h2>",
     `  <table><thead><tr><th>Level</th><th>Depth</th><th>Disp.</th><th>Rot.</th><th>Moment</th><th>Shear</th><th>Net p</th><th>Water p</th><th>Branch</th><th>Left</th><th>Right</th></tr></thead><tbody>${buildSampledResultRows(phase)}</tbody></table>`,
     "  <h2>Warnings</h2>",
-    `  <ul>${(result.warnings || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
+    `  <ul>${readableWarnings(result.warnings).map((item) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
     "  <h2>Assumptions</h2>",
-    `  <ul>${(result.assumptions || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
+    `  <ul>${(result.ec7_verification ? ["See the EC7 verification section for partial factors, design effects and overdig."] : result.assumptions || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
     "  <h2>Source refs</h2>",
-    `  <ul>${(result.source_refs || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
+    `  <ul>${(result.ec7_verification ? [] : result.source_refs || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
     "</body>",
     "</html>",
   ].join("\n");
@@ -2732,7 +3105,7 @@ export async function runAnalysis(
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify(project),
+      body: JSON.stringify(buildAnalysisPayload(project)),
     });
   } catch {
     throw new Error(unavailableServiceMessage(0));
@@ -2996,6 +3369,7 @@ function bootApp() {
   let currentResult: any = demoEnabled ? structuredClone(DEMO_RESULT ?? SAMPLE_RESULT) : null;
   let currentPreviewPhaseIndex = demoEnabled ? Math.min(2, currentProject.phases.length - 1) : 0;
   let currentResultPhaseIndex = 0;
+  let currentResultDesignView: ResultDesignView = "characteristic";
   let currentEditorTabId = "general";
   let currentContactState = readStoredContactState();
   let currentEditorFocus: EditorFocusState = {
@@ -3086,6 +3460,15 @@ function bootApp() {
         }
       });
     });
+    quickEditor.querySelector("[data-qe-ec7-reset]")?.addEventListener("click", () => {
+      currentProject = resetEc7PartialFactors(currentProject);
+      input.value = formatJson(currentProject);
+      currentEditorTabId = "general";
+      renderPreview();
+      if (currentResult) {
+        status.textContent = "EC7 partial factors reset to defaults. Rerun the analysis to refresh results.";
+      }
+    });
     quickEditor.querySelectorAll("input, select").forEach((field) => {
       field.addEventListener("change", () => {
         if (
@@ -3110,6 +3493,7 @@ function bootApp() {
           phase_name: (quickEditor.querySelector("[data-qe-phase-name]") as HTMLInputElement | null)?.value,
           wall_type: (quickEditor.querySelector("[data-qe-wall-type]") as HTMLSelectElement | null)?.value,
           design_mode: (quickEditor.querySelector("[data-qe-design-mode]") as HTMLSelectElement | null)?.value,
+          ec7_partial_factors: readEc7FactorInputs(quickEditor),
           toe_mode: (quickEditor.querySelector("[data-qe-toe-mode]") as HTMLSelectElement | null)?.value,
           top_level_m: Number((quickEditor.querySelector("[data-qe-top-level]") as HTMLInputElement | null)?.value),
           toe_level_m: Number((quickEditor.querySelector("[data-qe-toe-level]") as HTMLInputElement | null)?.value),
@@ -3142,7 +3526,10 @@ function bootApp() {
           groundwater_level_right_m: numberOrUndefined((quickEditor.querySelector("[data-qe-gw-right]") as HTMLInputElement | null)?.value),
           surcharge_left_kPa: numberOrUndefined((quickEditor.querySelector("[data-qe-sur-left]") as HTMLInputElement | null)?.value),
           surcharge_right_kPa: numberOrUndefined((quickEditor.querySelector("[data-qe-sur-right]") as HTMLInputElement | null)?.value),
+          surcharge_left_action: (quickEditor.querySelector("[data-qe-surcharge-left-action]") as HTMLSelectElement | null)?.value,
+          surcharge_right_action: (quickEditor.querySelector("[data-qe-surcharge-right-action]") as HTMLSelectElement | null)?.value,
           vertical_line_load_kN_per_m: numberOrUndefined((quickEditor.querySelector("[data-qe-vertical-load]") as HTMLInputElement | null)?.value),
+          vertical_line_load_action: (quickEditor.querySelector("[data-qe-vertical-line-load-action]") as HTMLSelectElement | null)?.value,
           include_vertical_line_second_order:
             ((quickEditor.querySelector("[data-qe-second-order]") as HTMLSelectElement | null)?.value === "true"),
           left_top_level_m: numberOrUndefined((quickEditor.querySelector("[data-qe-left-top]") as HTMLInputElement | null)?.value),
@@ -3221,6 +3608,7 @@ function bootApp() {
           support_capacity_kN_per_m: numberOrUndefined((quickEditor.querySelector("[data-qe-support-capacity]") as HTMLInputElement | null)?.value),
           support_force_kN_per_m: numberOrUndefined((quickEditor.querySelector("[data-qe-support-force]") as HTMLInputElement | null)?.value),
           support_moment_kNm_per_m: numberOrUndefined((quickEditor.querySelector("[data-qe-support-moment]") as HTMLInputElement | null)?.value),
+          support_action_type: (quickEditor.querySelector("[data-qe-support-action-type]") as HTMLSelectElement | null)?.value,
           anchor_inclination_degrees: numberOrUndefined((quickEditor.querySelector("[data-qe-anchor-inclination]") as HTMLInputElement | null)?.value),
         };
         const changedField = field.matches("[data-qe-top-level]")
@@ -3272,11 +3660,18 @@ function bootApp() {
       contactShell.innerHTML = "";
       return;
     }
-    resultShell.innerHTML = buildResultHtml(currentResult, currentResultPhaseIndex);
+    resultShell.innerHTML = buildResultHtml(currentResult, currentResultPhaseIndex, currentResultDesignView);
+    const resultViewToolbar = resultShell.querySelector(".result-view-toolbar");
     const plotGrid = resultShell.querySelector(".depth-plot-grid");
-    resultPlots.innerHTML = plotGrid?.outerHTML ?? "";
+    resultPlots.innerHTML = `${resultViewToolbar?.outerHTML ?? ""}${plotGrid?.outerHTML ?? ""}`;
+    resultViewToolbar?.remove();
     plotGrid?.remove();
     emptyPlots.hidden = Boolean(plotGrid);
+    resultPlots.querySelector<HTMLSelectElement>("[data-result-design-view]")?.addEventListener("change", (event) => {
+      const selected = (event.currentTarget as HTMLSelectElement).value;
+      currentResultDesignView = selected === "set1" || selected === "set2" ? selected : "characteristic";
+      renderResults();
+    });
     reportShell.innerHTML = buildReportPreviewHtml(currentProject, currentResult, currentResultPhaseIndex);
     renderContactPanel(contactShell, currentContactState, currentResult, currentResultPhaseIndex, (nextState) => {
       currentContactState = nextState;
@@ -3323,6 +3718,7 @@ function bootApp() {
       status.classList.remove("status-error");
       currentProject = JSON.parse(input.value);
       currentResult = await runAnalysis(currentProject, fetch, apiBaseUrl);
+      currentResultDesignView = "characteristic";
       currentPreviewPhaseIndex = governingPhaseIndex(currentResult, currentProject.phases.length);
       currentResultPhaseIndex = resultPhaseIndexForProject(currentProject, currentResult, currentPreviewPhaseIndex);
       renderPreview();
@@ -3361,7 +3757,7 @@ function bootApp() {
     const analyzedProject = resolveAnalyzedProject(currentProject, currentResult);
     triggerDownload(
       buildReportFilename(analyzedProject),
-      buildReportHtml(currentProject, currentResult, currentResultPhaseIndex),
+      buildReportHtml(currentProject, currentResult, currentResultPhaseIndex, new Date(), currentResultDesignView),
       "text/html;charset=utf-8"
     );
   });
@@ -3370,7 +3766,7 @@ function bootApp() {
     if (!currentResult) {
       return;
     }
-    const reportHtml = buildReportHtml(currentProject, currentResult, currentResultPhaseIndex);
+    const reportHtml = buildReportHtml(currentProject, currentResult, currentResultPhaseIndex, new Date(), currentResultDesignView);
     const printWindow = window.open("", "_blank", "noopener,noreferrer");
     if (!printWindow) {
       status.textContent = "Unable to open a print window.";
