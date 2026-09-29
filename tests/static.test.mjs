@@ -50,7 +50,9 @@ test("frontend is configured for retaining domain and API", async () => {
   assert.equal(cname.trim(), "retaining.easuys.com");
   assert.match(html, /EA Suys Retaining Tools/);
   assert.match(html, /name="robots" content="noindex,nofollow"/);
-  assert.match(html, /Engineering preview — benchmark validation pending/);
+  assert.match(html, /<strong>Engineering preview\.<\/strong>/);
+  assert.match(html, /not a design release/);
+  assert.doesNotMatch(html, /commercial|validation pending|still pending/i);
   assert.match(html, /href="https:\/\/www\.easuys\.be\/"/);
   assert.match(html, /href="https:\/\/structural\.easuys\.com\/"/);
   assert.match(html, /data-project-input/);
