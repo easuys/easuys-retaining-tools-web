@@ -357,6 +357,43 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
 
 .ec7-factor-block .quick-editor-actions { justify-self: start; }
 
+.culmann-phase-block {
+  display: grid;
+  min-width: 0;
+  grid-column: 1 / -1;
+  gap: 9px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.culmann-phase-block h3,
+.culmann-side-editor h4,
+.culmann-side-editor h5,
+.culmann-strip-heading h5 { margin: 0; }
+
+.culmann-sides-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+.culmann-side-editor {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.culmann-table { min-width: 375px; }
+.culmann-table input { width: 88px; min-height: 30px; padding: 4px 6px; }
+.culmann-table button { min-height: 28px; padding: 4px 6px; }
+.culmann-table-shell { border: 1px solid var(--line); border-radius: 7px; }
+.culmann-strip-card { display: grid; min-width: 0; gap: 7px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: #fffefa; }
+.culmann-strip-heading { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 6px; }
+.culmann-empty-strip { margin: 0; color: #8a3c30; }
+.culmann-side-editor > .quick-editor-actions select { min-width: 0; max-width: 100%; padding: 5px; font-size: 11px; }
+.earth-pressure-result { border-left: 4px solid var(--accent); }
+
 .project-input {
   display: block;
   width: 100%;
@@ -748,6 +785,9 @@ th { background: #f0eee7; font-weight: 700; }
   .canvas-toolbar { padding: 8px; }
   .canvas-section-heading { align-items: start; }
   .depth-plot-grid { grid-template-columns: minmax(0, 1fr); }
+  .culmann-sides-grid { grid-template-columns: minmax(0, 1fr); }
+  .culmann-side-editor { padding: 7px; }
+  .culmann-strip-heading { align-items: start; flex-direction: column; }
   .depth-plot-card h3 { min-height: 0; }
   .result-toolbar { align-items: start; flex-direction: column; }
   .export-actions { justify-content: start; }
