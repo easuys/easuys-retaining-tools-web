@@ -25,6 +25,7 @@ export const CONTACT_ENDPOINT = "/lead/study-request";
 export const TURNSTILE_SITE_KEY = "0x4AAAAAADYeVJCZgqihubKs";
 export const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const APP_STATE_STORAGE_KEY = "ea-suys-retaining-contact";
+const PROJECT_STORAGE_KEY = "ea-suys-retaining-project";
 export const STEEL_SHEET_PILE_LIBRARY = {
     AZ_18: {
         label: "AZ 18",
@@ -711,8 +712,157 @@ function ec7FactorBlock(project) {
       <p class="quick-editor-note">Default values for EC7-BE (design approach 1). Every factor can be changed; the engineer remains responsible for the partial factors.</p>
     </section>`;
 }
+function soilTopLevel(project, phase, side) {
+    const surface = phase[`surface_level_${side}_m`] ?? project.wall_geometry.top_level_m;
+    const excavation = phase[`excavation_level_${side}_m`];
+    return Math.min(surface, excavation);
+}
+export function normalizeCulmannProfiles(project) {
+    const normalized = structuredClone(project);
+    for (const phase of normalized.phases) {
+        for (const side of ["left", "right"]) {
+            const profileKey = `surface_profile_${side}_m`;
+            const profile = phase[profileKey];
+            if (Array.isArray(profile) && profile.length) {
+                profile[0] = [0, soilTopLevel(normalized, phase, side)];
+            }
+        }
+    }
+    return normalized;
+}
+export function validateEarthPressureInput(project) {
+    if ((project.earth_pressure_method ?? "coulomb") !== "culmann")
+        return [];
+    const errors = [];
+    project.phases.forEach((phase, phaseIndex) => {
+        for (const side of ["left", "right"]) {
+            const profile = phase[`surface_profile_${side}_m`];
+            if (profile?.length) {
+                let previousDistance = -Infinity;
+                profile.forEach((point, pointIndex) => {
+                    const distance = point?.[0];
+                    const level = point?.[1];
+                    if (typeof distance !== "number" || !Number.isFinite(distance) || typeof level !== "number" || !Number.isFinite(level)) {
+                        errors.push(`Phase ${phaseIndex + 1} ${side} surface profile row ${pointIndex + 1} needs a distance and level.`);
+                    }
+                    else {
+                        if (pointIndex === 0 && Math.abs(distance) > 1e-9) {
+                            errors.push(`Phase ${phaseIndex + 1} ${side} surface profile must start at distance 0 m.`);
+                        }
+                        if (distance <= previousDistance) {
+                            errors.push(`Phase ${phaseIndex + 1} ${side} surface profile distances must be strictly increasing.`);
+                        }
+                        previousDistance = distance;
+                    }
+                });
+            }
+            const strips = phase[`strip_surcharges_${side}`] ?? [];
+            if (strips.length > 10) {
+                errors.push(`Phase ${phaseIndex + 1} ${side} supports at most 10 strip surcharges.`);
+            }
+            strips.forEach((strip, stripIndex) => {
+                if (!Array.isArray(strip.points) || strip.points.length === 0) {
+                    errors.push(`Phase ${phaseIndex + 1} ${side} strip ${stripIndex + 1} is empty; add at least one distance and load point.`);
+                    return;
+                }
+                let previousDistance = -Infinity;
+                strip.points.forEach((point, pointIndex) => {
+                    const distance = point?.[0];
+                    const load = point?.[1];
+                    if (typeof distance !== "number" || !Number.isFinite(distance) || typeof load !== "number" || !Number.isFinite(load)) {
+                        errors.push(`Phase ${phaseIndex + 1} ${side} strip ${stripIndex + 1} row ${pointIndex + 1} needs a distance and load.`);
+                    }
+                    else {
+                        if (distance < previousDistance) {
+                            errors.push(`Phase ${phaseIndex + 1} ${side} strip ${stripIndex + 1} distances must not decrease.`);
+                        }
+                        previousDistance = distance;
+                    }
+                });
+            });
+        }
+    });
+    return errors;
+}
+export function applyCulmannStructureAction(project, phaseIndex, action, side, stripIndex = 0, rowIndex = 0) {
+    const nextProject = normalizeCulmannProfiles(project);
+    const phase = nextProject.phases[phaseIndex];
+    if (!phase)
+        return nextProject;
+    const profileKey = `surface_profile_${side}_m`;
+    const stripKey = `strip_surcharges_${side}`;
+    if (action.startsWith("profile_")) {
+        const profile = phase[profileKey] ?? [[0, soilTopLevel(nextProject, phase, side)]];
+        if (action === "profile_add" && profile.length < 50) {
+            const last = profile[profile.length - 1] ?? [0, soilTopLevel(nextProject, phase, side)];
+            profile.push([typeof last[0] === "number" ? last[0] + 5 : 5, last[1]]);
+        }
+        else if (action === "profile_remove" && rowIndex > 0) {
+            profile.splice(rowIndex, 1);
+        }
+        phase[profileKey] = profile;
+        return nextProject;
+    }
+    const strips = phase[stripKey] ?? [];
+    if (action === "strip_add" && strips.length < 10) {
+        strips.push({ points: [] });
+    }
+    else if (action === "strip_remove") {
+        strips.splice(stripIndex, 1);
+    }
+    else if (strips[stripIndex]) {
+        if (action === "strip_point_add" && strips[stripIndex].points.length < 50) {
+            strips[stripIndex].points.push([null, null]);
+        }
+        else if (action === "strip_point_remove") {
+            strips[stripIndex].points.splice(rowIndex, 1);
+        }
+    }
+    phase[stripKey] = strips;
+    return nextProject;
+}
 export function buildAnalysisPayload(project) {
-    const payload = structuredClone(project);
+    const payload = normalizeCulmannProfiles(project);
+    if ((payload.earth_pressure_method ?? "coulomb") === "culmann") {
+        payload.earth_pressure_method = "culmann";
+        if (payload.wall_friction_cap === "phi_over_3" || !payload.wall_friction_cap) {
+            delete payload.wall_friction_cap;
+        }
+        payload.phases = payload.phases.map((phase) => {
+            const nextPhase = { ...phase };
+            if (payload.design_mode === "ec7") {
+                nextPhase.strip_surcharges_left = nextPhase.strip_surcharges_left?.map((strip) => ({
+                    ...strip,
+                    action: strip.action ?? "variable_unfavourable",
+                }));
+                nextPhase.strip_surcharges_right = nextPhase.strip_surcharges_right?.map((strip) => ({
+                    ...strip,
+                    action: strip.action ?? "variable_unfavourable",
+                }));
+            }
+            else {
+                nextPhase.strip_surcharges_left = nextPhase.strip_surcharges_left?.map(({ action: _action, ...strip }) => strip);
+                nextPhase.strip_surcharges_right = nextPhase.strip_surcharges_right?.map(({ action: _action, ...strip }) => strip);
+            }
+            return nextPhase;
+        });
+    }
+    else {
+        delete payload.earth_pressure_method;
+        if (payload.wall_friction_cap === "phi_over_3" || !payload.wall_friction_cap) {
+            delete payload.wall_friction_cap;
+        }
+        payload.phases = payload.phases.map((phase) => {
+            const nextPhase = { ...phase };
+            delete nextPhase.surface_profile_left_m;
+            delete nextPhase.surface_profile_right_m;
+            delete nextPhase.strip_surcharges_left;
+            delete nextPhase.strip_surcharges_right;
+            return nextPhase;
+        });
+    }
+    if (payload.wall_friction_cap === "phi_over_3")
+        delete payload.wall_friction_cap;
     if (payload.design_mode !== "ec7") {
         delete payload.ec7_partial_factors;
         payload.phases = payload.phases.map((phase) => {
@@ -774,6 +924,23 @@ function isDisplayProjectCandidate(value) {
         value.soil_profiles?.right &&
         Array.isArray(value.soil_profiles.right.layers) &&
         Array.isArray(value.supports));
+}
+export function readStoredProject(storage) {
+    try {
+        const value = JSON.parse((storage ?? globalThis.localStorage).getItem(PROJECT_STORAGE_KEY) || "null");
+        return isDisplayProjectCandidate(value) ? normalizeCulmannProfiles(value) : null;
+    }
+    catch {
+        return null;
+    }
+}
+export function persistStoredProject(project, storage) {
+    try {
+        (storage ?? globalThis.localStorage).setItem(PROJECT_STORAGE_KEY, JSON.stringify(project));
+    }
+    catch {
+        // The editor remains usable when browser storage is unavailable.
+    }
 }
 export function resolveAnalyzedProject(project, result) {
     return isDisplayProjectCandidate(result?.normalized_input)
@@ -1122,13 +1289,26 @@ function activePhaseForProject(project, phaseIndex) {
     return project.phases[Math.max(0, Math.min(project.phases.length - 1, phaseIndex))];
 }
 export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
+    project = normalizeCulmannProfiles(project);
     const phase = activePhaseForProject(project, phaseIndex);
+    const showCulmannGeometry = (project.earth_pressure_method ?? "coulomb") === "culmann";
     const wallTop = project.wall_geometry.top_level_m;
     const wallToe = project.wall_geometry.toe_level_m;
     const leftSurfaceLevel = phase.surface_level_left_m ?? wallTop;
     const rightSurfaceLevel = phase.surface_level_right_m ?? wallTop;
+    const leftSoilTop = soilTopLevel(project, phase, "left");
+    const rightSoilTop = soilTopLevel(project, phase, "right");
+    const leftSurfaceProfile = phase.surface_profile_left_m?.length
+        ? phase.surface_profile_left_m
+        : [[0, leftSoilTop]];
+    const rightSurfaceProfile = phase.surface_profile_right_m?.length
+        ? phase.surface_profile_right_m
+        : [[0, rightSoilTop]];
+    const culmannProfileLevels = showCulmannGeometry
+        ? [...leftSurfaceProfile, ...rightSurfaceProfile].map((point) => point[1]).filter((level) => typeof level === "number" && Number.isFinite(level))
+        : [];
     const minLevel = Math.min(wallToe, ...project.soil_profiles.left.layers.map((layer) => layer.bottom_level_m), ...project.soil_profiles.right.layers.map((layer) => layer.bottom_level_m));
-    const maxLevel = Math.max(wallTop, leftSurfaceLevel, rightSurfaceLevel);
+    const maxLevel = Math.max(wallTop, leftSurfaceLevel, rightSurfaceLevel, ...culmannProfileLevels);
     const width = 640;
     const height = 1040;
     const topPad = 36;
@@ -1267,6 +1447,69 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
     const surchargeArrow = (x, y, value, anchor) => value > 0
         ? `<line x1="${x}" y1="${(y - 35).toFixed(1)}" x2="${x}" y2="${(y - 8).toFixed(1)}" stroke="#9b2226" stroke-width="3"></line><polygon points="${x - 6},${(y - 12).toFixed(1)} ${x + 6},${(y - 12).toFixed(1)} ${x},${(y - 2).toFixed(1)}" fill="#9b2226"></polygon><text x="${x + (anchor === "start" ? 9 : -9)}" y="${(y - 21).toFixed(1)}" text-anchor="${anchor}" font-size="17" font-weight="700" fill="#7c2020">${formatNumber(value, 1)} kPa</text>`
         : "";
+    const surfaceExtent = Math.max(wallX - leftSoilX, rightSoilX - wallX);
+    const xAtDistance = (side, distance, level) => {
+        const offset = Math.min(15, Math.max(0, distance)) * surfaceExtent / 15;
+        return wallAxisX(level) + (side === "left" ? -offset : offset);
+    };
+    const surfaceLevelAtDistance = (profile, distance) => {
+        const points = profile.filter((point) => typeof point?.[0] === "number" && typeof point?.[1] === "number");
+        if (!points.length)
+            return 0;
+        if (distance <= points[0][0])
+            return points[0][1];
+        for (let index = 1; index < points.length; index += 1) {
+            const previous = points[index - 1];
+            const next = points[index];
+            if (distance <= next[0]) {
+                const ratio = (distance - previous[0]) / Math.max(1e-9, next[0] - previous[0]);
+                return previous[1] + ratio * (next[1] - previous[1]);
+            }
+        }
+        return points[points.length - 1][1];
+    };
+    const surfacePolyline = (side, profile) => {
+        const points = profile.filter((point) => typeof point?.[0] === "number" && typeof point?.[1] === "number");
+        if (!points.length)
+            return "";
+        const mapped = points.map(([distance, level]) => `${xAtDistance(side, distance, level).toFixed(1)},${scaleY(level).toFixed(1)}`);
+        const finalLevel = points[points.length - 1][1];
+        const outsideX = side === "left" ? leftSoilX : rightSoilX;
+        mapped.push(`${outsideX.toFixed(1)},${scaleY(finalLevel).toFixed(1)}`);
+        return `<polyline class="culmann-surface-profile" data-surface-profile="${side}" points="${mapped.join(" ")}" fill="none" stroke="#7d5a36" stroke-width="3"></polyline>`;
+    };
+    const stripLoadBlocks = (side, profile) => {
+        const strips = phase[`strip_surcharges_${side}`] ?? [];
+        return strips.map((strip, stripIndex) => {
+            const points = strip.points.filter((point) => typeof point?.[0] === "number" && typeof point?.[1] === "number");
+            if (!points.length)
+                return "";
+            const pairs = points.length === 1
+                ? [[points[0][0], points[0][0], points[0][1]]]
+                : points.slice(1).map((point, index) => [points[index][0], point[0], (points[index][1] + point[1]) / 2]);
+            const blocks = pairs.map(([start, end, load], pairIndex) => {
+                const startX = xAtDistance(side, start, surfaceLevelAtDistance(profile, start));
+                const endX = xAtDistance(side, end, surfaceLevelAtDistance(profile, end));
+                const midDistance = (start + end) / 2;
+                const groundY = scaleY(surfaceLevelAtDistance(profile, midDistance));
+                const blockHeight = Math.max(7, Math.min(28, Math.abs(load) * 0.25));
+                const blockWidth = Math.max(6, Math.abs(endX - startX));
+                const blockX = (startX + endX) / 2 - blockWidth / 2;
+                return `<rect class="strip-load-block" data-strip-load-block="${side}-${stripIndex + 1}-${pairIndex + 1}" x="${blockX.toFixed(1)}" y="${(groundY - blockHeight).toFixed(1)}" width="${blockWidth.toFixed(1)}" height="${blockHeight.toFixed(1)}" rx="2" fill="#bd4a38" fill-opacity="0.84" stroke="#8c2f25"></rect>`;
+            }).join("");
+            const midDistance = (points[0][0] + points[points.length - 1][0]) / 2;
+            const midX = xAtDistance(side, midDistance, surfaceLevelAtDistance(profile, midDistance));
+            const labelY = scaleY(surfaceLevelAtDistance(profile, midDistance)) - 32;
+            const maxLoad = Math.max(...points.map((point) => point[1]));
+            return `${blocks}<text class="strip-load-label" x="${midX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="#7c2020">${formatNumber(maxLoad, 1)} kPa</text>`;
+        }).join("");
+    };
+    const culmannSurfaces = showCulmannGeometry
+        ? `${surfacePolyline("left", leftSurfaceProfile)}${surfacePolyline("right", rightSurfaceProfile)}`
+        : "";
+    const culmannStrips = showCulmannGeometry
+        ? `${stripLoadBlocks("left", leftSurfaceProfile)}${stripLoadBlocks("right", rightSurfaceProfile)}`
+        : "";
     const legend = [
         `Phase ${phaseIndex + 1}: ${phase.name}`,
         `Left excavation ${formatNumber(phase.excavation_level_left_m, 1)} m`,
@@ -1287,8 +1530,8 @@ export function buildGeometryPreviewSvg(project, phaseIndex = 0) {
         <rect x="${leftSoilX}" y="0" width="${soilWidth}" height="${leftExcavationY.toFixed(1)}" fill="#fdfbf6"></rect>
         <rect x="${(rightSoilX - soilWidth).toFixed(1)}" y="0" width="${soilWidth}" height="${rightExcavationY.toFixed(1)}" fill="#fdfbf6"></rect>
         ${levelTicks}
-        <line x1="${leftSoilX}" y1="${leftSurfaceY.toFixed(1)}" x2="${wallAxisX(leftSurfaceLevel).toFixed(1)}" y2="${leftSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="5 5"></line>
-        <line x1="${wallAxisX(rightSurfaceLevel).toFixed(1)}" y1="${rightSurfaceY.toFixed(1)}" x2="${rightSoilX}" y2="${rightSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="5 5"></line>
+        ${showCulmannGeometry ? culmannSurfaces : `<line x1="${leftSoilX}" y1="${leftSurfaceY.toFixed(1)}" x2="${wallAxisX(leftSurfaceLevel).toFixed(1)}" y2="${leftSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="5 5"></line><line x1="${wallAxisX(rightSurfaceLevel).toFixed(1)}" y1="${rightSurfaceY.toFixed(1)}" x2="${rightSoilX}" y2="${rightSurfaceY.toFixed(1)}" stroke="#7d5a36" stroke-width="2" stroke-dasharray="5 5"></line>`}
+        ${culmannStrips}
         <line x1="${leftSoilX}" y1="${leftWaterY.toFixed(1)}" x2="${(wallAxisX(phase.groundwater_level_left_m) - 10).toFixed(1)}" y2="${leftWaterY.toFixed(1)}" stroke="#2f8fda" stroke-width="2.5" stroke-dasharray="8 7"></line>
         <line x1="${(wallAxisX(phase.groundwater_level_right_m) + 10).toFixed(1)}" y1="${rightWaterY.toFixed(1)}" x2="${rightSoilX}" y2="${rightWaterY.toFixed(1)}" stroke="#2f8fda" stroke-width="2.5" stroke-dasharray="8 7"></line>
         <text x="${wallAxisX(phase.groundwater_level_left_m) - 16}" y="${(leftWaterY - 6).toFixed(1)}" font-size="22" fill="#146aa8">▽</text>
@@ -1316,9 +1559,13 @@ function buildTabbedQuickEditorHtml(flatMarkup) {
         { id: "json", label: "JSON" },
     ];
     const grouped = new Map(tabDefinitions.map((tab) => [tab.id, []]));
-    const ec7Block = flatMarkup.match(/<section class="ec7-factor-block"[\s\S]*?<\/section>/)?.[0];
-    const markupWithoutEc7Block = ec7Block ? flatMarkup.replace(ec7Block, "") : flatMarkup;
-    const items = markupWithoutEc7Block.match(/<label class="quick-editor-field">[\s\S]*?<\/label>|<div class="quick-editor-actions">[\s\S]*?<\/div>|<p class="quick-editor-note">[\s\S]*?<\/p>/g) ?? [];
+    const culmannBlock = flatMarkup.match(/<section class="culmann-phase-block"[\s\S]*?<\/section>/)?.[0];
+    const markupWithoutCulmannBlock = culmannBlock ? flatMarkup.replace(culmannBlock, "") : flatMarkup;
+    const ec7Block = markupWithoutCulmannBlock.match(/<section class="ec7-factor-block"[\s\S]*?<\/section>/)?.[0];
+    const markupWithoutSpecialBlocks = ec7Block
+        ? markupWithoutCulmannBlock.replace(ec7Block, "")
+        : markupWithoutCulmannBlock;
+    const items = markupWithoutSpecialBlocks.match(/<label class="quick-editor-field">[\s\S]*?<\/label>|<div class="quick-editor-actions">[\s\S]*?<\/div>|<p class="quick-editor-note"[^>]*>[\s\S]*?<\/p>/g) ?? [];
     for (const item of items) {
         let group = "general";
         if (/data-qe-support-(?:index|id|type|side|depth|active|inclination|stiffness|prestress|capacity|force|moment|action-type)|anchor-inclination|support_(?:add|remove)/.test(item)) {
@@ -1327,7 +1574,7 @@ function buildTabbedQuickEditorHtml(flatMarkup) {
         else if (/data-qe-(?:left-|right-)|left_layer_|right_layer_/.test(item)) {
             group = "soils";
         }
-        else if (/data-qe-phase-name|phase_(?:duplicate|remove)|data-qe-(?:surface|exc-|gw-|sur-|vertical-load|vertical-line-load-action|second-order|surcharge-.*-action)/.test(item)) {
+        else if (/data-qe-phase-name|phase_(?:duplicate|remove)|data-qe-(?:surface|exc-|gw-|sur-|vertical-load|vertical-line-load-action|second-order|surcharge-.*-action|culmann-ignored)/.test(item)) {
             group = "phases";
         }
         else if (/data-qe-(?:segment|library|section-name|wpl|av|fy|gamma-m0)|segment_(?:split|remove)/.test(item)) {
@@ -1335,6 +1582,8 @@ function buildTabbedQuickEditorHtml(flatMarkup) {
         }
         grouped.get(group)?.push(item);
     }
+    if (culmannBlock)
+        grouped.get("phases")?.push(culmannBlock);
     if (ec7Block)
         grouped.get("general")?.push(ec7Block);
     const tabButtons = tabDefinitions.map((tab, index) => `
@@ -1349,6 +1598,26 @@ function buildTabbedQuickEditorHtml(flatMarkup) {
   `).join("");
     return `<div class="editor-tabs" role="tablist" aria-label="Project input sections">${tabButtons}</div><div class="editor-tab-panels">${tabPanels}</div>`;
 }
+function culmannSideEditorHtml(project, phase, side) {
+    const profile = phase[`surface_profile_${side}_m`]?.length
+        ? phase[`surface_profile_${side}_m`]
+        : [[0, soilTopLevel(project, phase, side)]];
+    const strips = phase[`strip_surcharges_${side}`] ?? [];
+    const profileRows = profile.map((point, rowIndex) => {
+        const firstPoint = rowIndex === 0;
+        const distance = firstPoint ? 0 : point?.[0];
+        const level = firstPoint ? soilTopLevel(project, phase, side) : point?.[1];
+        return `<tr><th scope="row">${rowIndex + 1}</th><td><input type="number" step="any" aria-label="${side} surface distance ${rowIndex + 1}" data-cm-profile-distance data-side="${side}" data-row="${rowIndex}" value="${escapeHtml(distance ?? "")}" ${firstPoint ? "readonly" : ""}></td><td><input type="number" step="any" aria-label="${side} surface level ${rowIndex + 1}" data-cm-profile-level data-side="${side}" data-row="${rowIndex}" value="${escapeHtml(level ?? "")}" ${firstPoint ? "readonly" : ""}></td><td><button type="button" class="secondary-button" data-qe-culmann-action="profile_remove" data-side="${side}" data-row="${rowIndex}" ${firstPoint ? "disabled" : ""} aria-label="Remove ${side} surface point ${rowIndex + 1}">Remove</button></td></tr>`;
+    }).join("");
+    const stripCards = strips.map((strip, stripIndex) => {
+        const pointRows = strip.points.map((point, rowIndex) => `<tr><th scope="row">${rowIndex + 1}</th><td><input type="number" step="any" min="0" aria-label="${side} strip ${stripIndex + 1} distance ${rowIndex + 1}" data-cm-strip-distance data-side="${side}" data-strip="${stripIndex}" data-row="${rowIndex}" value="${escapeHtml(point?.[0] ?? "")}"></td><td><input type="number" step="any" min="0" max="1000" aria-label="${side} strip ${stripIndex + 1} load ${rowIndex + 1}" data-cm-strip-load data-side="${side}" data-strip="${stripIndex}" data-row="${rowIndex}" value="${escapeHtml(point?.[1] ?? "")}"></td><td><button type="button" class="secondary-button" data-qe-culmann-action="strip_point_remove" data-side="${side}" data-strip="${stripIndex}" data-row="${rowIndex}" aria-label="Remove ${side} strip ${stripIndex + 1} point ${rowIndex + 1}">Remove</button></td></tr>`).join("");
+        return `<article class="culmann-strip-card"><div class="culmann-strip-heading"><h5>${side === "left" ? "Left" : "Right"} strip ${stripIndex + 1}</h5><button type="button" class="secondary-button" data-qe-culmann-action="strip_remove" data-side="${side}" data-strip="${stripIndex}">Remove strip</button></div>${pointRows ? `<div class="table-shell culmann-table-shell"><table class="culmann-table"><thead><tr><th>Point</th><th>Distance (m)</th><th>Load (kPa)</th><th></th></tr></thead><tbody>${pointRows}</tbody></table></div>` : `<p class="quick-editor-note culmann-empty-strip">This strip has no points yet. Add a point before analysis.</p>`}<div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-culmann-action="strip_point_add" data-side="${side}" data-strip="${stripIndex}" ${strip.points.length >= 50 ? "disabled" : ""}>Add strip point</button>${project.design_mode === "ec7" ? ec7ActionTypeSelect(`data-cm-strip-action data-side="${side}" data-strip="${stripIndex}"`, strip.action) : ""}</div></article>`;
+    }).join("");
+    return `<div class="culmann-side-editor"><h4>${side === "left" ? "Left" : "Right"}</h4><h5>Surface profile</h5><p class="quick-editor-note">The first row stays at distance 0 m and follows this phase's soil top.</p><div class="table-shell culmann-table-shell"><table class="culmann-table"><thead><tr><th>Point</th><th>Distance (m)</th><th>Level (m)</th><th></th></tr></thead><tbody>${profileRows}</tbody></table></div><div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-culmann-action="profile_add" data-side="${side}" ${profile.length >= 50 ? "disabled" : ""}>Add surface point</button></div><h5>Strip surcharges</h5>${stripCards}<div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-culmann-action="strip_add" data-side="${side}" ${strips.length >= 10 ? "disabled" : ""}>Add strip surcharge</button></div></div>`;
+}
+function culmannPhaseEditorHtml(project, phase) {
+    return `<section class="culmann-phase-block"><h3>Culmann ground and strip loads</h3><div class="culmann-sides-grid">${culmannSideEditorHtml(project, phase, "left")}${culmannSideEditorHtml(project, phase, "right")}</div></section>`;
+}
 export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
     const phase = activePhaseForProject(project, phaseIndex);
     const focusState = normalizeEditorFocus(project, focus);
@@ -1359,6 +1628,9 @@ export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
     const leftLayer = project.soil_profiles.left.layers[focusState.leftLayerIndex];
     const rightLayer = project.soil_profiles.right.layers[focusState.rightLayerIndex];
     const selectedSegment = project.wall_geometry.segments[focusState.segmentIndex];
+    const culmannInputs = (project.earth_pressure_method ?? "coulomb") === "culmann"
+        ? culmannPhaseEditorHtml(project, phase)
+        : `<p class="quick-editor-note" data-qe-culmann-ignored>Surface profiles and strip surcharges are kept in this project but ignored while Coulomb is selected.</p>`;
     const section = selectedSegment?.steel_section || {};
     const libraryOptions = Object.entries(STEEL_SHEET_PILE_LIBRARY).map(([id, item]) => `
     <option value="${escapeHtml(id)}" ${section.library_section_id === id ? "selected" : ""}>${escapeHtml(item.label)}</option>
@@ -1409,6 +1681,9 @@ export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-structure-action="phase_duplicate">Duplicate phase</button><button type="button" class="secondary-button" data-qe-structure-action="phase_remove">Remove phase</button></div>
       <label class="quick-editor-field"><span>Wall type</span><select data-qe-wall-type><option value="steel_sheet_pile" ${project.wall_type === "steel_sheet_pile" ? "selected" : ""}>Steel sheet pile</option><option value="diaphragm_wall" ${project.wall_type === "diaphragm_wall" ? "selected" : ""}>Diaphragm wall</option></select></label>
       <label class="quick-editor-field"><span>Design mode</span><select data-qe-design-mode><option value="classic" ${project.design_mode === "classic" ? "selected" : ""}>Classic</option><option value="ec7" ${project.design_mode === "ec7" ? "selected" : ""}>EC7-BE (design approach 1)</option></select></label>
+      <label class="quick-editor-field"><span>Earth pressure</span><select data-qe-earth-pressure-method><option value="coulomb" ${(project.earth_pressure_method ?? "coulomb") === "coulomb" ? "selected" : ""}>Coulomb, horizontal surface (default)</option><option value="culmann" ${project.earth_pressure_method === "culmann" ? "selected" : ""}>Culmann, sloping surface and strip loads</option></select></label>
+      <label class="quick-editor-field"><span>Wall friction limit</span><select data-qe-wall-friction-cap><option value="phi_over_3" ${(project.wall_friction_cap ?? "phi_over_3") === "phi_over_3" ? "selected" : ""}>δ ≤ φ/3 (default)</option><option value="cur166" ${project.wall_friction_cap === "cur166" ? "selected" : ""}>CUR 166 (passive side)</option><option value="none" ${project.wall_friction_cap === "none" ? "selected" : ""}>Input δ</option></select></label>
+      <p class="quick-editor-note">Default: conservative horizontal-surface method; Culmann follows CUR 166 4.5 with straight slip planes.</p>
       <label class="quick-editor-field"><span>Toe control</span><select data-qe-toe-mode><option value="fixed" ${toeControlMode === "fixed" ? "selected" : ""}>Fixed toe</option><option value="search" ${toeControlMode === "search" ? "selected" : ""}>Search length</option></select></label>
       <label class="quick-editor-field"><span>Top level</span><input data-qe-top-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.top_level_m)}"></label>
       <label class="quick-editor-field"><span>Toe level</span><input data-qe-toe-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.toe_level_m)}"></label>
@@ -1441,6 +1716,7 @@ export function buildQuickEditorHtml(project, phaseIndex = 0, focus = {}) {
       <label class="quick-editor-field"><span>Phase vertical load</span><input data-qe-vertical-load type="number" step="1" value="${escapeHtml(project.phases[phaseIndex]?.vertical_line_load_kN_per_m ?? 0)}"></label>
       ${project.design_mode === "ec7" ? `<label class="quick-editor-field"><span>Vertical line load action</span>${ec7ActionTypeSelect("data-qe-vertical-line-load-action", phase.vertical_line_load_action ?? "permanent_unfavourable")}</label>` : ""}
       <label class="quick-editor-field"><span>2nd order</span><select data-qe-second-order><option value="false" ${project.phases[phaseIndex]?.include_vertical_line_second_order ? "" : "selected"}>Off</option><option value="true" ${project.phases[phaseIndex]?.include_vertical_line_second_order ? "selected" : ""}>On</option></select></label>
+      ${culmannInputs}
       <label class="quick-editor-field"><span>Left layer top</span><input data-qe-left-top type="number" step="0.1" value="${escapeHtml(leftLayer?.top_level_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Left layer bottom</span><input data-qe-left-bottom type="number" step="0.1" value="${escapeHtml(leftLayer?.bottom_level_m ?? "")}"></label>
       <label class="quick-editor-field"><span>Left γ dry</span><input data-qe-left-gamma-dry type="number" step="0.1" value="${escapeHtml(leftLayer?.unit_weight_dry_kN_m3 ?? "")}"></label>
@@ -1521,6 +1797,8 @@ export function applyQuickEditorPatch(project, phaseIndex, patch, focus = {}) {
     const nextWallLengthSearch = nextProject.design_options?.wall_length_search;
     nextProject.wall_type = patch.wall_type ?? nextProject.wall_type;
     nextProject.design_mode = patch.design_mode ?? nextProject.design_mode;
+    nextProject.earth_pressure_method = patch.earth_pressure_method ?? nextProject.earth_pressure_method;
+    nextProject.wall_friction_cap = patch.wall_friction_cap ?? nextProject.wall_friction_cap;
     if (nextProject.design_mode === "ec7") {
         nextProject.ec7_partial_factors = {
             ...ec7PartialFactorsForProject(nextProject),
@@ -1614,6 +1892,14 @@ export function applyQuickEditorPatch(project, phaseIndex, patch, focus = {}) {
     if (nextProject.phases[phaseIndex]) {
         nextProject.phases[phaseIndex].name =
             patch.phase_name ?? nextProject.phases[phaseIndex].name;
+        nextProject.phases[phaseIndex].surface_profile_left_m =
+            patch.surface_profile_left_m ?? nextProject.phases[phaseIndex].surface_profile_left_m;
+        nextProject.phases[phaseIndex].surface_profile_right_m =
+            patch.surface_profile_right_m ?? nextProject.phases[phaseIndex].surface_profile_right_m;
+        nextProject.phases[phaseIndex].strip_surcharges_left =
+            patch.strip_surcharges_left ?? nextProject.phases[phaseIndex].strip_surcharges_left;
+        nextProject.phases[phaseIndex].strip_surcharges_right =
+            patch.strip_surcharges_right ?? nextProject.phases[phaseIndex].strip_surcharges_right;
         nextProject.phases[phaseIndex].surface_level_left_m =
             patch.surface_level_left_m ?? nextProject.phases[phaseIndex].surface_level_left_m;
         nextProject.phases[phaseIndex].surface_level_right_m =
@@ -2105,6 +2391,9 @@ export function readableWarningMessage(code) {
     if (code === "DIAPHRAGM_WALL_CONSTANT_EI") {
         return "Diaphragm wall uses constant bending stiffness EI; a moment-curvature relation is not modelled.";
     }
+    if (code === "CULMANN_PHI_RANGE_OVER_15_DEG") {
+        return "Culmann validity warning: soil friction angles along the wall differ by more than 15 degrees, so one straight slip plane is outside the method's validity (CUR 166 4.5.8).";
+    }
     return code;
 }
 function readableWarnings(warnings) {
@@ -2325,6 +2614,14 @@ export function buildResultHtml(result, phaseIndex, view = "characteristic") {
     const plotData = buildPhasePlotData(result, phaseIndex, view);
     const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
     const steppedShear = buildSteppedShearSeries(result, phaseIndex, view === "characteristic" ? undefined : phase);
+    const earthPressureMethod = result?.earth_pressure_method ?? result?.normalized_input?.earth_pressure_method ?? "coulomb";
+    const wallFrictionCap = result?.wall_friction_cap ?? result?.normalized_input?.wall_friction_cap ?? "phi_over_3";
+    const earthPressureMethodLabel = earthPressureMethod === "culmann"
+        ? "Culmann (sloping surface and strip loads)"
+        : "Coulomb (horizontal surface)";
+    const wallFrictionCapLabel = wallFrictionCap === "cur166"
+        ? "CUR 166 (passive side)"
+        : wallFrictionCap === "none" ? "Input δ" : "δ ≤ φ/3";
     const cards = buildPhaseOverview(result, phaseIndex, view).map((card) => `
     <article class="result-card">
       <h3>${escapeHtml(card.title)}</h3>
@@ -2354,6 +2651,7 @@ export function buildResultHtml(result, phaseIndex, view = "characteristic") {
     return `
     ${buildResultViewToolbar(result, view)}
     ${convergenceAlert}
+    <article class="result-card result-card-wide earth-pressure-result"><h3>Earth-pressure assumptions</h3><p>Method: ${escapeHtml(earthPressureMethodLabel)}. Wall friction limit: ${escapeHtml(wallFrictionCapLabel)}.</p></article>
     <div class="depth-plot-grid" aria-label="Selected phase depth plots">
       ${plotCards}
       ${rotationPlot}
@@ -2663,6 +2961,46 @@ function readStoredContactState() {
 function persistContactState(state) {
     localStorage.setItem(APP_STATE_STORAGE_KEY, JSON.stringify(state));
 }
+function editorNumberOrNull(value) {
+    if (value.trim() === "")
+        return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+function captureCulmannEditorValues(project, phaseIndex, root) {
+    const nextProject = normalizeCulmannProfiles(project);
+    const phase = nextProject.phases[phaseIndex];
+    if (!phase)
+        return nextProject;
+    for (const side of ["left", "right"]) {
+        const profileDistances = Array.from(root.querySelectorAll(`[data-cm-profile-distance][data-side="${side}"]`));
+        if (profileDistances.length) {
+            const profile = profileDistances
+                .sort((a, b) => Number(a.dataset.row) - Number(b.dataset.row))
+                .map((distanceInput, rowIndex) => {
+                const levelInput = root.querySelector(`[data-cm-profile-level][data-side="${side}"][data-row="${rowIndex}"]`);
+                return rowIndex === 0
+                    ? [0, soilTopLevel(nextProject, phase, side)]
+                    : [editorNumberOrNull(distanceInput.value), editorNumberOrNull(levelInput?.value ?? "")];
+            });
+            phase[`surface_profile_${side}_m`] = profile;
+        }
+        const stripKey = `strip_surcharges_${side}`;
+        const strips = phase[stripKey] ?? [];
+        phase[stripKey] = strips.map((strip, stripIndex) => {
+            const distanceInputs = Array.from(root.querySelectorAll(`[data-cm-strip-distance][data-side="${side}"][data-strip="${stripIndex}"]`));
+            const points = distanceInputs
+                .sort((a, b) => Number(a.dataset.row) - Number(b.dataset.row))
+                .map((distanceInput, rowIndex) => {
+                const loadInput = root.querySelector(`[data-cm-strip-load][data-side="${side}"][data-strip="${stripIndex}"][data-row="${rowIndex}"]`);
+                return [editorNumberOrNull(distanceInput.value), editorNumberOrNull(loadInput?.value ?? "")];
+            });
+            const action = root.querySelector(`[data-cm-strip-action][data-side="${side}"][data-strip="${stripIndex}"]`)?.value;
+            return { ...strip, points, ...(action ? { action } : {}) };
+        });
+    }
+    return nextProject;
+}
 export function buildDirectMailto(contact, result, phaseIndex = 0) {
     const subjectBase = contact.projectName.trim() || "Retaining wall enquiry";
     const summary = buildResultSummaryItems(result, phaseIndex);
@@ -2730,6 +3068,10 @@ function unavailableServiceMessage(status) {
     return `The calculation service is currently unavailable (HTTP ${status}). Your input is kept; you can download the JSON payload and try again later.`;
 }
 export async function runAnalysis(project, fetchImpl = fetch, apiBaseUrl = resolveApiBaseUrl(globalThis.location?.search ?? "")) {
+    const validationErrors = validateEarthPressureInput(project);
+    if (validationErrors.length) {
+        throw new Error(`Please fix the earth-pressure inputs before analysis: ${validationErrors.join(" ")}`);
+    }
     let response;
     try {
         response = await fetchImpl(`${apiBaseUrl}${ANALYSIS_ROUTE}`, {
@@ -2957,7 +3299,7 @@ function bootApp() {
         serviceStatus.classList.toggle("is-online", online);
         serviceStatus.classList.toggle("is-offline", !online);
     });
-    let currentProject = structuredClone(SAMPLE_PROJECT);
+    let currentProject = readStoredProject() ?? structuredClone(SAMPLE_PROJECT);
     let currentResult = demoEnabled ? structuredClone(DEMO_RESULT ?? SAMPLE_RESULT) : null;
     let currentPreviewPhaseIndex = demoEnabled ? Math.min(2, currentProject.phases.length - 1) : 0;
     let currentResultPhaseIndex = 0;
@@ -2972,6 +3314,7 @@ function bootApp() {
     };
     const renderPreview = (rebuildEditor = true) => {
         currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
+        persistStoredProject(currentProject);
         updateWorkspacePhaseSelect(currentProject, previewPhase, currentPreviewPhaseIndex);
         updateInputPreview(currentProject, preview, geometry, currentPreviewPhaseIndex);
         if (rebuildEditor) {
@@ -3002,6 +3345,8 @@ function bootApp() {
             const leavingJson = currentEditorTabId === "json" && tab.dataset.editorTab !== "json";
             currentEditorTabId = tab.dataset.editorTab ?? "general";
             if (leavingJson) {
+                currentProject = normalizeCulmannProfiles(currentProject);
+                input.value = formatJson(currentProject);
                 renderPreview();
                 return;
             }
@@ -3053,6 +3398,20 @@ function bootApp() {
                 }
             });
         });
+        quickEditor.querySelectorAll("[data-qe-culmann-action]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const action = button.dataset.qeCulmannAction;
+                const side = button.dataset.side;
+                if (!action || !side)
+                    return;
+                currentProject = captureCulmannEditorValues(currentProject, currentPreviewPhaseIndex, quickEditor);
+                currentProject = applyCulmannStructureAction(currentProject, currentPreviewPhaseIndex, action, side, Number(button.dataset.strip ?? 0), Number(button.dataset.row ?? 0));
+                input.value = formatJson(currentProject);
+                renderPreview();
+                if (currentResult)
+                    status.textContent = "Culmann inputs updated. Rerun the analysis to refresh results.";
+            });
+        });
         quickEditor.querySelector("[data-qe-ec7-reset]")?.addEventListener("click", () => {
             currentProject = resetEc7PartialFactors(currentProject);
             input.value = formatJson(currentProject);
@@ -3080,10 +3439,20 @@ function bootApp() {
                     }
                     return;
                 }
+                if (field.matches("[data-cm-profile-distance], [data-cm-profile-level], [data-cm-strip-distance], [data-cm-strip-load], [data-cm-strip-action]")) {
+                    currentProject = captureCulmannEditorValues(currentProject, currentPreviewPhaseIndex, quickEditor);
+                    input.value = formatJson(currentProject);
+                    renderPreview();
+                    if (currentResult)
+                        status.textContent = "Culmann inputs updated. Rerun the analysis to refresh results.";
+                    return;
+                }
                 const editorPatch = {
                     phase_name: quickEditor.querySelector("[data-qe-phase-name]")?.value,
                     wall_type: quickEditor.querySelector("[data-qe-wall-type]")?.value,
                     design_mode: quickEditor.querySelector("[data-qe-design-mode]")?.value,
+                    earth_pressure_method: quickEditor.querySelector("[data-qe-earth-pressure-method]")?.value,
+                    wall_friction_cap: quickEditor.querySelector("[data-qe-wall-friction-cap]")?.value,
                     ec7_partial_factors: readEc7FactorInputs(quickEditor),
                     toe_mode: quickEditor.querySelector("[data-qe-toe-mode]")?.value,
                     top_level_m: Number(quickEditor.querySelector("[data-qe-top-level]")?.value),
@@ -3266,7 +3635,7 @@ function bootApp() {
     }
     input.addEventListener("input", () => {
         try {
-            currentProject = JSON.parse(input.value);
+            currentProject = normalizeCulmannProfiles(JSON.parse(input.value));
             currentPreviewPhaseIndex = Math.min(currentPreviewPhaseIndex, Math.max(0, currentProject.phases.length - 1));
             currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
             renderPreview(false);

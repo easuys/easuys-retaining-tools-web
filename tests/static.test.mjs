@@ -13,6 +13,7 @@ import {
   STEEL_SHEET_PILE_LIBRARY,
   applyQuickEditorStructureAction,
   applyQuickEditorPatch,
+  applyCulmannStructureAction,
   buildAnalysisPayload,
   buildEc7VerificationHtml,
   ec7FactorEditorValuesToState,
@@ -26,6 +27,9 @@ import {
   buildReportPreviewHtml,
   buildReportFilename,
   buildQuickEditorHtml,
+  normalizeCulmannProfiles,
+  persistStoredProject,
+  readStoredProject,
   TURNSTILE_SCRIPT_URL,
   buildDirectMailto,
   buildStudyRequestPayload,
@@ -41,6 +45,7 @@ import {
   runAnalysis,
   resolveApiBaseUrl,
   submitStudyRequest,
+  validateEarthPressureInput,
 } from "../app.js";
 
 const EC7_SAMPLE_RESULT = JSON.parse(
@@ -290,6 +295,113 @@ test("sample project exposes a dedicated retaining payload", () => {
   assert.match(buildQuickEditorHtml(SAMPLE_PROJECT, 1), /Manual section name/);
   assert.match(buildQuickEditorHtml(SAMPLE_PROJECT, 1), /Manual Wpl/);
   assert.match(buildQuickEditorHtml(SAMPLE_PROJECT, 1), /Gamma M0/);
+});
+
+test("default earth-pressure payload stays unchanged and editor exposes Culmann controls", () => {
+  assert.deepEqual(buildAnalysisPayload(SAMPLE_PROJECT), SAMPLE_PROJECT);
+  const classicHtml = buildQuickEditorHtml(SAMPLE_PROJECT, 1);
+  assert.match(classicHtml, /Earth pressure/);
+  assert.match(classicHtml, /Coulomb, horizontal surface/);
+  assert.match(classicHtml, /Culmann, sloping surface and strip loads/);
+  assert.match(classicHtml, /Wall friction limit/);
+  assert.match(classicHtml, /δ ≤ φ\/3 \(default\)/);
+  assert.match(classicHtml, /CUR 166 \(passive side\)/);
+  assert.match(classicHtml, /conservative horizontal-surface method/);
+  assert.match(classicHtml, /ignored while Coulomb is selected/);
+
+  const culmann = applyQuickEditorPatch(SAMPLE_PROJECT, 1, { earth_pressure_method: "culmann" });
+  culmann.phases[1].strip_surcharges_left = [{ points: [[2, 20], [5, 20]] }];
+  const culmannHtml = buildQuickEditorHtml(culmann, 1);
+  assert.match(culmannHtml, /culmann-phase-block/);
+  assert.match(culmannHtml, /data-cm-profile-distance/);
+  assert.match(culmannHtml, /data-qe-culmann-action="profile_add"/);
+  assert.match(culmannHtml, /data-qe-culmann-action="strip_add"/);
+  assert.match(culmannHtml, /data-cm-strip-distance/);
+  assert.doesNotMatch(culmannHtml, /data-qe-culmann-ignored/);
+});
+
+test("Culmann payload carries profiles and strips, Coulomb omits them, and EC7 preserves strip actions", () => {
+  const culmann = structuredClone(SAMPLE_PROJECT);
+  culmann.earth_pressure_method = "culmann";
+  culmann.wall_friction_cap = "cur166";
+  culmann.phases[1].surface_level_left_m = -1;
+  culmann.phases[1].surface_profile_left_m = [[0, 0], [5, 1], [12, 2]];
+  culmann.phases[1].strip_surcharges_left = [{ points: [[2, 20], [5, 20]] }];
+  const payload = buildAnalysisPayload(culmann);
+  assert.equal(payload.earth_pressure_method, "culmann");
+  assert.equal(payload.wall_friction_cap, "cur166");
+  assert.deepEqual(payload.phases[1].surface_profile_left_m, [[0, -4], [5, 1], [12, 2]]);
+  assert.deepEqual(payload.phases[1].strip_surcharges_left, [{ points: [[2, 20], [5, 20]] }]);
+
+  const coulomb = structuredClone(culmann);
+  coulomb.earth_pressure_method = "coulomb";
+  const coulombPayload = buildAnalysisPayload(coulomb);
+  assert.equal("earth_pressure_method" in coulombPayload, false);
+  assert.equal(coulombPayload.wall_friction_cap, "cur166");
+  assert.equal("surface_profile_left_m" in coulombPayload.phases[1], false);
+  assert.equal("strip_surcharges_left" in coulombPayload.phases[1], false);
+
+  const ec7 = structuredClone(culmann);
+  ec7.design_mode = "ec7";
+  ec7.phases[1].strip_surcharges_left[0].action = "permanent_favourable";
+  const ec7Payload = buildAnalysisPayload(ec7);
+  assert.equal(ec7Payload.phases[1].strip_surcharges_left[0].action, "permanent_favourable");
+  assert.equal(buildQuickEditorHtml(ec7, 1).includes("data-cm-strip-action"), true);
+});
+
+test("Culmann profiles follow soil tops and invalid profiles or empty strips stop before sending", async () => {
+  const culmann = structuredClone(SAMPLE_PROJECT);
+  culmann.earth_pressure_method = "culmann";
+  culmann.phases[1].surface_level_left_m = -1;
+  culmann.phases[1].surface_profile_left_m = [[0, 1], [5, 2]];
+  const normalized = normalizeCulmannProfiles(culmann);
+  assert.deepEqual(normalized.phases[1].surface_profile_left_m[0], [0, -4]);
+
+  const decreasing = structuredClone(culmann);
+  decreasing.phases[1].surface_profile_left_m = [[0, -4], [5, 1], [4, 2]];
+  assert.match(validateEarthPressureInput(decreasing).join(" "), /surface profile distances must be strictly increasing/);
+  let fetchCalls = 0;
+  await assert.rejects(
+    () => runAnalysis(decreasing, async () => { fetchCalls += 1; throw new Error("unexpected request"); }),
+    /surface profile distances must be strictly increasing/
+  );
+  assert.equal(fetchCalls, 0);
+
+  const emptyStrip = structuredClone(culmann);
+  emptyStrip.phases[1].strip_surcharges_left = [{ points: [] }];
+  assert.match(validateEarthPressureInput(emptyStrip).join(" "), /strip 1 is empty/);
+  await assert.rejects(
+    () => runAnalysis(emptyStrip, async () => { fetchCalls += 1; throw new Error("unexpected request"); }),
+    /strip 1 is empty/
+  );
+  assert.equal(fetchCalls, 0);
+});
+
+test("Culmann drawing, structure edits and stored project fields round-trip", () => {
+  const culmann = structuredClone(SAMPLE_PROJECT);
+  culmann.earth_pressure_method = "culmann";
+  culmann.phases[1].surface_profile_left_m = [[0, -4], [5, -2], [12, 1]];
+  culmann.phases[1].strip_surcharges_left = [{ points: [[2, 20], [5, 20]] }];
+  const svg = buildGeometryPreviewSvg(culmann, 1);
+  assert.match(svg, /data-surface-profile="left"/);
+  assert.match(svg, /class="strip-load-block"/);
+  assert.match(svg, /20\.0 kPa/);
+
+  const withStrip = applyCulmannStructureAction(culmann, 1, "strip_add", "right");
+  assert.deepEqual(withStrip.phases[1].strip_surcharges_right, [{ points: [] }]);
+  const withPoint = applyCulmannStructureAction(withStrip, 1, "strip_point_add", "right", 0);
+  assert.deepEqual(withPoint.phases[1].strip_surcharges_right[0].points, [[null, null]]);
+
+  let stored = null;
+  const storage = {
+    getItem: () => stored,
+    setItem: (_key, value) => { stored = value; },
+  };
+  persistStoredProject(culmann, storage);
+  const restored = readStoredProject(storage);
+  assert.equal(restored.earth_pressure_method, "culmann");
+  assert.deepEqual(restored.phases[1].surface_profile_left_m, culmann.phases[1].surface_profile_left_m);
+  assert.deepEqual(restored.phases[1].strip_surcharges_left, culmann.phases[1].strip_surcharges_left);
 });
 
 test("quick editor shows design-mode gamma M0 defaults when manual steel gamma is omitted", () => {
@@ -652,7 +764,11 @@ test("EC7 fixture renders factors, overdig, design plots, report export and fail
   assert.doesNotMatch(buildResultHtml(SAMPLE_RESULT, 2), /EC7 verification|data-result-design-view/);
 });
 
-test("new EC7 and diaphragm warning codes have readable messages and removed codes are silent", () => {
+test("Culmann, EC7 and diaphragm warnings have readable messages and removed codes are silent", () => {
+  assert.match(
+    readableWarningMessage("CULMANN_PHI_RANGE_OVER_15_DEG"),
+    /friction angles along the wall differ by more than 15 degrees.*one straight slip plane.*CUR 166 4\.5\.8/
+  );
   assert.equal(
     readableWarningMessage("EC7_PHASE_DID_NOT_CONVERGE:set2:Phase B"),
     "EC7 set 2: phase “Phase B” has no equilibrium — ULS verification fails",
@@ -667,6 +783,17 @@ test("new EC7 and diaphragm warning codes have readable messages and removed cod
   );
   assert.equal(readableWarningMessage("FIRST_PASS_EC7_FACTORS"), "");
   assert.equal(readableWarningMessage("BENCHMARK_IMPORTS_PENDING"), "");
+
+  const culmannResult = {
+    ...structuredClone(SAMPLE_RESULT),
+    earth_pressure_method: "culmann",
+    wall_friction_cap: "cur166",
+    warnings: ["CULMANN_PHI_RANGE_OVER_15_DEG"],
+  };
+  const resultHtml = buildResultHtml(culmannResult, 2);
+  assert.match(resultHtml, /Culmann \(sloping surface and strip loads\)/);
+  assert.match(resultHtml, /CUR 166 \(passive side\)/);
+  assert.match(resultHtml, /one straight slip plane is outside the method(?:&#39;|')s validity/);
 });
 
 test("study-request helpers build and submit the retained contact payload", async () => {
