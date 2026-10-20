@@ -3536,7 +3536,7 @@ export function buildDesignSummaryHtml(summary: DesignSummary, options: { forRep
       </div>
       <p class="summary-ec7"><strong>EC7 set used:</strong> ${escapeHtml(summary.ec7.label)}. ${escapeHtml(summary.ec7.detail)}</p>
       <p class="summary-scope">Screening result, not a design release. Not covered here: overall and deep-seated stability, anchor length, vertical equilibrium, hydraulic failure (heave, piping) and corrosion allowance.</p>
-      <p class="summary-evidence">How the engine is checked: comparisons with published examples and manual tutorials, with the differences explained, on the <a href="${escapeHtml(validationHref)}" data-validation-link>validation page</a>.</p>
+      <p class="summary-evidence">How the engine is checked: comparisons with the published SPW 2006 examples, with the differences explained, on the <a href="${escapeHtml(validationHref)}" data-validation-link>validation page</a>.</p>
       ${buildStudyCtaHtml(summary, options)}
     </article>`;
 }

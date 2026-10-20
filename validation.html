@@ -104,7 +104,7 @@
             <h2 id="independent-title">Independent reference calculations</h2>
           </div>
         </div>
-        <p>Results were compared with independent reference calculations for public examples and published manual tutorials. Comparisons cover wall displacement, bending moment, shear, support forces and selected effective stresses where those quantities are reported. For the SPW 2006 examples, the response was compared at the reference nodes.</p>
+        <p>Results were compared with independent reference calculations for the published examples and test problems of the free program SPW 2006. Comparisons cover wall displacement, bending moment, shear, support forces and selected effective stresses where those quantities are reported. For the SPW 2006 examples, the response was compared at the reference nodes.</p>
         <p class="validation-note">These comparisons cover the cases and quantities listed below. They do not establish performance for every soil profile, loading condition, construction sequence or design procedure.</p>
       </section>
 
@@ -117,9 +117,7 @@
         </div>
         <ul>
           <li><strong>SPW 2006, same staging convention:</strong> the largest node-by-node difference stays within 2&nbsp;% for displacement and 4.5&nbsp;% for bending moment; the analytical checks of Test1 (0.1980 m against 0.200 m) and Test3 (40.15 kN/m against 40.08 kN/m) are reproduced.</li>
-          <li><strong>D-Sheet Piling manual, tutorials 1 and 3:</strong> the printed moments, shears and displacements are reproduced to 0.1 kNm/m, 0.1 kN/m and 0.1 mm; the tutorial 3 anchor force is 147.15 kN/m against 147.22 kN/m.</li>
           <li><strong>Larger differences, shown as they are:</strong> SPW 2006 Ex1 step 2 (moment 33&nbsp;%, on a small peak of 2.5 kNm/m), Ex3 steps 1–2 (about 10&nbsp;%) and Ex3 steps 4–5 (moment 8&nbsp;%; strut force at 8 m 188.2 kN/m against 234.1 kN/m, +24&nbsp;%). They come from a different <a href="#staging-title">staging convention</a>; a variant that avoids it (Ex3q) agrees within 2&nbsp;%.</li>
-          <li><strong>Tutorial 4 (Culmann method, available on request):</strong> within 2&nbsp;% of the 2023 manual and within 1.2&nbsp;% of the 9.1 manual.</li>
         </ul>
       </section>
 
@@ -172,58 +170,8 @@
           <li><strong>Ex3 steps 1–2</strong>: the top force displaces the wall before the weight on the excavated side changes.</li>
           <li><strong>Ex3 steps 4–5</strong>: a 20 kPa surcharge is placed on the excavation bottom next to the displaced wall. In step 5 the strut force at 8 m is 188.2 kN/m in the reference and 234.1 kN/m in the engine (+24&nbsp;%), and the peak moment differs by 8&nbsp;%. Step 5 also has unequal water levels, for which the engine uses a water unit weight of 9.81 kN/m³ against 10 kN/m³ in the reference input.</li>
         </ul>
-        <p>The reference program keeps the displacement offset of each spring and re-evaluates the pressure with the new neutral stress and stiffness. The engine carries the pressure forward and shifts it by the change in neutral pressure, the convention also used by D-Sheet Piling, the program of the manual tutorials below. Both are modelling conventions, not errors.</p>
+        <p>The reference program keeps the displacement offset of each spring and re-evaluates the pressure with the new neutral stress and stiffness. The engine carries the pressure forward and shifts it by the change in neutral pressure. Both are modelling conventions, not errors.</p>
         <p>Check of this explanation: variant Ex3q applies the same 20 kPa surcharge one stage earlier, together with the step 3 excavation; only that input changes. The later steps then agree like the single-stage cases: displacement within 0.9–1.9&nbsp;%, moment within 1.2–1.7&nbsp;%, and strut force at 8 m 264.8 / 259.4 kN/m (2&nbsp;%), against 8&nbsp;% in moment and 24&nbsp;% in strut force in Ex3.</p>
-      </section>
-
-      <section class="panel validation-section validation-tables" aria-labelledby="tutorials-title">
-        <div class="canvas-section-heading">
-          <div>
-            <p class="panel-kicker">Published manual comparisons</p>
-            <h2 id="tutorials-title">D-Sheet Piling manual tutorials 1, 3 and 4</h2>
-          </div>
-        </div>
-        <p>For Tutorials 1 and 3, the comparison uses the values printed in the published user manual. Moment and shear are compared by magnitude where sign conventions differ. Differences below are engine minus manual value.</p>
-        <div class="table-shell validation-table-wrap">
-          <table>
-            <thead>
-              <tr><th scope="col">Tutorial / stage</th><th scope="col">Quantity</th><th scope="col">Manual</th><th scope="col">Engine</th><th scope="col">Difference</th></tr>
-            </thead>
-            <tbody>
-              <tr><th scope="row">1</th><td>Maximum bending moment (kNm/m)</td><td>158.7</td><td>158.7</td><td>0.0</td></tr>
-              <tr><th scope="row">1</th><td>Shear maximum / minimum (kN/m)</td><td>53.7 / −42.6</td><td>53.6 / −42.5</td><td>−0.1 / +0.1</td></tr>
-              <tr><th scope="row">1</th><td>Head displacement (mm)</td><td>−193.9</td><td>−193.9</td><td>0.0</td></tr>
-              <tr><th scope="row">1</th><td>Displacement profile, top 2.3 m (18 points)</td><td>Figure 8-24</td><td>Within 0.035 mm</td><td>—</td></tr>
-              <tr><th scope="row">1</th><td>Maximum effective stress, left / right (kPa)</td><td>56.5 / 57.7</td><td>56.5 / 56.9</td><td>0.0 / −0.8</td></tr>
-              <tr><th scope="row">3 / stage 1</th><td>Displacement (mm)</td><td>−7.0</td><td>−7.0</td><td>0.0</td></tr>
-              <tr><th scope="row">3 / stage 1</th><td>Moment / shear magnitude (kNm/m, kN/m)</td><td>11.8 / 17.0</td><td>11.8 / 17.0</td><td>0.0 / 0.0</td></tr>
-              <tr><th scope="row">3 / stage 2</th><td>Displacement (mm)</td><td>−6.6</td><td>−6.6</td><td>0.0</td></tr>
-              <tr><th scope="row">3 / stage 2</th><td>Moment / shear / anchor (kNm/m, kN/m, kN/m)</td><td>35.3 / 47.2 / 80.00</td><td>35.3 / 47.2 / 80.0</td><td>0.0 / 0.0 / 0.0</td></tr>
-              <tr><th scope="row">3 / stage 3</th><td>Displacement (mm)</td><td>−109.0</td><td>−109.0</td><td>0.0</td></tr>
-              <tr><th scope="row">3 / stage 3</th><td>Moment / shear / anchor (kNm/m, kN/m, kN/m)</td><td>346.0 / 119.5 / 147.22</td><td>346.1 / 119.4 / 147.15</td><td>+0.1 / −0.1 / −0.07</td></tr>
-              <tr><th scope="row">3 / stage 3</th><td>Other-sign moment / shear maxima (kNm/m, kN/m)</td><td>156.3 / 94.2</td><td>156.4 / 94.2</td><td>+0.1 / 0.0</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="validation-footnote">The Tutorial 1 right-hand effective-stress difference occurs at the clay/sand boundary at −13 m. The manual reports the clay value at the boundary; the engine's last clay sample is at −12.9 m, where stress rises 0.8 kPa per 0.1 m.</p>
-
-        <h3>Tutorial 4 · Culmann method (available on request)</h3>
-        <p>Tutorial 4 uses the Culmann method for the earth pressures, with a strip load next to the wall. This method is not part of the public workspace; it is available on request for project studies. The final stage is compared with two published manual editions, with the 2023 edition as the primary comparison. Differences are engine minus manual; percentages compare magnitudes relative to the manual value.</p>
-        <div class="table-shell validation-table-wrap">
-          <table>
-            <thead>
-              <tr><th scope="col">Stage 4 quantity</th><th scope="col">Engine</th><th scope="col">2023 manual</th><th scope="col">Difference</th><th scope="col">9.1 manual</th><th scope="col">Difference</th></tr>
-            </thead>
-            <tbody>
-              <tr><th scope="row">Displacement (mm)</th><td>−99.6</td><td>−101.1</td><td>+1.5 (−1.5%)</td><td>−100.2</td><td>+0.6 (−0.6%)</td></tr>
-              <tr><th scope="row">Bending moment maximum / minimum (kNm/m)</th><td>135.0 / −300.7</td><td>137.7 / −305.1</td><td>−2.7 / +4.4 (−2.0 / −1.4% by magnitude)</td><td>135.2 / −304.4</td><td>−0.2 / +3.7 (−0.1 / −1.2% by magnitude)</td></tr>
-              <tr><th scope="row">Shear maximum / minimum (kN/m)</th><td>83.4 / −134.8</td><td>85.0 / −135.8</td><td>−1.6 / +1.0 (−1.9 / −0.7% by magnitude)</td><td>84.4 / −135.1</td><td>−1.0 / +0.3 (−1.2 / −0.2% by magnitude)</td></tr>
-              <tr><th scope="row">Anchor force (kN/m)</th><td>192.8</td><td>193.7</td><td>−0.9 (−0.5%)</td><td>191.3</td><td>+1.5 (+0.8%)</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="validation-footnote">The two editions differ for this stage. The 2023 manual describes a Fine calculation, which evaluates Culmann coefficients at minor nodes five times as often as the Coarse setting described in the 9.1 manual. This stage uses a 20 kPa strip from 0 to 2 m and a 50 kN/m mooring force at the wall top, close to the wall where the manual says calculation settings can matter most. The engine evaluates coefficients at the nodes of its own discretisation, yet its results are closer to the 9.1 values. The reason for the difference cannot be determined from the manuals alone.</p>
-        <p class="validation-note">The soil friction angles in this example range from 17° to 35°, exceeding the 15° range noted in the 2023 manual for straight Culmann slip surfaces. The engine also reports this range warning, so Tutorial 4 is outside the stated intended range of that method.</p>
       </section>
 
       <section class="panel validation-section" aria-labelledby="limitations-title">
@@ -238,9 +186,6 @@
           <li>The public request limit is 50 soil layers per profile.</li>
           <li>In SPW 2006 Ex3 steps 1–2, a weightless submerged layer on the excavated side is not reproduced exactly: the engine applies a minimum submerged unit weight of 0.1 kN/m³, corresponding to 0.6 kPa at 8 m.</li>
           <li>The larger SPW 2006 differences during stage changes reflect the stated spring-staging conventions. They should be considered when interpreting results for stages that change effective stress around an already displaced wall.</li>
-          <li>Tutorial 2 cannot be reproduced from the manual's printed data because its soil profile is shown only as a plot from a CPT file.</li>
-          <li>Tutorials 5, 7–15 are outside this comparison. They cover required length, design checks, anchor stability, combi-walls, additional pore pressures, limited-width loads, drivability and single piles.</li>
-          <li>The Tutorial 4 difference between manual editions and calculation settings remains unresolved; a direct comparison using both settings is needed to isolate its cause.</li>
         </ul>
         <p>Use the results with engineering judgement and check that the chosen model and input assumptions suit the project.</p>
       </section>

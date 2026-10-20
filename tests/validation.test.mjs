@@ -72,7 +72,15 @@ test("validation page shows the larger differences with their explanation", asyn
   assert.match(html, /id="staging-title"/);
   assert.ok((html.match(/href="#staging-title"/g) ?? []).length >= 2);
   assert.equal((html.match(/class="staging-row"/g) ?? []).length, 4);
-  assert.match(html, /Culmann method \(available on request\)/);
-  assert.match(html, /not part of the public workspace/);
   assert.match(html, /href="mailto:info@easuys\.be\?subject=/);
+});
+
+// Owner 20/10/2026: publish only the SPW 2006 comparison (public data); the reference-manual
+// tutorial comparison stays internal.
+test("validation page publishes only the SPW 2006 comparison", async () => {
+  const html = await readFile(validationUrl, "utf8");
+
+  assert.match(html, /SPW 2006/);
+  assert.match(html, /id="spw-title"/);
+  assert.doesNotMatch(html, /D-Sheet|Deltares|tutorial|Culmann|tutorials-title/i);
 });
