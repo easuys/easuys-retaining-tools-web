@@ -39,6 +39,7 @@ jobs:
           rm -rf page-dist
           mkdir -p page-dist/docs
           cp index.html app.js styles.css CNAME README.md page-dist/
+          cp validation.html page-dist/
           cp -R docs/screenshots page-dist/docs/screenshots
 
       - name: Configure GitHub Pages

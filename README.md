@@ -41,8 +41,9 @@ Published site assumptions:
 
 - default branch: `main`
 - custom domain: `retaining.easuys.com`
-- static artifact includes `index.html`, compiled `app.js`, `styles.css`,
-  `CNAME`, and the screenshot acceptance set under `docs/screenshots/`
+- static artifact includes `index.html`, `validation.html`, compiled `app.js`,
+  `styles.css`, `CNAME`, and the screenshot acceptance set under
+  `docs/screenshots/`
 
 The one-time publication and verification procedure is recorded in
 [`docs/launch_runbook.md`](docs/launch_runbook.md). Pages, DNS, and the Worker
