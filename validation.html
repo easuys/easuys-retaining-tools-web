@@ -1,0 +1,229 @@
+<!-- DRAFT 2026-10-20: source results are on API branches not yet merged into main (spw2006 3c17cc8, dsheet tutorials 1cfffca). Publish only after the owner merges them. -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EA Suys Retaining Tools | Verification &amp; validation</title>
+    <meta name="description" content="Scope, comparison results and known limitations for the EA Suys retaining wall analysis tool.">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="icon" href="https://www.easuys.be/favicon.ico" sizes="any">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      .validation-workspace {
+        display: grid;
+        width: 100%;
+        max-width: 1320px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        margin: 0 auto;
+        padding: 20px 24px 40px;
+      }
+
+      .validation-section { padding: 16px; }
+      .validation-section > p { max-width: 100ch; }
+      .validation-section h2 { margin: 0; }
+      .validation-section h3 { margin: 16px 0 6px; font-size: 15px; }
+      .validation-lede { max-width: 86ch; color: var(--muted); }
+      .validation-kicker { margin: 0 0 4px; }
+      .validation-note {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        border-left: 4px solid var(--accent);
+        border-radius: 5px;
+        background: var(--accent-soft);
+        color: var(--ink);
+        font-size: 13px;
+      }
+      .validation-section ul { padding-left: 20px; }
+      .validation-section li + li { margin-top: 5px; }
+      .validation-table-wrap { margin-top: 9px; }
+      .validation-tables table { font-size: 12px; }
+      .validation-tables td { white-space: normal; }
+      .validation-tables th { white-space: nowrap; }
+      .validation-footnote { color: var(--muted); font-size: 12px; }
+      .validation-status { margin: 0; color: var(--muted); font: 500 12px/1.4 "IBM Plex Mono", "SFMono-Regular", monospace; }
+      .validation-contact { font-weight: 700; }
+
+      @media (max-width: 899px) {
+        .validation-workspace { padding: 10px; }
+      }
+
+      @media (max-width: 560px) {
+        .validation-workspace { padding: 8px; }
+        .validation-section { padding: 10px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="https://www.easuys.be/">EA Suys <span>·</span> Retaining workspace</a>
+      <nav class="topbar-links" aria-label="EA Suys sites">
+        <a href="https://www.easuys.be/">easuys.be</a>
+        <a href="https://structural.easuys.com/">Structural tools</a>
+        <a href="index.html">Retaining workspace</a>
+      </nav>
+    </header>
+
+    <main class="validation-workspace">
+      <section class="panel validation-section" aria-labelledby="page-title">
+        <p class="panel-kicker validation-kicker">Verification &amp; validation</p>
+        <h1 id="page-title">Retaining wall analysis</h1>
+        <p class="validation-lede">Comparison evidence, scope and known limitations for the EA Suys retaining tool.</p>
+        <p class="validation-status">Validation status 20 October 2026</p>
+      </section>
+
+      <section class="panel validation-section" aria-labelledby="purpose-title">
+        <div class="canvas-section-heading">
+          <div>
+            <p class="panel-kicker">Purpose and scope</p>
+            <h2 id="purpose-title">What the tool computes</h2>
+          </div>
+        </div>
+        <p>The tool analyses a flexible retaining wall through construction stages. It reports wall displacement, bending moment and shear along the wall, together with support forces for the entered geometry, soil, water, loads and stage conditions.</p>
+        <p>It is intended as a design aid for geotechnical and structural engineers. It does not replace engineering judgement, complete input checks or independent review of the design.</p>
+      </section>
+
+      <section class="panel validation-section" aria-labelledby="method-title">
+        <div class="canvas-section-heading">
+          <div>
+            <p class="panel-kicker">Method in brief</p>
+            <h2 id="method-title">Staged beam and soil-spring model</h2>
+          </div>
+        </div>
+        <p>The wall is modelled as a beam supported by elastoplastic soil springs. The calculation advances through excavation and support stages; spring response is carried between stages as geometry, water levels and loads change. The reported response depends on the entered soil properties, earth-pressure assumptions and construction sequence.</p>
+      </section>
+
+      <section class="panel validation-section" aria-labelledby="independent-title">
+        <div class="canvas-section-heading">
+          <div>
+            <p class="panel-kicker">Comparison approach</p>
+            <h2 id="independent-title">Independent reference calculations</h2>
+          </div>
+        </div>
+        <p>Results were compared with independent reference calculations for public examples and published manual tutorials. Comparisons cover wall displacement, bending moment, shear, support forces and selected effective stresses where those quantities are reported. For the SPW 2006 examples, the response was compared at the reference nodes.</p>
+        <p class="validation-note">These comparisons cover the cases and quantities listed below. They do not establish performance for every soil profile, loading condition, construction sequence or design procedure.</p>
+      </section>
+
+      <section class="panel validation-section validation-tables" aria-labelledby="spw-title">
+        <div class="canvas-section-heading">
+          <div>
+            <p class="panel-kicker">Public example comparison</p>
+            <h2 id="spw-title">SPW 2006 public examples and test problems</h2>
+          </div>
+        </div>
+        <p>Values below are reference / engine. The maximum absolute difference is the largest node-by-node difference for that stage. Moment signs are expressed in the engine convention.</p>
+        <p class="validation-footnote">Test2 is omitted because its published data file duplicates Test1 and adds no distinct comparison.</p>
+        <div class="table-shell validation-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Case / step</th>
+                <th scope="col">Nodes</th>
+                <th scope="col">Peak displacement (mm); max |Δ|</th>
+                <th scope="col">Peak moment (kNm/m); max |Δ|</th>
+                <th scope="col">Anchor or force (kN/m), reference / engine</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Ex1 / 1</th><td>101</td><td>−5.34 / −5.36; 0.02 (0.4%)</td><td>3.2 / 3.2; 0.05 (1.5%)</td><td>1 m: 4.3 / 4.3</td></tr>
+              <tr><th scope="row">Ex1 / 2</th><td>101</td><td>−7.82 / −7.37; 0.45 (5.8%)</td><td>2.5 / 2.8; 0.83 (33.0%)</td><td>1 m: 6.7 / 6.2; 2 m: 2.3 / 1.8</td></tr>
+              <tr><th scope="row">Ex2 / 1</th><td>101</td><td>17.90 / 17.98; 0.08 (0.4%)</td><td>−18.7 / −18.8; 0.12 (0.6%)</td><td>—</td></tr>
+              <tr><th scope="row">Ex2 / 2</th><td>101</td><td>78.32 / 77.61; 1.11 (1.4%)</td><td>−51.5 / −53.2; 2.28 (4.4%)</td><td>2 m: −24.0 / −23.5</td></tr>
+              <tr><th scope="row">Ex2 / 3</th><td>101</td><td>112.05 / 110.83; 1.86 (1.7%)</td><td>−108.8 / −111.5; 3.50 (3.2%)</td><td>2 m: −44.4 / −44.2; 5 m: −42.4 / −42.4</td></tr>
+              <tr><th scope="row">Ex3 / 1–2</th><td>201</td><td>−4.73 / −4.44; 0.45 (9.4%)</td><td>−22.5 / −23.1; 2.56 (11.4%)</td><td>0 m: 20.0 / 20.0</td></tr>
+              <tr><th scope="row">Ex3 / 3</th><td>201</td><td>−58.87 / −58.53; 0.60 (1.0%)</td><td>−212.3 / −211.7; 1.37 (0.6%)</td><td>1 m: 51.0 / 50.7</td></tr>
+              <tr><th scope="row">Ex3 / 4</th><td>201</td><td>−58.43 / −58.44; 1.38 (2.4%)</td><td>−222.1 / −214.0; 18.38 (8.3%)</td><td>1 m: 52.9 / 51.1</td></tr>
+              <tr><th scope="row">Ex3 / 5</th><td>201</td><td>−70.14 / −70.23; 3.61 (5.2%)</td><td>−297.9 / −288.6; 24.03 (8.1%)</td><td>1 m: 84.1 / 81.6; 8 m: 188.2 / 234.1</td></tr>
+              <tr><th scope="row">Ex4 / 1</th><td>101</td><td>−77.84 / −77.94; 0.12 (0.2%)</td><td>−309.3 / −309.8; 0.72 (0.2%)</td><td>2 m: 148.3 / 148.3</td></tr>
+              <tr><th scope="row">Test1 / 1</th><td>201</td><td>198.98 / 198.01; 1.28 (0.6%)</td><td>−3.2 / −3.3; 0.04 (1.2%)</td><td>0 m: 10.0 / 10.0</td></tr>
+              <tr><th scope="row">Test3 / 1</th><td>201</td><td>−48.08 / −48.19; 0.31 (0.7%)</td><td>−63.7 / −63.8; 0.02 (0.0%)</td><td>1 m: 40.1 / 40.1</td></tr>
+              <tr><th scope="row">Test4 / 1</th><td>201</td><td>48.08 / 48.19; 0.31 (0.7%)</td><td>63.7 / 63.8; 0.02 (0.0%)</td><td>1 m: −40.1 / −40.1</td></tr>
+              <tr><th scope="row">Ex3q / 3–4</th><td>201</td><td>−27.11 / −27.63; 0.52 (1.9%)</td><td>−127.7 / −128.6; 1.47 (1.2%)</td><td>1 m: 31.7 / 31.7</td></tr>
+              <tr><th scope="row">Ex3q / 5</th><td>201</td><td>−41.10 / −41.32; 0.35 (0.9%)</td><td>−215.7 / −214.7; 3.75 (1.7%)</td><td>1 m: 62.9 / 62.4; 8 m: 264.8 / 259.4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="validation-footnote">The analytical checks reported for Test1 and Test3 were also reproduced: the Test1 analytical head displacement is 0.200 m; reference / engine results are 0.1990 / 0.1980 m. For Test3, the analytical anchor force is 40.08 kN/m; reference / engine results are 40.14 / 40.15 kN/m.</p>
+
+        <h3>Staging convention</h3>
+        <p>The larger differences in Ex1 step 2 and Ex3 steps 1–2 and 4–5 occur when vertical effective stress changes at springs that have already moved. One calculation convention retains the spring displacement offset and recomputes pressure with the updated neutral stress and stiffness. The engine carries pressure forward and shifts it by the change in neutral pressure, a convention also used in the published manual comparison below. These are differences in modelling convention.</p>
+        <p>In Ex3q, the 20 kPa surcharge was applied earlier, with the preceding excavation stage. Later displacement differences were 0.9–1.9%, moment differences 1.2–1.7%, and the 8 m support force was 264.8 / 259.4 kN/m (reference / engine).</p>
+      </section>
+
+      <section class="panel validation-section validation-tables" aria-labelledby="tutorials-title">
+        <div class="canvas-section-heading">
+          <div>
+            <p class="panel-kicker">Published manual comparisons</p>
+            <h2 id="tutorials-title">D-Sheet Piling manual tutorials 1, 3 and 4</h2>
+          </div>
+        </div>
+        <p>For Tutorials 1 and 3, the comparison uses the values printed in the published user manual. Moment and shear are compared by magnitude where sign conventions differ. Differences below are engine minus manual value.</p>
+        <div class="table-shell validation-table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Tutorial / stage</th><th scope="col">Quantity</th><th scope="col">Manual</th><th scope="col">Engine</th><th scope="col">Difference</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">1</th><td>Maximum bending moment (kNm/m)</td><td>158.7</td><td>158.7</td><td>0.0</td></tr>
+              <tr><th scope="row">1</th><td>Shear maximum / minimum (kN/m)</td><td>53.7 / −42.6</td><td>53.6 / −42.5</td><td>−0.1 / +0.1</td></tr>
+              <tr><th scope="row">1</th><td>Head displacement (mm)</td><td>−193.9</td><td>−193.9</td><td>0.0</td></tr>
+              <tr><th scope="row">1</th><td>Displacement profile, top 2.3 m (18 points)</td><td>Figure 8-24</td><td>Within 0.035 mm</td><td>—</td></tr>
+              <tr><th scope="row">1</th><td>Maximum effective stress, left / right (kPa)</td><td>56.5 / 57.7</td><td>56.5 / 56.9</td><td>0.0 / −0.8</td></tr>
+              <tr><th scope="row">3 / stage 1</th><td>Displacement (mm)</td><td>−7.0</td><td>−7.0</td><td>0.0</td></tr>
+              <tr><th scope="row">3 / stage 1</th><td>Moment / shear magnitude (kNm/m, kN/m)</td><td>11.8 / 17.0</td><td>11.8 / 17.0</td><td>0.0 / 0.0</td></tr>
+              <tr><th scope="row">3 / stage 2</th><td>Displacement (mm)</td><td>−6.6</td><td>−6.6</td><td>0.0</td></tr>
+              <tr><th scope="row">3 / stage 2</th><td>Moment / shear / anchor (kNm/m, kN/m, kN/m)</td><td>35.3 / 47.2 / 80.00</td><td>35.3 / 47.2 / 80.0</td><td>0.0 / 0.0 / 0.0</td></tr>
+              <tr><th scope="row">3 / stage 3</th><td>Displacement (mm)</td><td>−109.0</td><td>−109.0</td><td>0.0</td></tr>
+              <tr><th scope="row">3 / stage 3</th><td>Moment / shear / anchor (kNm/m, kN/m, kN/m)</td><td>346.0 / 119.5 / 147.22</td><td>346.1 / 119.4 / 147.15</td><td>+0.1 / −0.1 / −0.07</td></tr>
+              <tr><th scope="row">3 / stage 3</th><td>Other-sign moment / shear maxima (kNm/m, kN/m)</td><td>156.3 / 94.2</td><td>156.4 / 94.2</td><td>+0.1 / 0.0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="validation-footnote">The Tutorial 1 right-hand effective-stress difference occurs at the clay/sand boundary at −13 m. The manual reports the clay value at the boundary; the engine's last clay sample is at −12.9 m, where stress rises 0.8 kPa per 0.1 m.</p>
+
+        <h3>Tutorial 4 · Culmann option</h3>
+        <p>Tutorial 4 uses the Culmann option, which is available on request. It compares the final stage with two published manual editions; the 2023 edition is the primary comparison in the supplied results. Differences are engine minus manual; percentages follow the supplied comparison.</p>
+        <div class="table-shell validation-table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Stage 4 quantity</th><th scope="col">Engine</th><th scope="col">2023 manual</th><th scope="col">Difference</th><th scope="col">9.1 manual</th><th scope="col">Difference</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Displacement (mm)</th><td>−99.6</td><td>−101.1</td><td>+1.5 (−1.5%)</td><td>−100.2</td><td>+0.6 (−0.6%)</td></tr>
+              <tr><th scope="row">Bending moment maximum / minimum (kNm/m)</th><td>135.0 / −300.7</td><td>137.7 / −305.1</td><td>−2.7 / +4.4 (−2.0 / −1.4% by magnitude)</td><td>135.2 / −304.4</td><td>−0.2 / +3.7 (−0.1 / −1.2% by magnitude)</td></tr>
+              <tr><th scope="row">Shear maximum / minimum (kN/m)</th><td>83.4 / −134.8</td><td>85.0 / −135.8</td><td>−1.6 / +1.0 (−1.9 / −0.7% by magnitude)</td><td>84.4 / −135.1</td><td>−1.0 / +0.3 (−1.2 / −0.2% by magnitude)</td></tr>
+              <tr><th scope="row">Anchor force (kN/m)</th><td>192.8</td><td>193.7</td><td>−0.9 (−0.5%)</td><td>191.3</td><td>+1.5 (+0.8%)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="validation-footnote">The two editions differ for this stage. The 2023 manual describes a Fine calculation, which evaluates Culmann coefficients at minor nodes five times as often as the Coarse setting described in the 9.1 manual. This stage uses a 20 kPa strip from 0 to 2 m and a 50 kN/m mooring force at the wall top, close to the wall where the manual says calculation settings can matter most. The engine evaluates coefficients at the nodes of its own discretisation, yet its results are closer to the 9.1 values. The reason for the difference cannot be determined from the manuals alone.</p>
+        <p class="validation-note">The soil friction angles in this example range from 17° to 35°, exceeding the 15° range noted in the 2023 manual for straight Culmann slip surfaces. The engine also reports this range warning, so Tutorial 4 is outside the stated intended range of that method.</p>
+      </section>
+
+      <section class="panel validation-section" aria-labelledby="limitations-title">
+        <div class="canvas-section-heading">
+          <div>
+            <p class="panel-kicker">Known limitations and open points</p>
+            <h2 id="limitations-title">Limits of the current comparison</h2>
+          </div>
+        </div>
+        <ul>
+          <li>The comparison evidence is limited to the cases and outputs shown here; broader benchmark coverage is incomplete.</li>
+          <li>The public request limit is 50 soil layers per profile.</li>
+          <li>In SPW 2006 Ex3 steps 1–2, a weightless submerged layer on the excavated side is not reproduced exactly: the engine applies a minimum submerged unit weight of 0.1 kN/m³, corresponding to 0.6 kPa at 8 m.</li>
+          <li>The larger SPW 2006 differences during stage changes reflect the stated spring-staging conventions. They should be considered when interpreting results for stages that change effective stress around an already displaced wall.</li>
+          <li>Tutorial 2 cannot be reproduced from the manual's printed data because its soil profile is shown only as a plot from a CPT file.</li>
+          <li>Tutorials 5, 7–15 are outside this comparison. They cover required length, design checks, anchor stability, combi-walls, additional pore pressures, limited-width loads, drivability and single piles.</li>
+          <li>The Tutorial 4 difference between manual editions and calculation settings remains unresolved; a direct comparison using both settings is needed to isolate its cause.</li>
+        </ul>
+        <p>Use the results with engineering judgement and check that the chosen model and input assumptions suit the project.</p>
+      </section>
+
+      <footer class="panel validation-section">
+        <p class="validation-status">Validation status 20 October 2026</p>
+        <p>For questions, contact <a class="validation-contact" href="https://www.easuys.be/">EA Suys</a>.</p>
+      </footer>
+    </main>
+  </body>
+</html>
