@@ -375,6 +375,285 @@ export const SAMPLE_PROJECT: ProjectInput = {
   },
 };
 
+export type ExamplePreset = {
+  id: string;
+  title: string;
+  lede: string;
+  facts: string[];
+  note: string;
+  project: ProjectInput;
+};
+
+const sheetPileSegment = (libraryId: string, topLevelM: number, bottomLevelM: number): WallSegmentInput => ({
+  label: STEEL_SHEET_PILE_LIBRARY[libraryId].section_name,
+  top_level_m: topLevelM,
+  bottom_level_m: bottomLevelM,
+  ei_kNm2_per_m: Math.round(STEEL_SHEET_PILE_LIBRARY[libraryId].ei_kNm2_per_m),
+  steel_section: { library_section_id: libraryId, steel_grade_mpa: 355 },
+});
+
+const sameLayersBothSides = (layers: SoilLayerInput[]) => ({
+  left: { layers: structuredClone(layers) },
+  right: { layers: structuredClone(layers) },
+});
+
+// One-click examples. Public API features only: horizontal ground, uniform
+// surcharges, the Coulomb earth-pressure default, EC7-BE design approach 1 with
+// the default partial factors. Left = excavation side, right = retained side.
+// Soil values are typical illustrative values for Belgian soils, not project data.
+export const EXAMPLE_PRESETS: ReadonlyArray<ExamplePreset> = [
+  {
+    id: "cantilever-sand",
+    title: "Cantilever sheet pile in sand",
+    lede: "3.0 m excavation in medium dense sand, no anchors.",
+    facts: [
+      "AZ 18-700, S355, toe at −9.0 m",
+      "Loose sand fill over medium dense sand (φ′ 30–32.5°)",
+      "Groundwater −4.0 m · 10 kPa site traffic",
+      "Displacement limit 30 mm (H/100)",
+    ],
+    note: "Typical of a temporary pit or a basement edge in Campine or Flemish sand.",
+    project: {
+      design_mode: "ec7",
+      wall_type: "steel_sheet_pile",
+      wall_geometry: {
+        top_level_m: 0,
+        toe_level_m: -9,
+        inclination_degrees: 0,
+        segments: [sheetPileSegment("AZ_18_700", 0, -9)],
+      },
+      phases: [
+        {
+          name: "Initial state",
+          excavation_level_left_m: 0,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -4,
+          groundwater_level_right_m: -4,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Excavate to -3.0 m",
+          excavation_level_left_m: -3,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -4,
+          groundwater_level_right_m: -4,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+      ],
+      soil_profiles: sameLayersBothSides([
+        { top_level_m: 0, bottom_level_m: -1, unit_weight_dry_kN_m3: 17, unit_weight_wet_kN_m3: 19, friction_angle_deg: 30, cohesion_kPa: 0, subgrade_modulus_kN_m3: 12000 },
+        { top_level_m: -1, bottom_level_m: -15, unit_weight_dry_kN_m3: 18, unit_weight_wet_kN_m3: 20, friction_angle_deg: 32.5, cohesion_kPa: 0, subgrade_modulus_kN_m3: 20000 },
+      ]),
+      supports: [],
+      design_options: { target_element_length_m: 0.25, max_wall_displacement_mm: 30 },
+    },
+  },
+  {
+    id: "anchored-sheet-pile",
+    title: "Anchored sheet pile, one anchor row",
+    lede: "6.0 m basement pit next to a street, grouted anchors at −1.5 m.",
+    facts: [
+      "AZ 26-700, S355, toe at −13.0 m",
+      "Fill, loam, then dense sand (φ′ 27.5–32.5°)",
+      "Groundwater −3.0 m outside, pumped to −6.5 m inside",
+      "Anchors at 30°, prestress 100 kN/m · limit 30 mm",
+    ],
+    note: "Excavate to −2.0 m, install and prestress the anchors, then excavate to the final level.",
+    project: {
+      design_mode: "ec7",
+      wall_type: "steel_sheet_pile",
+      wall_geometry: {
+        top_level_m: 0,
+        toe_level_m: -13,
+        inclination_degrees: 0,
+        segments: [sheetPileSegment("AZ_26_700", 0, -13)],
+      },
+      phases: [
+        {
+          name: "Initial state",
+          excavation_level_left_m: 0,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -3,
+          groundwater_level_right_m: -3,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Excavate to -2.0 m",
+          excavation_level_left_m: -2,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -3,
+          groundwater_level_right_m: -3,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Install and prestress anchors",
+          excavation_level_left_m: -2,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -3,
+          groundwater_level_right_m: -3,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Excavate to -6.0 m (pumped to -6.5 m)",
+          excavation_level_left_m: -6,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -6.5,
+          groundwater_level_right_m: -3,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+      ],
+      soil_profiles: sameLayersBothSides([
+        { top_level_m: 0, bottom_level_m: -2, unit_weight_dry_kN_m3: 17, unit_weight_wet_kN_m3: 19, friction_angle_deg: 30, cohesion_kPa: 0, subgrade_modulus_kN_m3: 12000 },
+        { top_level_m: -2, bottom_level_m: -5, unit_weight_dry_kN_m3: 18, unit_weight_wet_kN_m3: 19, friction_angle_deg: 27.5, cohesion_kPa: 2, subgrade_modulus_kN_m3: 8000 },
+        { top_level_m: -5, bottom_level_m: -20, unit_weight_dry_kN_m3: 18, unit_weight_wet_kN_m3: 20, friction_angle_deg: 32.5, cohesion_kPa: 0, subgrade_modulus_kN_m3: 30000 },
+      ]),
+      supports: [
+        {
+          id: "A1",
+          type: "anchor",
+          depth_m: 1.5,
+          side: "right",
+          inclination_degrees: 30,
+          stiffness_kN_per_m: 8000,
+          prestress_kN_per_m: 100,
+          capacity_kN_per_m: 400,
+          active_from_phase: 2,
+        },
+      ],
+      design_options: { target_element_length_m: 0.25, max_wall_displacement_mm: 30 },
+    },
+  },
+  {
+    id: "propped-diaphragm-wall",
+    title: "Propped diaphragm wall",
+    lede: "7.0 m two-level basement, 0.60 m diaphragm wall, two rows of steel props.",
+    facts: [
+      "0.60 m C30/37 wall, toe at −15.0 m in clay",
+      "Fill, dense sand, stiff clay from −12 m (φ′ 22.5–32.5°)",
+      "Groundwater −5.0 m outside, pumped to −7.5 m inside",
+      "Props at −1.0 m and −4.0 m · limit 25 mm",
+    ],
+    note: "Typical Brussels profile: fill over Brussels sand on Ieper clay. Moment and shear resistance are the entered design values of the reinforced section.",
+    project: {
+      design_mode: "ec7",
+      wall_type: "diaphragm_wall",
+      wall_geometry: {
+        top_level_m: 0,
+        toe_level_m: -15,
+        inclination_degrees: 0,
+        segments: [
+          {
+            label: "Diaphragm wall 0.60 m C30/37",
+            top_level_m: 0,
+            bottom_level_m: -15,
+            // E_cm 33 000 MPa x 0.60^3 / 12 m4/m.
+            ei_kNm2_per_m: 594000,
+            moment_resistance_kNm_per_m: 420,
+            shear_resistance_kN_per_m: 230,
+          },
+        ],
+      },
+      phases: [
+        {
+          name: "Initial state",
+          excavation_level_left_m: 0,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -5,
+          groundwater_level_right_m: -5,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Excavate to -2.0 m",
+          excavation_level_left_m: -2,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -5,
+          groundwater_level_right_m: -5,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Install props at -1.0 m",
+          excavation_level_left_m: -2,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -5,
+          groundwater_level_right_m: -5,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Excavate to -4.5 m",
+          excavation_level_left_m: -4.5,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -5,
+          groundwater_level_right_m: -5,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Install props at -4.0 m",
+          excavation_level_left_m: -4.5,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -5,
+          groundwater_level_right_m: -5,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+        {
+          name: "Excavate to -7.0 m (pumped to -7.5 m)",
+          excavation_level_left_m: -7,
+          excavation_level_right_m: 0,
+          groundwater_level_left_m: -7.5,
+          groundwater_level_right_m: -5,
+          surcharge_left_kPa: 0,
+          surcharge_right_kPa: 10,
+        },
+      ],
+      soil_profiles: sameLayersBothSides([
+        { top_level_m: 0, bottom_level_m: -3, unit_weight_dry_kN_m3: 18, unit_weight_wet_kN_m3: 19, friction_angle_deg: 27.5, cohesion_kPa: 0, subgrade_modulus_kN_m3: 8000 },
+        { top_level_m: -3, bottom_level_m: -12, unit_weight_dry_kN_m3: 18, unit_weight_wet_kN_m3: 20, friction_angle_deg: 32.5, cohesion_kPa: 0, subgrade_modulus_kN_m3: 30000 },
+        { top_level_m: -12, bottom_level_m: -25, unit_weight_dry_kN_m3: 19.5, unit_weight_wet_kN_m3: 19.5, friction_angle_deg: 22.5, cohesion_kPa: 10, subgrade_modulus_kN_m3: 15000 },
+      ]),
+      supports: [
+        {
+          id: "P1",
+          type: "strut",
+          depth_m: 1,
+          // side = direction of the support force on the wall: the props push it towards the retained soil.
+          side: "right",
+          inclination_degrees: 0,
+          stiffness_kN_per_m: 40000,
+          prestress_kN_per_m: 50,
+          capacity_kN_per_m: 600,
+          active_from_phase: 2,
+        },
+        {
+          id: "P2",
+          type: "strut",
+          depth_m: 4,
+          side: "right",
+          inclination_degrees: 0,
+          stiffness_kN_per_m: 40000,
+          prestress_kN_per_m: 100,
+          capacity_kN_per_m: 600,
+          active_from_phase: 4,
+        },
+      ],
+      design_options: { target_element_length_m: 0.25, max_wall_displacement_mm: 25 },
+    },
+  },
+];
+
+export function examplePresetById(id: string | null | undefined) {
+  return EXAMPLE_PRESETS.find((preset) => preset.id === id);
+}
+
 export const SAMPLE_RESULT: any = {
   formula_version: "retaining-ts-sample-v1",
   discretization: {
@@ -1530,9 +1809,13 @@ export function buildGeometryPreviewSvg(project: ProjectInput, phaseIndex = 0) {
     .map((support) => {
       const y = scaleY(project.wall_geometry.top_level_m - support.depth_m);
       const supportWallX = wallAxisX(project.wall_geometry.top_level_m - support.depth_m);
-      const supportSide = support.side ?? "right";
-      const supportColor = supportSide === "left" ? "#8b5e00" : "#0b6e4f";
-      const supportLabel = `${support.id} ${supportTypeLabel(support.type)}`;
+      // The API side of an anchor or strut is the direction of its force on the wall.
+      // An anchor sits on that side (it pulls); a strut stands on the other side (it pushes),
+      // so a strut is drawn in the excavation.
+      const forceSide = support.side ?? "right";
+      const supportSide = support.type === "strut" ? (forceSide === "left" ? "right" : "left") : forceSide;
+      const supportColor = support.type === "strut" ? "#8b5e00" : supportSide === "left" ? "#8b5e00" : "#0b6e4f";
+      const supportLabel = `${support.id} ${support.type === "strut" ? "prop" : supportTypeLabel(support.type)}`;
       const angle = ((support.inclination_degrees ?? 0) * Math.PI) / 180;
       const length = 64;
       const dx = Math.cos(angle) * length * (supportSide === "left" ? -1 : 1);
@@ -1831,7 +2114,7 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <label class="quick-editor-field"><span>Right pore offset</span><input data-qe-right-pore type="number" step="0.1" value="${escapeHtml(rightLayer?.pore_pressure_offset_kPa ?? "")}"></label>
       <label class="quick-editor-field"><span>Support id</span><input data-qe-support-id type="text" value="${escapeHtml(selectedSupport?.id ?? "")}"></label>
       <label class="quick-editor-field"><span>Support type</span><select data-qe-support-type><option value="anchor" ${selectedSupport?.type === "anchor" ? "selected" : ""}>Anchor</option><option value="strut" ${selectedSupport?.type === "strut" ? "selected" : ""}>Strut</option><option value="spring" ${selectedSupport?.type === "spring" ? "selected" : ""}>Spring</option><option value="underwater_concrete_block" ${selectedSupport?.type === "underwater_concrete_block" ? "selected" : ""}>Underwater concrete block</option><option value="rigid" ${selectedSupport?.type === "rigid" ? "selected" : ""}>Rigid</option><option value="clamp" ${selectedSupport?.type === "clamp" ? "selected" : ""}>Clamp</option><option value="point_load" ${selectedSupport?.type === "point_load" ? "selected" : ""}>Point load</option><option value="moment" ${selectedSupport?.type === "moment" ? "selected" : ""}>Moment</option></select></label>
-      <label class="quick-editor-field"><span>Support side</span><select data-qe-support-side><option value="right" ${selectedSupport?.side !== "left" ? "selected" : ""}>Right</option><option value="left" ${selectedSupport?.side === "left" ? "selected" : ""}>Left</option></select></label>
+      <label class="quick-editor-field" title="Anchors and props: the side the support force pulls or pushes the wall towards (normally the retained side). Point loads and moments: the side they act from."><span>Support side</span><select data-qe-support-side><option value="right" ${selectedSupport?.side !== "left" ? "selected" : ""}>Right</option><option value="left" ${selectedSupport?.side === "left" ? "selected" : ""}>Left</option></select></label>
       <label class="quick-editor-field"><span>Support depth</span><input data-qe-support-depth type="number" step="0.1" value="${escapeHtml(selectedSupport?.depth_m ?? 0)}"></label>
       <label class="quick-editor-field"><span>Support active from phase</span><input data-qe-support-active-from type="number" step="1" min="1" value="${escapeHtml((selectedSupport?.active_from_phase ?? 0) + 1)}"></label>
       <label class="quick-editor-field"><span>Support active to phase</span><input data-qe-support-active-to type="number" step="1" min="1" value="${escapeHtml(selectedSupport?.active_to_phase === undefined ? "" : selectedSupport.active_to_phase + 1)}" placeholder="blank = final phase"></label>
@@ -2797,8 +3080,8 @@ export function buildResultHtml(result: any, phaseIndex: number, view: ResultDes
       <h3>Wall-length search</h3>
       <p>Selected toe ${formatNumber(wallLengthSearch.selected_toe_level_m, 1)} m after ${wallLengthSearch.trial_count} trial(s). Stop reason: ${escapeHtml(wallLengthSearch.stop_reason)}.</p>
     </article>` : ""}
-    <article class="result-card result-card-wide">
-      <h3>Solver discretization</h3>
+    <details class="result-card result-card-wide result-details">
+      <summary><h3>Solver discretization</h3></summary>
       <p>${escapeHtml(buildDiscretizationSummary(result))}</p>
       <div class="table-shell">
         <table>
@@ -2808,7 +3091,7 @@ export function buildResultHtml(result: any, phaseIndex: number, view: ResultDes
           <tbody>${buildDiscretizationRows(result)}</tbody>
         </table>
       </div>
-    </article>
+    </details>
     <article class="result-card result-card-wide">
       <h3>Solver provenance</h3>
       <p>Formula version, warnings, assumptions, and source references returned directly by the API for this run.</p>
@@ -2867,8 +3150,8 @@ export function buildResultHtml(result: any, phaseIndex: number, view: ResultDes
         </table>
       </div>
     </article>
-    <article class="result-card result-card-wide">
-      <h3>Sampled numerical output</h3>
+    <details class="result-card result-card-wide result-details">
+      <summary><h3>Sampled numerical output</h3></summary>
       <p>Depth-wise API response table used for the plots and report without client-side engineering recomputation.</p>
       <div class="table-shell">
         <table>
@@ -2878,8 +3161,466 @@ export function buildResultHtml(result: any, phaseIndex: number, view: ResultDes
           <tbody>${buildSampledResultRows(phase)}</tbody>
         </table>
       </div>
-    </article>
+    </details>
   `;
+}
+
+// ---------------------------------------------------------------------------
+// v2: one-click examples, design summary card, study request call to action.
+// Everything below only reads the API response; no mechanics are recomputed.
+
+export const VALIDATION_PAGE_PATH = "validation.html";
+export const VALIDATION_PAGE_URL = "https://retaining.easuys.com/validation.html";
+export const STUDY_REQUEST_EMAIL = "info@easuys.be";
+export const STUDY_REQUEST_SUBJECT = "Retaining wall study - request for a fixed-price offer";
+export const ON_REQUEST_SENTENCE =
+  "Sloping ground and strip loads (for example a crane platform or a neighbouring foundation) are available on request.";
+
+export type SummaryStatus = "pass" | "fail" | "not_assessed";
+
+export type DesignSummaryFigure = { id: string; label: string; value: string; detail: string };
+
+export type DesignSummaryCheck = {
+  id: string;
+  label: string;
+  basis: string;
+  demand: string;
+  capacity: string;
+  utilisation?: number;
+  status: SummaryStatus;
+  note: string;
+};
+
+export type DesignSummary = {
+  caseTitle: string;
+  wallLabel: string;
+  ec7: { active: boolean; label: string; detail: string };
+  figures: DesignSummaryFigure[];
+  checks: DesignSummaryCheck[];
+  overall: SummaryStatus;
+  overallText: string;
+};
+
+function finiteNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function fmt(value: unknown, digits = 1) {
+  const number = finiteNumber(value);
+  return number === undefined ? "n/a" : number.toFixed(digits);
+}
+
+function splitGoverningPhase(value: unknown) {
+  const text = String(value ?? "").trim();
+  const match = /^(.*?)\s*\[set (\d)\]$/.exec(text);
+  return match ? { phase: match[1], set: `set ${match[2]}` } : { phase: text, set: "" };
+}
+
+function phaseWithSet(value: unknown) {
+  const { phase, set } = splitGoverningPhase(value);
+  if (!phase) return "n/a";
+  return set ? `EC7 ${set} · ${phase}` : phase;
+}
+
+function supportRoleLabel(type: unknown) {
+  if (type === "anchor") return "Anchor";
+  if (type === "strut") return "Prop";
+  const text = typeof type === "string" && type ? supportTypeLabel(type as SupportInput["type"]) : "support";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function characteristicSupportMaximum(result: any, supportId: string) {
+  let best: { horizontal: number; axial?: number; phase: string } | undefined;
+  for (const phase of result?.phases ?? []) {
+    if (phase?.converged === false) continue;
+    for (const reaction of phase?.support_reactions ?? []) {
+      if (String(reaction?.id) !== supportId) continue;
+      const horizontal = Math.abs(Number(reaction?.reaction_kN_per_m ?? 0));
+      if (!best || horizontal > best.horizontal) {
+        const axial = finiteNumber(reaction?.axial_force_kN_per_m);
+        best = { horizontal, axial: axial === undefined ? undefined : Math.abs(axial), phase: String(phase?.name ?? "n/a") };
+      }
+    }
+  }
+  return best;
+}
+
+export function wallSectionShortLabel(project: ProjectInput) {
+  const segment = project.wall_geometry.segments[0];
+  if (project.wall_type === "steel_sheet_pile") {
+    const section = segment?.steel_section;
+    const libraryName = section?.library_section_id
+      ? STEEL_SHEET_PILE_LIBRARY[section.library_section_id]?.section_name
+      : "";
+    const name = section?.section_name || libraryName || segment?.label || "Steel sheet pile";
+    return `${name} · fy ${fmt(section?.steel_grade_mpa ?? 355, 0)} MPa`;
+  }
+  return segment?.label || "Diaphragm wall";
+}
+
+function ec7FactorsAreDefaults(partialFactors: any) {
+  for (const setName of ["set1", "set2"] as const) {
+    const defaults = EC7_PARTIAL_FACTOR_DEFAULTS[setName] as Record<string, number>;
+    for (const [key, value] of Object.entries(defaults)) {
+      const used = Number(partialFactors?.[setName]?.[key] ?? value);
+      if (Math.abs(used - value) > 1e-9) return false;
+    }
+  }
+  return true;
+}
+
+function utilisationStatus(utilisation: number | undefined, pass: unknown): SummaryStatus {
+  if (utilisation !== undefined) return utilisation <= 1 + 1e-9 ? "pass" : "fail";
+  if (pass === true) return "pass";
+  if (pass === false) return "fail";
+  return "not_assessed";
+}
+
+export function buildDesignSummary(project: ProjectInput, result: any, caseTitle = "Retaining project"): DesignSummary {
+  const displayProject = resolveAnalyzedProject(project, result);
+  const isSteel = displayProject.wall_type === "steel_sheet_pile";
+  const verification = result?.ec7_verification;
+  const wall = result?.design_checks?.wall;
+  const serviceability = result?.design_checks?.serviceability;
+  const supportChecks: any[] = Array.isArray(result?.design_checks?.supports) ? result.design_checks.supports : [];
+  const governing = result?.governing ?? {};
+  const wallLabel = wallSectionShortLabel(displayProject);
+  const designWord = verification ? "Design" : "Max.";
+  const valueKind = verification ? "design value" : "characteristic";
+
+  const bendingSet = splitGoverningPhase(wall?.bending_governing_phase).set;
+  const shearSet = splitGoverningPhase(wall?.shear_governing_phase).set;
+  const ec7 = verification
+    ? {
+        active: true,
+        label: "EC7-BE, design approach 1, sets 1 and 2",
+        detail: [
+          ec7FactorsAreDefaults(verification.partial_factors) ? "Default EC7-BE partial factors" : "Partial factors changed by the user",
+          `overdig ${fmt(Number(verification.partial_factors?.set1?.overdig_fraction ?? 0.1) * 100, 0)} % of H, at most ${fmt(verification.partial_factors?.set1?.overdig_max_m ?? 0.5, 1)} m`,
+          bendingSet || shearSet
+            ? `bending governed by ${bendingSet || "the characteristic analysis"}, shear by ${shearSet || "the characteristic analysis"}`
+            : "",
+          "displacements are characteristic (SLS)",
+        ].filter(Boolean).join("; ") + ".",
+      }
+    : {
+        active: false,
+        label: "Characteristic analysis only",
+        detail: "No EC7 ultimate limit state verification. Set Design mode to EC7 for sets 1 and 2 with the EC7-BE factors.",
+      };
+
+  const figures: DesignSummaryFigure[] = [];
+  figures.push({
+    id: "moment",
+    label: `${designWord} bending moment${verification ? " M_Ed" : ""}`,
+    value: `${fmt(wall?.bending_demand_kNm_per_m ?? governing.max_abs_moment_kNm_per_m, 0)} kNm/m`,
+    detail: wall
+      ? `${splitGoverningPhase(wall.bending_governing_phase).set ? `EC7 ${splitGoverningPhase(wall.bending_governing_phase).set}` : valueKind} · at ${fmt(wall.bending_governing_level_m, 1)} m`
+      : `${valueKind} · ${governing.max_abs_moment_phase ?? "n/a"}`,
+  });
+  figures.push({
+    id: "shear",
+    label: `${designWord} shear force${verification ? " V_Ed" : ""}`,
+    value: `${fmt(wall?.shear_demand_kN_per_m ?? governing.max_abs_shear_kN_per_m, 0)} kN/m`,
+    detail: wall
+      ? `${splitGoverningPhase(wall.shear_governing_phase).set ? `EC7 ${splitGoverningPhase(wall.shear_governing_phase).set}` : valueKind} · at ${fmt(wall.shear_governing_level_m, 1)} m`
+      : `${valueKind} · ${governing.max_abs_shear_phase ?? "n/a"}`,
+  });
+  figures.push({
+    id: "displacement",
+    label: "Wall displacement (SLS)",
+    value: `${fmt(serviceability?.max_abs_displacement_mm ?? governing.max_abs_displacement_mm, 1)} mm`,
+    detail: `${finiteNumber(serviceability?.limit_mm) !== undefined ? `limit ${fmt(serviceability.limit_mm, 0)} mm · ` : ""}characteristic`,
+  });
+  const governingSupport = governingSupportCheck(result);
+  if (governingSupport) {
+    const role = supportRoleLabel(governingSupport.support_type);
+    const designForce = finiteNumber(governingSupport.axial_demand_kN_per_m) ?? finiteNumber(governingSupport.demand_kN_per_m);
+    const characteristic = characteristicSupportMaximum(result, String(governingSupport.support_id));
+    const characteristicForce = characteristic ? (characteristic.axial ?? characteristic.horizontal) : undefined;
+    figures.push({
+      id: "support",
+      label: `${role} force${verification ? " (design)" : ""}`,
+      value: `${fmt(designForce, 0)} kN/m`,
+      detail: [
+        `${governingSupport.support_id}${finiteNumber(governingSupport.axial_demand_kN_per_m) !== undefined ? " · axial" : ""}`,
+        splitGoverningPhase(governingSupport.governing_phase).set ? `EC7 ${splitGoverningPhase(governingSupport.governing_phase).set}` : "",
+        characteristicForce !== undefined ? `characteristic ${fmt(characteristicForce, 0)} kN/m` : "",
+      ].filter(Boolean).join(" · "),
+    });
+  } else {
+    figures.push({ id: "support", label: "Anchor / prop force", value: "None", detail: "Cantilever wall: no anchors or props" });
+  }
+  const bendingUtilisation = finiteNumber(wall?.bending_utilization);
+  const shearUtilisation = finiteNumber(wall?.shear_utilization);
+  const maxUtilisation = bendingUtilisation === undefined && shearUtilisation === undefined
+    ? undefined
+    : Math.max(bendingUtilisation ?? 0, shearUtilisation ?? 0);
+  figures.push({
+    id: "utilisation",
+    label: `${isSteel ? "Profile" : "Section"} utilisation`,
+    value: maxUtilisation === undefined ? "n/a" : fmt(maxUtilisation, 2),
+    detail: `bending ${fmt(bendingUtilisation, 2)} · shear ${fmt(shearUtilisation, 2)}`,
+  });
+
+  const checks: DesignSummaryCheck[] = [];
+  if (wall) {
+    checks.push({
+      id: "wall-bending",
+      label: "Wall bending",
+      basis: isSteel ? "EN 1993-5 5.2.2, M_Rd = W_pl f_y / γ_M0" : "Entered design moment resistance",
+      demand: `${fmt(wall.bending_demand_kNm_per_m, 1)} kNm/m`,
+      capacity: `${fmt(wall.bending_capacity_kNm_per_m, 1)} kNm/m`,
+      utilisation: bendingUtilisation,
+      status: utilisationStatus(bendingUtilisation, wall.pass),
+      note: phaseWithSet(wall.bending_governing_phase),
+    });
+    checks.push({
+      id: "wall-shear",
+      label: "Wall shear",
+      basis: isSteel ? "EN 1993-5 5.2.2, V_Rd = A_v f_y / (√3 γ_M0)" : "Entered design shear resistance",
+      demand: `${fmt(wall.shear_demand_kN_per_m, 1)} kN/m`,
+      capacity: `${fmt(wall.shear_capacity_kN_per_m, 1)} kN/m`,
+      utilisation: shearUtilisation,
+      status: utilisationStatus(shearUtilisation, wall.pass),
+      note: phaseWithSet(wall.shear_governing_phase),
+    });
+  }
+  for (const item of supportChecks) {
+    const axial = finiteNumber(item?.axial_demand_kN_per_m) !== undefined && finiteNumber(item?.axial_capacity_kN_per_m) !== undefined;
+    const utilisation = finiteNumber(item?.utilization_ratio);
+    checks.push({
+      id: `support-${item?.support_id}`,
+      label: `${supportRoleLabel(item?.support_type)} ${item?.support_id ?? ""}`.trim(),
+      basis: axial ? "Entered capacity, axial force" : "Entered capacity, horizontal force",
+      demand: `${fmt(axial ? item.axial_demand_kN_per_m : item?.demand_kN_per_m, 1)} kN/m`,
+      capacity: `${fmt(axial ? item.axial_capacity_kN_per_m : item?.capacity_kN_per_m, 1)} kN/m`,
+      utilisation,
+      status: item?.pass === true ? "pass" : item?.pass === false ? "fail" : utilisationStatus(utilisation, undefined),
+      note: phaseWithSet(item?.governing_phase),
+    });
+  }
+  const displacement = finiteNumber(serviceability?.max_abs_displacement_mm);
+  const limit = finiteNumber(serviceability?.limit_mm);
+  checks.push({
+    id: "displacement",
+    label: "Wall displacement",
+    basis: "Project limit, characteristic analysis (SLS)",
+    demand: `${fmt(displacement, 1)} mm`,
+    capacity: limit === undefined ? "not declared" : `${fmt(limit, 1)} mm`,
+    utilisation: displacement !== undefined && limit !== undefined && limit > 0 ? displacement / limit : undefined,
+    status: serviceability?.assessed === true ? (serviceability.pass === true ? "pass" : "fail") : "not_assessed",
+    note: String(governing.max_abs_displacement_phase ?? ""),
+  });
+  const failedStages: string[] = [];
+  for (const phase of result?.phases ?? []) {
+    if (phase?.converged === false) failedStages.push(`characteristic: ${phase.name}`);
+  }
+  for (const setResult of verification?.sets ?? []) {
+    for (const phase of setResult?.phases ?? []) {
+      if (phase?.converged === false) failedStages.push(`EC7 ${String(setResult.set ?? "").replace("set", "set ")}: ${phase.name}`);
+    }
+  }
+  const stageCount = Array.isArray(result?.phases) ? result.phases.length : 0;
+  checks.push({
+    id: "equilibrium",
+    label: "Equilibrium in every stage",
+    basis: verification ? "Characteristic analysis and EC7 sets 1 and 2" : "Characteristic analysis",
+    demand: `${stageCount} stage${stageCount === 1 ? "" : "s"}`,
+    capacity: failedStages.length ? `${failedStages.length} without equilibrium` : "all converged",
+    status: failedStages.length ? "fail" : stageCount ? "pass" : "not_assessed",
+    note: failedStages.length
+      ? `No equilibrium in ${failedStages.join("; ")}. Lengthen the wall or add support.`
+      : "",
+  });
+
+  const overallPass = result?.design_checks?.overall_pass;
+  const anyFail = checks.some((check) => check.status === "fail");
+  const overall: SummaryStatus = overallPass === true && !anyFail ? "pass" : overallPass === false || anyFail ? "fail" : "not_assessed";
+  return {
+    caseTitle,
+    wallLabel,
+    ec7,
+    figures,
+    checks,
+    overall,
+    overallText: overall === "pass"
+      ? "All assessed checks pass"
+      : overall === "fail"
+        ? "One or more checks fail"
+        : "Checks not assessed",
+  };
+}
+
+const SUMMARY_STATUS_LABEL: Record<SummaryStatus, string> = { pass: "✓ Pass", fail: "✗ Fail", not_assessed: "– Not assessed" };
+
+export function buildStudyRequestMailto(summary?: DesignSummary | null) {
+  const lines = [
+    "Hello,",
+    "",
+    "I would like a fixed-price offer for a retaining wall study.",
+    "",
+    "Project location:",
+    "Excavation depth and length:",
+    "Neighbouring buildings, roads or loads:",
+    "Soil investigation (CPT / borehole) available: yes / no",
+    "Planned wall type:",
+    "Timing:",
+  ];
+  if (summary) {
+    lines.push("", `Screening result from the workspace (${summary.caseTitle}, not a design):`);
+    for (const figure of summary.figures) {
+      lines.push(`- ${figure.label}: ${figure.value} (${figure.detail})`);
+    }
+    lines.push(`- ${summary.ec7.label}: ${summary.overallText.toLowerCase()}`);
+  }
+  const subject = summary ? `${STUDY_REQUEST_SUBJECT} (${summary.caseTitle})` : STUDY_REQUEST_SUBJECT;
+  return `mailto:${STUDY_REQUEST_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
+}
+
+export function buildStudyCtaHtml(summary?: DesignSummary | null, options: { forReport?: boolean } = {}) {
+  const text = `<p class="study-cta-text"><strong>Need a design you can build from?</strong> EA Suys prepares the retaining wall study for your project, with soil parameters from your CPTs, every construction stage, the anchor or prop design and a calculation note. ${escapeHtml(ON_REQUEST_SENTENCE)}</p>`;
+  if (options.forReport) {
+    return `<div class="study-cta">${text}<p class="study-cta-text">Request a study or a fixed-price offer: ${escapeHtml(STUDY_REQUEST_EMAIL)}</p></div>`;
+  }
+  return `<div class="study-cta">${text}<a class="action-button study-cta-button" data-study-mailto href="${escapeHtml(buildStudyRequestMailto(summary))}">Request a study · fixed-price offer</a></div>`;
+}
+
+const SYMBOL_PATTERN = /(^|[\s(=/√])(M|V|W|f|A|γ)_(Ed|Rd|pl|y|v|M0)(?=$|[\s),/])/g;
+
+/** Escapes the text and writes symbols such as M_Ed or γ_M0 with a subscript. */
+export function withSubscripts(text: string) {
+  return escapeHtml(text).replace(SYMBOL_PATTERN, (_match, before, symbol, index) => `${before}${symbol}<sub>${index}</sub>`);
+}
+
+export function buildDesignSummaryHtml(summary: DesignSummary, options: { forReport?: boolean } = {}) {
+  const validationHref = options.forReport ? VALIDATION_PAGE_URL : VALIDATION_PAGE_PATH;
+  const figures = summary.figures.map((figure) => `
+      <div class="summary-figure summary-figure-${escapeHtml(figure.id)}">
+        <span class="summary-figure-label">${withSubscripts(figure.label)}</span>
+        <strong class="summary-figure-value">${escapeHtml(figure.value)}</strong>
+        <span class="summary-figure-detail">${escapeHtml(figure.detail)}</span>
+      </div>`).join("");
+  const rows = summary.checks.map((check) => {
+    const utilisation = check.utilisation === undefined ? "—" : fmt(check.utilisation, 2);
+    const bar = check.utilisation === undefined
+      ? ""
+      : `<span class="util-bar" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, check.utilisation * 100)).toFixed(0)}%"></span></span>`;
+    return `
+        <tr class="summary-check summary-check-${check.status}" data-check="${escapeHtml(check.id)}">
+          <th scope="row">${escapeHtml(check.label)}<span class="summary-check-basis">${withSubscripts(check.basis)}</span></th>
+          <td>${escapeHtml(check.demand)}</td>
+          <td>${escapeHtml(check.capacity)}</td>
+          <td class="summary-util">${utilisation}${bar}</td>
+          <td><span class="status-chip status-${check.status}">${SUMMARY_STATUS_LABEL[check.status]}</span>${check.note ? `<span class="summary-check-note">${escapeHtml(check.note)}</span>` : ""}</td>
+        </tr>`;
+  }).join("");
+  return `
+    <article class="design-summary design-summary-${summary.overall}" aria-labelledby="design-summary-title" data-design-summary-card>
+      <header class="design-summary-head">
+        <div>
+          <p class="panel-kicker">Design summary</p>
+          <h2 id="design-summary-title">${escapeHtml(summary.caseTitle)}</h2>
+          <p class="design-summary-sub">${escapeHtml(summary.wallLabel)} · ${escapeHtml(summary.ec7.label)}</p>
+        </div>
+        <p class="summary-verdict status-${summary.overall}" data-summary-verdict>${escapeHtml(summary.overallText)}</p>
+      </header>
+      <div class="summary-figures">${figures}
+      </div>
+      <div class="table-shell">
+        <table class="summary-checks">
+          <thead><tr><th scope="col">Check</th><th scope="col">Demand</th><th scope="col">Resistance / limit</th><th scope="col">Utilisation</th><th scope="col">Status</th></tr></thead>
+          <tbody>${rows}
+          </tbody>
+        </table>
+      </div>
+      <p class="summary-ec7"><strong>EC7 set used:</strong> ${escapeHtml(summary.ec7.label)}. ${escapeHtml(summary.ec7.detail)}</p>
+      <p class="summary-scope">Screening result, not a design release. Not covered here: overall and deep-seated stability, anchor length, vertical equilibrium, hydraulic failure (heave, piping) and corrosion allowance.</p>
+      <p class="summary-evidence">How the engine is checked: comparisons with published examples and manual tutorials, with the differences explained, on the <a href="${escapeHtml(validationHref)}" data-validation-link>validation page</a>.</p>
+      ${buildStudyCtaHtml(summary, options)}
+    </article>`;
+}
+
+function exampleThumbnailSvg(project: ProjectInput) {
+  const width = 150;
+  const height = 104;
+  const phase = project.phases[project.phases.length - 1];
+  const top = project.wall_geometry.top_level_m;
+  const toe = project.wall_geometry.toe_level_m;
+  const bottomLevel = toe - 2;
+  const y = (level: number) => 10 + ((top - level) / (top - bottomLevel)) * (height - 16);
+  const wallX = 75;
+  const leftGround = y(phase?.excavation_level_left_m ?? top);
+  const rightGround = y(phase?.excavation_level_right_m ?? top);
+  const waterLeft = Math.max(y(phase?.groundwater_level_left_m ?? bottomLevel), leftGround);
+  const waterRight = Math.max(y(phase?.groundwater_level_right_m ?? bottomLevel), rightGround);
+  const parts = [
+    `<rect x="4" y="${leftGround.toFixed(1)}" width="${wallX - 4}" height="${(height - 4 - leftGround).toFixed(1)}" fill="#dcc6a6"></rect>`,
+    `<rect x="${wallX}" y="${rightGround.toFixed(1)}" width="${width - 4 - wallX}" height="${(height - 4 - rightGround).toFixed(1)}" fill="#cfb08a"></rect>`,
+    `<line x1="6" x2="${wallX - 2}" y1="${waterLeft.toFixed(1)}" y2="${waterLeft.toFixed(1)}" stroke="#2f8fda" stroke-width="1.5" stroke-dasharray="4 3"></line>`,
+    `<line x1="${wallX + 2}" x2="${width - 6}" y1="${waterRight.toFixed(1)}" y2="${waterRight.toFixed(1)}" stroke="#2f8fda" stroke-width="1.5" stroke-dasharray="4 3"></line>`,
+    project.wall_type === "diaphragm_wall"
+      ? `<rect x="${wallX - 3}" y="${y(top).toFixed(1)}" width="6" height="${(y(toe) - y(top)).toFixed(1)}" fill="#7d8a90"></rect>`
+      : `<line x1="${wallX}" x2="${wallX}" y1="${y(top).toFixed(1)}" y2="${y(toe).toFixed(1)}" stroke="#3a596a" stroke-width="3"></line>`,
+  ];
+  if ((phase?.surcharge_right_kPa ?? 0) > 0) {
+    for (const x of [100, 116, 132]) {
+      parts.push(`<line x1="${x}" x2="${x}" y1="${(rightGround - 9).toFixed(1)}" y2="${(rightGround - 2).toFixed(1)}" stroke="#9b2226" stroke-width="1.5"></line>`);
+    }
+  }
+  for (const support of project.supports) {
+    const sy = y(top - support.depth_m);
+    if (support.type === "anchor") {
+      const direction = support.side === "left" ? -1 : 1;
+      const angle = ((support.inclination_degrees ?? 0) * Math.PI) / 180;
+      const x2 = wallX + direction * 52 * Math.cos(angle);
+      const y2 = sy + 52 * Math.sin(angle);
+      parts.push(`<line x1="${wallX}" y1="${sy.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#0b6e4f" stroke-width="2"></line>`);
+      parts.push(`<circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="4" fill="#0b6e4f"></circle>`);
+    } else if (support.type === "strut") {
+      // The API side is the direction of the prop force on the wall; the prop stands on the other side.
+      const direction = support.side === "left" ? 1 : -1;
+      parts.push(`<line x1="${wallX}" y1="${sy.toFixed(1)}" x2="${(wallX + direction * 62).toFixed(1)}" y2="${sy.toFixed(1)}" stroke="#8b5e00" stroke-width="3"></line>`);
+    }
+  }
+  return `<svg class="example-thumb" viewBox="0 0 ${width} ${height}" role="img" aria-label="Sketch of the final stage">${parts.join("")}</svg>`;
+}
+
+export function buildExamplePresetsHtml(activeId?: string | null) {
+  return EXAMPLE_PRESETS.map((preset, index) => `
+    <article class="example-card${preset.id === activeId ? " is-active" : ""}" data-example-card="${escapeHtml(preset.id)}">
+      <div class="example-card-head">
+        <div>
+          <p class="panel-kicker">Example ${index + 1}</p>
+          <h3>${escapeHtml(preset.title)}</h3>
+          <p class="example-lede">${escapeHtml(preset.lede)}</p>
+        </div>
+        ${exampleThumbnailSvg(preset.project)}
+      </div>
+      <ul class="example-facts">${preset.facts.map((fact) => `<li>${escapeHtml(fact)}</li>`).join("")}</ul>
+      <button type="button" class="action-button example-run" data-example-preset="${escapeHtml(preset.id)}" aria-label="Run example: ${escapeHtml(preset.title)}">${preset.id === activeId ? "Run again" : "Run this example"}</button>
+    </article>
+  `).join("");
+}
+
+function buildInputTablesHtml(project: ProjectInput) {
+  const sameProfiles = JSON.stringify(project.soil_profiles.left.layers) === JSON.stringify(project.soil_profiles.right.layers);
+  const layerRows = (side: string, layers: SoilLayerInput[]) => layers.map((layer) => `<tr><td>${escapeHtml(side)}</td><td>${fmt(layer.top_level_m, 2)} to ${fmt(layer.bottom_level_m, 2)}</td><td>${fmt(layer.unit_weight_dry_kN_m3, 1)} / ${fmt(layer.unit_weight_wet_kN_m3, 1)}</td><td>${fmt(layer.friction_angle_deg, 1)}</td><td>${fmt(layer.cohesion_kPa ?? 0, 1)}</td><td>${fmt(layer.subgrade_modulus_kN_m3, 0)}</td></tr>`).join("");
+  const soilRows = sameProfiles
+    ? layerRows("Both sides", project.soil_profiles.left.layers)
+    : `${layerRows("Left", project.soil_profiles.left.layers)}${layerRows("Right", project.soil_profiles.right.layers)}`;
+  const phaseRows = project.phases.map((phase, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(phase.name)}</td><td>${fmt(phase.excavation_level_left_m, 2)} / ${fmt(phase.excavation_level_right_m, 2)}</td><td>${fmt(phase.groundwater_level_left_m, 2)} / ${fmt(phase.groundwater_level_right_m, 2)}</td><td>${fmt(phase.surcharge_left_kPa ?? 0, 1)} / ${fmt(phase.surcharge_right_kPa ?? 0, 1)}</td></tr>`).join("");
+  const supportRows = project.supports.length
+    ? project.supports.map((support) => `<tr><td>${escapeHtml(support.id)}</td><td>${escapeHtml(supportRoleLabel(support.type))}</td><td>${fmt(support.depth_m, 2)}</td><td>${fmt(support.inclination_degrees ?? 0, 0)}°</td><td>${support.stiffness_kN_per_m === undefined ? "—" : fmt(support.stiffness_kN_per_m, 0)}</td><td>${fmt(support.prestress_kN_per_m ?? 0, 0)}</td><td>${support.capacity_kN_per_m === undefined ? "—" : fmt(support.capacity_kN_per_m, 0)}</td><td>${(support.active_from_phase ?? 0) + 1}</td></tr>`).join("")
+    : `<tr><td colspan="8">No anchors or props (cantilever wall).</td></tr>`;
+  return [
+    `<h3>Construction stages</h3>`,
+    `<table><thead><tr><th>#</th><th>Stage</th><th>Excavation L / R (m)</th><th>Groundwater L / R (m)</th><th>Surcharge L / R (kPa)</th></tr></thead><tbody>${phaseRows}</tbody></table>`,
+    `<h3>Soil layers</h3>`,
+    `<table><thead><tr><th>Side</th><th>Level (m)</th><th>γ / γ<sub>sat</sub> (kN/m³)</th><th>φ′ (°)</th><th>c′ (kPa)</th><th>k<sub>h</sub> (kN/m³)</th></tr></thead><tbody>${soilRows}</tbody></table>`,
+    `<h3>Anchors and props</h3>`,
+    `<table><thead><tr><th>Id</th><th>Type</th><th>Depth (m)</th><th>Angle</th><th>Stiffness (kN/m/m)</th><th>Prestress (kN/m)</th><th>Capacity (kN/m)</th><th>From stage</th></tr></thead><tbody>${supportRows}</tbody></table>`,
+  ].join("\n");
 }
 
 export function buildResultDownloadText(project: ProjectInput, result: any) {
@@ -2961,7 +3702,8 @@ export function buildReportHtml(
   result: any,
   phaseIndex = 0,
   generatedAt = new Date(),
-  resultView: ResultDesignView = "characteristic"
+  resultView: ResultDesignView = "characteristic",
+  caseTitle = "Retaining project"
 ) {
   const displayProject = resolveAnalyzedProject(project, result);
   const wallSection = buildWallSectionMetadata(displayProject);
@@ -2971,104 +3713,156 @@ export function buildReportHtml(
   const wallLengthSearch = result.search_evaluation;
   const plotData = buildPhasePlotData(result, phaseIndex, resultView);
   const { levels, displacement, rotation, moment, shear, pressure, waterPressure, source } = plotData;
+  const designSummary = buildDesignSummary(project, result, caseTitle);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const readableDate = `${pad(generatedAt.getDate())}/${pad(generatedAt.getMonth() + 1)}/${generatedAt.getFullYear()} ${pad(generatedAt.getHours())}:${pad(generatedAt.getMinutes())}`;
+  const viewLabel = resultView === "characteristic" ? "characteristic values" : `EC7 ${resultView.replace("set", "set ")} design values for moment and shear`;
+  const figure = (title: string, quantity: string, svg: string) => [
+    "    <article class=\"figure-card\">",
+    `      <h3>${title}</h3>`,
+    `      <p>${escapeHtml(plotSourceDescription(source, quantity))}</p>`,
+    svg,
+    "    </article>",
+  ].join("\n");
   return [
     "<!DOCTYPE html>",
     '<html lang="en">',
     "<head>",
     '  <meta charset="UTF-8">',
     '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
-    "  <title>EA Suys Retaining Wall Report</title>",
+    `  <title>EA Suys Retaining Wall Report · ${escapeHtml(caseTitle)}</title>`,
     "  <style>",
-    "    body { font-family: Georgia, \"Times New Roman\", serif; color: #182022; margin: 28px; line-height: 1.5; }",
-    "    h1 { margin-bottom: 8px; }",
-    "    h2 { margin-top: 22px; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; color: #596265; }",
-    "    dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }",
-    "    dt { font-weight: 700; color: #596265; }",
-    "    dd { margin: 4px 0 0; font-weight: 700; }",
+    "    @page { size: A4; margin: 14mm 12mm 16mm; }",
+    "    * { box-sizing: border-box; }",
+    "    body { max-width: 1000px; margin: 24px auto; padding: 0 18px; color: #182022; font: 14px/1.45 \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif; }",
+    "    .report-header { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding-bottom: 10px; border-bottom: 3px solid #0b6e4f; }",
+    "    .report-brand { margin: 0; color: #0b6e4f; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 12px; }",
+    "    h1 { margin: 2px 0 4px; font-size: 22px; }",
+    "    .report-case { margin: 0; font-size: 15px; font-weight: 600; }",
+    "    .report-meta { margin: 0; color: #596265; font-size: 12px; text-align: right; }",
+    "    .report-preview { margin: 10px 0 0; padding: 7px 10px; border-left: 4px solid #c5a04e; background: #fff4d8; color: #5a3a00; font-size: 12px; }",
+    "    h2 { margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(24, 32, 34, 0.16); font-size: 15px; letter-spacing: 0.02em; color: #114f3d; }",
+    "    h3 { margin: 14px 0 4px; font-size: 13px; }",
+    "    dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; margin: 8px 0; }",
+    "    dt { color: #596265; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }",
+    "    dd { margin: 2px 0 0; font-weight: 600; }",
     "    ul { padding-left: 18px; }",
-    "    .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }",
-    "    .figure-card { border: 1px solid rgba(24, 32, 34, 0.12); border-radius: 16px; padding: 14px; background: rgba(255, 251, 243, 0.75); break-inside: avoid; }",
-    "    .figure-card h3 { margin: 0 0 8px; font-size: 1rem; }",
-    "    .figure-card p { margin: 0 0 10px; color: #596265; }",
+    "    .figure-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }",
+    "    .figure-card { border: 1px solid rgba(24, 32, 34, 0.14); border-radius: 8px; padding: 8px; break-inside: avoid; }",
+    "    .figure-card h3 { margin: 0 0 4px; font-size: 12px; }",
+    "    .figure-card p { margin: 0 0 6px; color: #596265; font-size: 10px; }",
     "    .figure-card svg { width: 100%; height: auto; display: block; }",
     "    .figure-card-wide { grid-column: 1 / -1; }",
-    "    .ec7-verification { border: 1px solid rgba(24, 32, 34, 0.16); border-radius: 12px; padding: 14px; break-inside: avoid; }",
+    "    .figure-card-wide svg { max-height: 420px; }",
+    "    .geometry-legend { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 6px 0 0; padding: 0; list-style: none; color: #596265; font-size: 10px; }",
+    "    .ec7-verification { margin-top: 14px; border: 1px solid rgba(24, 32, 34, 0.16); border-radius: 8px; padding: 10px 12px; }",
+    "    .ec7-verification h3 { margin-top: 0; }",
     "    .phase-alert { margin: 10px 0; padding: 10px 12px; border: 1px solid #b42318; border-left-width: 5px; border-radius: 8px; background: #fdecea; color: #5c1411; }",
     "    .phase-alert strong { color: #8a1c14; }",
-    "    table { width: 100%; border-collapse: collapse; margin-top: 10px; }",
-    "    th, td { border-bottom: 1px solid rgba(24, 32, 34, 0.12); padding: 8px 6px; text-align: left; }",
-    "    th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: #596265; }",
+    "    table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; }",
+    "    th, td { border-bottom: 1px solid rgba(24, 32, 34, 0.12); padding: 5px 6px; text-align: left; vertical-align: top; }",
+    "    th { color: #596265; font-size: 11px; }",
+    "    thead th { background: #f0eee7; color: #182022; }",
+    "    tr { break-inside: avoid; }",
     "    .note { color: #596265; }",
-    "    @media (max-width: 900px) { .figure-grid { grid-template-columns: 1fr; } }",
+    "    .design-summary { padding: 12px 14px; border: 1px solid rgba(24, 32, 34, 0.18); border-top: 5px solid #0b6e4f; border-radius: 8px; break-inside: avoid; }",
+    "    .design-summary-fail { border-top-color: #b42318; }",
+    "    .design-summary-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }",
+    "    .design-summary-head h2 { margin: 0; padding: 0; border: 0; color: #182022; font-size: 16px; }",
+    "    .panel-kicker { margin: 0; color: #596265; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }",
+    "    .design-summary-sub { margin: 2px 0 0; color: #596265; font-size: 12px; }",
+    "    .summary-verdict { margin: 0; padding: 5px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; white-space: nowrap; }",
+    "    .summary-verdict.status-pass { background: #d7efe5; color: #114f3d; }",
+    "    .summary-verdict.status-fail { background: #fdecea; color: #8a1c14; }",
+    "    .summary-verdict.status-not_assessed { background: #f0eee7; color: #596265; }",
+    "    .summary-figures { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }",
+    "    .summary-figure { display: grid; align-content: start; gap: 1px; padding: 7px 8px; border: 1px solid rgba(24, 32, 34, 0.12); border-radius: 6px; background: #fbfaf6; }",
+    "    .summary-figure-label { color: #596265; font-size: 10px; }",
+    "    .summary-figure-value { font-size: 17px; }",
+    "    .summary-figure-detail { color: #596265; font-size: 9.5px; line-height: 1.3; }",
+    "    .summary-check-basis, .summary-check-note { display: block; color: #596265; font-size: 10px; font-weight: 400; }",
+    "    .summary-checks th[scope=row] { color: #182022; font-size: 12px; }",
+    "    .util-bar { display: block; width: 70px; height: 5px; margin-top: 3px; border-radius: 3px; background: #e6e3da; overflow: hidden; }",
+    "    .util-bar span { display: block; height: 100%; background: #0b6e4f; }",
+    "    .summary-check-fail .util-bar span { background: #b42318; }",
+    "    .status-chip { font-weight: 700; white-space: nowrap; }",
+    "    .status-chip.status-pass { color: #114f3d; }",
+    "    .status-chip.status-fail { color: #8a1c14; }",
+    "    .status-chip.status-not_assessed { color: #596265; }",
+    "    .summary-ec7, .summary-scope, .summary-evidence { margin: 6px 0 0; font-size: 11.5px; }",
+    "    .summary-scope { color: #596265; }",
+    "    .study-cta { margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: #eef6f2; }",
+    "    .study-cta-text { margin: 0; font-size: 11.5px; }",
+    "    .appendix h2 { color: #596265; }",
+    "    .report-footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid rgba(24, 32, 34, 0.16); color: #596265; font-size: 11px; }",
+    "    @media (max-width: 900px) { .figure-grid, .summary-figures, dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }",
+    "    @media print {",
+    "      body { max-width: none; margin: 0; padding: 0; font-size: 10pt; }",
+    "      a { color: inherit; text-decoration: none; }",
+    "      h2 { break-after: avoid; }",
+    "      .report-figures, .appendix { break-before: page; }",
+    "      .figure-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }",
+    "      .figure-card-wide { grid-column: auto; }",
+    "      .figure-card-wide svg { max-height: none; }",
+    "      .figure-card > p { display: none; }",
+    "      .summary-figures { grid-template-columns: repeat(5, minmax(0, 1fr)); }",
+    "      dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }",
+    "    }",
     "  </style>",
     "</head>",
     "<body>",
-    "  <h1>EA Suys Retaining Wall Report</h1>",
+    "  <header class=\"report-header\">",
+    "    <div>",
+    "      <p class=\"report-brand\">EA Suys · Retaining workspace</p>",
+    "      <h1>EA Suys Retaining Wall Report</h1>",
+    `      <p class="report-case">${escapeHtml(caseTitle)} · ${escapeHtml(designSummary.wallLabel)}</p>`,
+    "    </div>",
+    `    <p class="report-meta">${escapeHtml(readableDate)}<br>Formula version ${escapeHtml(result.formula_version || "n/a")}<br>retaining.easuys.com</p>`,
+    "  </header>",
     `  <p class="note">Generated ${escapeHtml(generatedAt.toISOString())}</p>`,
-    "  <h2>Project</h2>",
+    "  <p class=\"report-preview\"><strong>Engineering preview.</strong> Screening output, not a design release. Independent engineering review and complete input checks remain required.</p>",
+    "  <h2>1. Design summary</h2>",
+    buildDesignSummaryHtml(designSummary, { forReport: true }),
+    "  <h2>2. Input</h2>",
     `  <dl><div><dt>Wall type</dt><dd>${escapeHtml(displayProject.wall_type.replaceAll("_", " "))}</dd></div><div><dt>Design mode</dt><dd>${escapeHtml(displayProject.design_mode.toUpperCase())}</dd></div><div><dt>Selected phase</dt><dd>${escapeHtml(phase.name)}</dd></div><div><dt>Formula version</dt><dd>${escapeHtml(result.formula_version || "n/a")}</dd></div><div><dt>Wall inclination</dt><dd>${escapeHtml(formatNumber(displayProject.wall_geometry.inclination_degrees ?? 0, 1))}°</dd></div><div><dt>Vertical wall load</dt><dd>${escapeHtml(formatNumber(phase.normalized_vertical_line_load_kN_per_m ?? phase.vertical_line_load_kN_per_m ?? displayProject.phases[phaseIndex]?.vertical_line_load_kN_per_m ?? 0, 1))} kN/m</dd></div><div><dt>Target element length</dt><dd>${escapeHtml(formatNumber(targetElementLengthForProject(displayProject), 2))} m</dd></div><div><dt>Max wall displacement (project limit)</dt><dd>${Number.isFinite(displayProject.design_options?.max_wall_displacement_mm) ? `${escapeHtml(formatNumber(displayProject.design_options?.max_wall_displacement_mm as number, 2))} mm` : "Not declared"}</dd></div><div><dt>${escapeHtml(wallSection.label)}</dt><dd>${escapeHtml(wallSection.value)}</dd></div><div><dt>Toe control</dt><dd>${escapeHtml(wallLengthSearch ? `Search selected ${formatNumber(wallLengthSearch.selected_toe_level_m, 1)} m (${wallLengthSearch.stop_reason})` : `Fixed toe ${formatNumber(displayProject.wall_geometry.toe_level_m, 1)} m`)}</dd></div></dl>`,
-    "  <h2>Summary</h2>",
-    `  <ul>${summary.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`,
-    "  <h2>Global Governing Envelope</h2>",
-    `  <table><thead><tr><th>Quantity</th><th>Min</th><th>Max</th><th>Max |abs|</th><th>Min phase</th><th>Max phase</th><th>Abs phase</th></tr></thead><tbody>${buildGlobalGoverningRows(result)}</tbody></table>`,
+    buildInputTablesHtml(displayProject),
     result?.ec7_verification ? buildEc7VerificationHtml(result) : "",
-    wallLengthSearch
-      ? `  <h2>Wall-Length Search</h2>\n  <ul><li>Start toe: ${escapeHtml(formatNumber(wallLengthSearch.start_toe_level_m, 1))} m</li><li>Minimum toe: ${escapeHtml(formatNumber(wallLengthSearch.minimum_toe_level_m, 1))} m</li><li>Step: ${escapeHtml(formatNumber(wallLengthSearch.step_m, 2))} m</li><li>Target max head displacement: ${escapeHtml(formatNumber(wallLengthSearch.max_head_displacement_mm, 1))} mm</li><li>Selected toe: ${escapeHtml(formatNumber(wallLengthSearch.selected_toe_level_m, 1))} m</li><li>Achieved max head displacement: ${escapeHtml(formatNumber(wallLengthSearch.achieved_max_head_displacement_mm, 2))} mm</li><li>Stop reason: ${escapeHtml(wallLengthSearch.stop_reason)}</li></ul>`
-      : "",
-    "  <h2>Discretization</h2>",
-    `  <p>${escapeHtml(buildDiscretizationSummary(result))}</p>`,
-    `  <table><thead><tr><th>Node</th><th>Level</th><th>Next element</th></tr></thead><tbody>${buildDiscretizationRows(result)}</tbody></table>`,
-    "  <h2>Figures</h2>",
+    "  <section class=\"report-figures\">",
+    `  <h2>3. Figures · ${escapeHtml(phase.name)} (${escapeHtml(viewLabel)})</h2>`,
     "  <div class=\"figure-grid\">",
     "    <article class=\"figure-card figure-card-wide\">",
     "      <h3>Geometry Preview</h3>",
     "      <p>Selected phase geometry, excavation, groundwater, surface levels, and support layout.</p>",
     buildGeometryPreviewSvg(displayProject, phaseIndex),
     "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Wall Deformed Shape</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "displacement array"))}</p>`,
-    buildDeformedWallSvg(levels, displacement),
-    "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Displacement Plot</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "displacement array"))}</p>`,
-    buildSvgPlot(levels, displacement, "displacement", "Displacement plot", "mm"),
-    "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Rotation Plot</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "rotation array"))}</p>`,
-    buildSvgPlot(levels, rotation, "rotation", "Rotation plot", "mrad"),
-    "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Bending Moment Plot</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "moment array"))}</p>`,
-    buildSvgPlot(levels, moment, "moment", "Moment plot", "kNm/m"),
-    "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Shear Plot</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "shear array"))}</p>`,
-    buildSvgPlot(levels, shear, "shear", "Shear plot", "kN/m"),
-    "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Net Pressure Plot</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "net soil pressure array"))}</p>`,
-    buildSvgPlot(levels, pressure, "pressure", "Net pressure plot", "kPa"),
-    "    </article>",
-    "    <article class=\"figure-card\">",
-    "      <h3>Water Pressure Plot</h3>",
-    `      <p>${escapeHtml(plotSourceDescription(source, "water-pressure array"))}</p>`,
-    buildSvgPlot(levels, waterPressure, "water", "Water pressure plot", "kPa"),
-    "    </article>",
+    figure("Bending Moment Plot", "moment array", buildSvgPlot(levels, moment, "moment", "Moment plot", "kNm/m")),
+    figure("Shear Plot", "shear array", buildSvgPlot(levels, shear, "shear", "Shear plot", "kN/m")),
+    figure("Displacement Plot", "displacement array", buildSvgPlot(levels, displacement, "displacement", "Displacement plot", "mm")),
+    figure("Net Pressure Plot", "net soil pressure array", buildSvgPlot(levels, pressure, "pressure", "Net pressure plot", "kPa")),
+    figure("Water Pressure Plot", "water-pressure array", buildSvgPlot(levels, waterPressure, "water", "Water pressure plot", "kPa")),
+    figure("Rotation Plot", "rotation array", buildSvgPlot(levels, rotation, "rotation", "Rotation plot", "mrad")),
+    figure("Wall Deformed Shape", "displacement array", buildDeformedWallSvg(levels, displacement)),
     "  </div>",
-    "  <h2>Wall design check</h2>",
+    "  </section>",
+    "  <h2>4. Wall design check</h2>",
     `  <table><thead><tr><th>Check field</th><th>Value</th></tr></thead><tbody>${buildWallCheckRows(result)}</tbody></table>`,
-    "  <h2>Support design checks</h2>",
+    "  <h2>5. Support design checks</h2>",
     `  <ul>${buildSupportCheckList(result)}</ul>`,
     `  <table><thead><tr><th>Support</th><th>Type</th><th>Demand</th><th>Capacity</th><th>Utilization</th><th>Governing phase</th><th>Status</th></tr></thead><tbody>${buildSupportCheckRows(result)}</tbody></table>`,
+    "  <section class=\"appendix\">",
+    "  <h2>Appendix A. Result lines</h2>",
+    `  <ul>${summary.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`,
+    "  <h2>Global Governing Envelope</h2>",
+    `  <table><thead><tr><th>Quantity</th><th>Min</th><th>Max</th><th>Max |abs|</th><th>Min phase</th><th>Max phase</th><th>Abs phase</th></tr></thead><tbody>${buildGlobalGoverningRows(result)}</tbody></table>`,
+    wallLengthSearch
+      ? `  <h2>Wall-Length Search</h2>\n  <ul><li>Start toe: ${escapeHtml(formatNumber(wallLengthSearch.start_toe_level_m, 1))} m</li><li>Minimum toe: ${escapeHtml(formatNumber(wallLengthSearch.minimum_toe_level_m, 1))} m</li><li>Step: ${escapeHtml(formatNumber(wallLengthSearch.step_m, 2))} m</li><li>Target max head displacement: ${escapeHtml(formatNumber(wallLengthSearch.max_head_displacement_mm, 1))} mm</li><li>Selected toe: ${escapeHtml(formatNumber(wallLengthSearch.selected_toe_level_m, 1))} m</li><li>Achieved max head displacement: ${escapeHtml(formatNumber(wallLengthSearch.achieved_max_head_displacement_mm, 2))} mm</li><li>Stop reason: ${escapeHtml(wallLengthSearch.stop_reason)}</li></ul>`
+      : "",
     "  <h2>Support reactions</h2>",
     `  <ul>${supportItems}</ul>`,
     `  <table><thead><tr><th>Support</th><th>Type</th><th>Side</th><th>Depth</th><th>Horizontal force</th><th>Moment</th><th>Axial force</th><th>Utilization / State</th></tr></thead><tbody>${buildSupportReactionRows(phase)}</tbody></table>`,
+    "  <h2>Discretization</h2>",
+    `  <p>${escapeHtml(buildDiscretizationSummary(result))}</p>`,
+    `  <table><thead><tr><th>Node</th><th>Level</th><th>Next element</th></tr></thead><tbody>${buildDiscretizationRows(result)}</tbody></table>`,
     "  <h2>Sampled numerical output</h2>",
     `  <table><thead><tr><th>Level</th><th>Depth</th><th>Disp.</th><th>Rot.</th><th>Moment</th><th>Shear</th><th>Net p</th><th>Water p</th><th>Branch</th><th>Left</th><th>Right</th></tr></thead><tbody>${buildSampledResultRows(phase)}</tbody></table>`,
     "  <h2>Warnings</h2>",
@@ -3077,6 +3871,8 @@ export function buildReportHtml(
     `  <ul>${(result.ec7_verification ? ["See the EC7 verification section for partial factors, design effects and overdig."] : result.assumptions || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
     "  <h2>Source refs</h2>",
     `  <ul>${(result.ec7_verification ? [] : result.source_refs || []).map((item: string) => `<li>${escapeHtml(item)}</li>`).join("") || "<li>None</li>"}</ul>`,
+    "  </section>",
+    `  <footer class="report-footer">EA Suys · ${escapeHtml(STUDY_REQUEST_EMAIL)} · Validation: ${escapeHtml(VALIDATION_PAGE_URL)} · Screening output of the EA Suys retaining workspace, not a design release.</footer>`,
     "</body>",
     "</html>",
   ].join("\n");
@@ -3406,6 +4202,33 @@ function renderContactPanel(
   });
 }
 
+export function printReportDocument(reportHtml: string, onError: () => void = () => {}, documentRef: Document = document) {
+  const frame = documentRef.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute("tabindex", "-1");
+  frame.className = "print-frame";
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+  frame.addEventListener("load", () => {
+    const frameWindow = frame.contentWindow;
+    if (!frameWindow) {
+      onError();
+      frame.remove();
+      return;
+    }
+    frameWindow.addEventListener("afterprint", () => setTimeout(() => frame.remove(), 0), { once: true });
+    try {
+      frameWindow.focus();
+      frameWindow.print();
+    } catch {
+      onError();
+      frame.remove();
+    }
+  }, { once: true });
+  frame.srcdoc = reportHtml;
+  documentRef.body.appendChild(frame);
+  return frame;
+}
+
 function bootApp() {
   const input = document.querySelector("[data-project-input]") as HTMLTextAreaElement | null;
   const quickEditor = document.querySelector("[data-quick-editor]") as HTMLElement | null;
@@ -3449,16 +4272,33 @@ function bootApp() {
   ) {
     return;
   }
+  const examplesShell = document.querySelector("[data-example-presets]") as HTMLElement | null;
+  const designSummaryShell = document.querySelector("[data-design-summary]") as HTMLElement | null;
 
   const apiBaseUrl = resolveApiBaseUrl(globalThis.location?.search ?? "");
   const demoEnabled = new URLSearchParams(globalThis.location?.search ?? "").get("demo") === "1";
+  const requestedExample = demoEnabled
+    ? undefined
+    : examplePresetById(new URLSearchParams(globalThis.location?.search ?? "").get("example"));
   void checkCalculationService(fetch, apiBaseUrl).then((online) => {
     serviceStatus.textContent = online ? "Service online" : "Service offline";
     serviceStatus.classList.toggle("is-online", online);
     serviceStatus.classList.toggle("is-offline", !online);
   });
 
-  let currentProject = structuredClone(SAMPLE_PROJECT);
+  let currentProject = structuredClone(requestedExample?.project ?? SAMPLE_PROJECT);
+  let activePresetId: string | null = requestedExample?.id ?? null;
+  let presetEdited = false;
+  const caseTitle = () => {
+    const preset = examplePresetById(activePresetId);
+    return preset ? `${preset.title}${presetEdited ? " (edited)" : ""}` : "Retaining project";
+  };
+  const markEdited = () => {
+    if (activePresetId && !presetEdited) {
+      presetEdited = true;
+      renderExamples();
+    }
+  };
   let currentResult: any = demoEnabled ? structuredClone(DEMO_RESULT ?? SAMPLE_RESULT) : null;
   let currentPreviewPhaseIndex = demoEnabled ? Math.min(2, currentProject.phases.length - 1) : 0;
   let currentResultPhaseIndex = 0;
@@ -3547,6 +4387,7 @@ function bootApp() {
           currentPreviewPhaseIndex = nextState.previewPhaseIndex;
         }
         input.value = formatJson(currentProject);
+        markEdited();
         renderPreview();
         if (currentResult) {
           status.textContent = "Structured editor changed the payload. Rerun the analysis to refresh results.";
@@ -3556,6 +4397,7 @@ function bootApp() {
     quickEditor.querySelector("[data-qe-ec7-reset]")?.addEventListener("click", () => {
       currentProject = resetEc7PartialFactors(currentProject);
       input.value = formatJson(currentProject);
+      markEdited();
       currentEditorTabId = "general";
       renderPreview();
       if (currentResult) {
@@ -3722,10 +4564,32 @@ function bootApp() {
           currentEditorFocus
         );
         input.value = formatJson(currentProject);
+        markEdited();
         renderPreview();
         if (currentResult) {
           status.textContent = "Quick editor updated the payload. Rerun the analysis to refresh results.";
         }
+      });
+    });
+  };
+
+  const renderDesignSummary = () => {
+    const summary = currentResult ? buildDesignSummary(currentProject, currentResult, caseTitle()) : null;
+    if (designSummaryShell) {
+      designSummaryShell.hidden = !summary;
+      designSummaryShell.innerHTML = summary ? buildDesignSummaryHtml(summary) : "";
+    }
+    document.querySelectorAll<HTMLAnchorElement>("[data-study-mailto]").forEach((link) => {
+      link.href = buildStudyRequestMailto(summary);
+    });
+  };
+
+  const renderExamples = () => {
+    if (!examplesShell) return;
+    examplesShell.innerHTML = buildExamplePresetsHtml(presetEdited ? null : activePresetId);
+    examplesShell.querySelectorAll<HTMLButtonElement>("[data-example-preset]").forEach((button) => {
+      button.addEventListener("click", () => {
+        void loadAndRunExample(button.dataset.examplePreset ?? "");
       });
     });
   };
@@ -3741,6 +4605,7 @@ function bootApp() {
       emptyPlots.hidden = false;
       reportShell.innerHTML = `<article class="report-card"><h3>Exports</h3><p>Run the analysis to enable JSON download, HTML report export, and the inline study request flow.</p></article>`;
       contactShell.innerHTML = "";
+      renderDesignSummary();
       return;
     }
     currentResultPhaseIndex = resultPhaseIndexForProject(currentProject, currentResult, currentPreviewPhaseIndex);
@@ -3766,6 +4631,7 @@ function bootApp() {
       renderResults();
     });
     reportShell.innerHTML = buildReportPreviewHtml(currentProject, currentResult, currentResultPhaseIndex);
+    renderDesignSummary();
     renderContactPanel(contactShell, currentContactState, currentResult, currentResultPhaseIndex, (nextState) => {
       currentContactState = nextState;
       persistContactState(currentContactState);
@@ -3773,6 +4639,7 @@ function bootApp() {
   };
 
   input.value = formatJson(currentProject);
+  renderExamples();
   renderPreview();
   renderResults();
   if (demoEnabled) {
@@ -3782,6 +4649,7 @@ function bootApp() {
   input.addEventListener("input", () => {
     try {
       currentProject = JSON.parse(input.value);
+      markEdited();
       currentPreviewPhaseIndex = Math.min(currentPreviewPhaseIndex, Math.max(0, currentProject.phases.length - 1));
       currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
       renderPreview(false);
@@ -3805,7 +4673,7 @@ function bootApp() {
     renderResults();
   });
 
-  runButton.addEventListener("click", async () => {
+  const runCurrentProject = async () => {
     try {
       status.textContent = "Running phased analysis...";
       status.classList.remove("status-error");
@@ -3817,10 +4685,35 @@ function bootApp() {
       renderPreview();
       renderResults();
       status.textContent = `Solved ${currentResult.phases.length} phase(s). Governing |M|max: ${formatNumber(currentResult.governing.max_abs_moment_kNm_per_m, 2)} kNm/m.`;
+      return true;
     } catch (error) {
       status.textContent = error instanceof Error ? error.message : "Analysis failed.";
       status.classList.add("status-error");
+      return false;
     }
+  };
+
+  const loadAndRunExample = async (presetId: string) => {
+    const preset = examplePresetById(presetId);
+    if (!preset) return;
+    activePresetId = preset.id;
+    presetEdited = false;
+    currentProject = structuredClone(preset.project);
+    currentResult = null;
+    currentPreviewPhaseIndex = currentProject.phases.length - 1;
+    currentEditorFocus = normalizeEditorFocus(currentProject, { segmentIndex: 0, leftLayerIndex: 0, rightLayerIndex: 0, supportIndex: 0 });
+    input.value = formatJson(currentProject);
+    renderExamples();
+    renderPreview();
+    renderResults();
+    status.textContent = `Running example: ${preset.title}...`;
+    if (await runCurrentProject()) {
+      designSummaryShell?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  runButton.addEventListener("click", () => {
+    void runCurrentProject();
   });
 
   downloadInputButton.addEventListener("click", () => {
@@ -3850,7 +4743,7 @@ function bootApp() {
     const analyzedProject = resolveAnalyzedProject(currentProject, currentResult);
     triggerDownload(
       buildReportFilename(analyzedProject),
-      buildReportHtml(currentProject, currentResult, currentResultPhaseIndex, new Date(), currentResultDesignView),
+      buildReportHtml(currentProject, currentResult, currentResultPhaseIndex, new Date(), currentResultDesignView, caseTitle()),
       "text/html;charset=utf-8"
     );
   });
@@ -3859,18 +4752,14 @@ function bootApp() {
     if (!currentResult) {
       return;
     }
-    const reportHtml = buildReportHtml(currentProject, currentResult, currentResultPhaseIndex, new Date(), currentResultDesignView);
-    const printWindow = window.open("", "_blank", "noopener,noreferrer");
-    if (!printWindow) {
-      status.textContent = "Unable to open a print window.";
-      status.classList.add("status-error");
-      return;
-    }
-    printWindow.document.open();
-    printWindow.document.write(reportHtml);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    // window.open with "noopener" returns null, so the report is printed from a hidden frame.
+    printReportDocument(
+      buildReportHtml(currentProject, currentResult, currentResultPhaseIndex, new Date(), currentResultDesignView, caseTitle()),
+      () => {
+        status.textContent = "Unable to open the print dialog. Use Download HTML report and print that file.";
+        status.classList.add("status-error");
+      }
+    );
   });
 }
 

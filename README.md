@@ -26,6 +26,31 @@ with the API built (`RETAINING_API_ROOT` points to its checkout):
 `node scripts/build_demo_result.mjs` and
 `node scripts/build_ec7_sample_fixture.mjs`, then review the diff.
 
+## Examples, design summary and printable report
+
+`EXAMPLE_PRESETS` in `app.ts` holds three one-click examples with typical
+Belgian soil values (a cantilever sheet pile in sand, an anchored sheet pile
+and a propped diaphragm wall). They use public API features only: horizontal
+ground, uniform surcharges, the default earth-pressure method and EC7-BE design
+approach 1 with the default partial factors. Sloping ground and strip loads stay
+"available on request". `?example=<id>` loads an example without running it.
+
+For anchors and struts the API `side` is the direction of the support force on
+the wall, so a prop standing in the excavation on the left is entered with side
+`right`; the geometry preview draws props in the excavation.
+
+`buildDesignSummary` turns the API response into the result card (governing
+M and V, displacement against the limit, anchor or prop force, profile
+utilisation, EC7 set, pass/fail per check, validation link and the study
+request mailto). It only reads the response. `tests/fixtures/example_presets_results.json`
+holds the trimmed API results of the examples, checked against the request hash
+the browser sends; regenerate it after changing an example with
+`npm run build && node scripts/build_example_presets_fixture.mjs` (three POST
+requests to the production API, or `EXAMPLE_PAIRS_DIR` for cached runs).
+
+Print report prints `buildReportHtml` (design summary first, then input,
+figures, checks and an appendix, with A4 print CSS) from a hidden frame.
+
 ## Pull-request checks
 
 Pull requests run a separate read-only build and test workflow. It has no Pages
