@@ -230,14 +230,20 @@ test("sample project exposes a dedicated retaining payload", () => {
   assert.equal(SAMPLE_PROJECT.supports[0].inclination_degrees, 15);
   assert.equal(SAMPLE_PROJECT.wall_geometry.segments[0].steel_section.library_section_id, "AZ_18");
   assert.equal(SAMPLE_PROJECT.design_options.max_wall_displacement_mm, 30);
-  assert.equal(STEEL_SHEET_PILE_LIBRARY.AZ_18.label, "AZ 18");
+  assert.equal(STEEL_SHEET_PILE_LIBRARY.AZ_18.label, "AZ 18 (630 mm series)");
+  // The sample EI is E I of its own profile (210 000 MPa x 34 200 cm4/m), never a free number.
+  assert.equal(
+    SAMPLE_PROJECT.wall_geometry.segments[0].ei_kNm2_per_m,
+    STEEL_SHEET_PILE_LIBRARY[SAMPLE_PROJECT.wall_geometry.segments[0].steel_section.library_section_id].ei_kNm2_per_m
+  );
+  assert.ok(Math.abs(SAMPLE_PROJECT.wall_geometry.segments[0].ei_kNm2_per_m - 71820) <= 1e-6);
 
   const snapshot = buildInputSnapshot(SAMPLE_PROJECT, 1);
   assert.equal(snapshot.length, 7);
   assert.match(snapshot[0].text, /embedment/);
   assert.match(snapshot[0].text, /from vertical/);
   assert.match(snapshot[0].text, /AZ 18/);
-  assert.match(snapshot[0].text, /EI 52000 kNm2\/m/);
+  assert.match(snapshot[0].text, /EI 71820 kNm2\/m/);
   assert.match(snapshot[1].text, /target element length 0.50 m/);
   assert.match(snapshot[1].text, /max wall displacement \(project limit\) 30.00 mm/);
   assert.match(snapshot[2].text, /Excavate left side to -4.0 m/);
@@ -497,7 +503,7 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /6 nodes · 5 elements/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Solver provenance/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /retaining-ts-sample-v1/);
-  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /plan\.md screenshot acceptance workflow/);
+  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Illustrative values for frontend rendering tests; not a calculation/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Direct API visualization displacement array/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Max 16\.40 mm @ -4\.00 m/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), />0\.0 m<\/text>/);
@@ -516,7 +522,7 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /16\.40 mm maximum \/ 30\.00 mm project limit · ASSESSED PASS/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Support design checks/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Bending demand \/ capacity/);
-  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /182\.50 \/ 246\.62 kNm\/m/);
+  assert.match(buildResultHtml(SAMPLE_RESULT, 2), /182\.50 \/ 746\.92 kNm\/m/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /91\.40 \/ 144\.89/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /axial 94\.62 \/ 150\.00 kN\/m/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 2), /Governing level/);
@@ -547,7 +553,7 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Global moment range: -18\.00 to 182\.50 kNm\/m/);
   assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Governing \|rotation\|: 4\.00 mrad \(Deepen excavation to -5\.0 m\)/);
   assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Governing \|moment\|: 182\.50 kNm\/m \(Deepen excavation to -5\.0 m\)/);
-  assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Wall governing check: bending · demand\/capacity 182\.50 \/ 246\.62 kNm\/m/);
+  assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Wall governing check: bending · demand\/capacity 182\.50 \/ 746\.92 kNm\/m/);
   assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Wall governing level: -4\.00 m/);
   assert.match(buildReportPreviewHtml(SAMPLE_PROJECT, SAMPLE_RESULT, 2), /Governing support check: A1 · demand\/capacity 91\.40 \/ 144\.89 kN\/m · axial 94\.62 \/ 150\.00 kN\/m/);
   assert.match(buildResultHtml(SAMPLE_RESULT, 0), /inactive/);
@@ -601,8 +607,8 @@ test("result helpers create options, plots and html fragments", () => {
   assert.match(mailto, /Global rotation range: 0.00 to 4.00 mrad/);
   assert.match(mailto, /Global moment range: -18.00 to 182.50 kNm\/m/);
   assert.match(mailto, /Governing \|rotation\|: 4.00 mrad \(Deepen excavation to -5.0 m\)/);
-  assert.match(mailto, /Wall bending demand\/capacity: 182.50 \/ 246.62 kNm\/m/);
-  assert.match(mailto, /Wall shear demand\/capacity: 102.30 \/ 249.51 kN\/m/);
+  assert.match(mailto, /Wall bending demand\/capacity: 182.50 \/ 746.92 kNm\/m/);
+  assert.match(mailto, /Wall shear demand\/capacity: 102.30 \/ 1145.09 kN\/m/);
   assert.match(mailto, /Wall governing level: -4.00 m/);
   assert.match(mailto, /Governing support demand\/capacity: 91.40 \/ 144.89 kN\/m · axial 94.62 \/ 150.00 kN\/m/);
 });
@@ -925,7 +931,7 @@ test("report helpers prefer backend normalized input over drifted local project 
   assert.doesNotMatch(report, /<dt>Vertical wall load<\/dt><dd>99\.0 kN\/m<\/dd>/);
   assert.match(report, /<dt>Target element length<\/dt><dd>0\.50 m<\/dd>/);
   assert.doesNotMatch(report, /<dt>Target element length<\/dt><dd>0\.90 m<\/dd>/);
-  assert.match(report, /<dt>Steel section<\/dt><dd>AZ 18<\/dd>/);
+  assert.match(report, /<dt>Steel section<\/dt><dd>AZ 18 \(630 mm series\)<\/dd>/);
   assert.doesNotMatch(report, /Local override section/);
 });
 
@@ -1069,6 +1075,8 @@ test("quick editor patch updates section, load and geometry fields", () => {
     segment_cracking_moment_kNm_per_m: 210,
     segment_moment_resistance_kNm_per_m: 640,
     segment_shear_resistance_kN_per_m: 410,
+    // Not a catalogue id (GU 22N was withdrawn): the patch passes it through
+    // and keeps the entered EI; a catalogue id would set EI = E I of the section.
     library_section_id: "GU_22N",
     section_name: "Custom GU panel",
     plastic_section_modulus_cm3_per_m: 1040,
@@ -1290,7 +1298,7 @@ test("quick editor can target non-first segment, soil layers and support items",
   assert.equal(patched.wall_geometry.segments[1].top_level_m, -4.8);
   assert.equal(patched.wall_geometry.segments[1].bottom_level_m, -10.2);
   assert.equal(patched.wall_geometry.toe_level_m, -10.2);
-  assert.equal(patched.wall_geometry.segments[0].ei_kNm2_per_m, 52000);
+  assert.equal(patched.wall_geometry.segments[0].ei_kNm2_per_m, 71820);
   assert.equal(patched.wall_geometry.segments[1].ei_kNm2_per_m, 45500);
   assert.equal(patched.soil_profiles.left.layers[0].friction_angle_deg, 30);
   assert.equal(patched.soil_profiles.left.layers[1].friction_angle_deg, 39);

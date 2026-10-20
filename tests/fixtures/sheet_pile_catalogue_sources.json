@@ -1,0 +1,268 @@
+{
+  "description": "Transcribed source rows of the built-in sheet-pile catalogue (src/sheet_pile_catalogue.ts). database_row: metric table row of the ArcelorMittal products database page named by 'source', machine-extracted from the page HTML on 2026-10-18 (cells as printed). flyer_row: the same section transcribed by hand from the 2026 flyer, page 1, as an independent second transcription. expected_shear_area_cm2_per_m: Av = tw (h - tf) / b * 10 (EN 1993-5:2007 5.2.2(4), one web per single-pile width b), rounded to 0.01 cm2/m.",
+  "sources": {
+    "arcelormittal_db_az": {
+      "publisher": "ArcelorMittal Commercial RPS S.a r.l., Sheet Piling",
+      "title": "Products database - AZ sections - AZ (metric table)",
+      "url": "https://sheetpiling.arcelormittal.com/products/az-sections/az",
+      "accessed": "2026-10-18"
+    },
+    "arcelormittal_db_az700_az770": {
+      "publisher": "ArcelorMittal Commercial RPS S.a r.l., Sheet Piling",
+      "title": "Products database - AZ sections - AZ-700 and AZ-770 (metric table)",
+      "url": "https://sheetpiling.arcelormittal.com/products/az-sections/az-700-and-az-770",
+      "accessed": "2026-10-18"
+    },
+    "arcelormittal_flyer_2026": {
+      "publisher": "ArcelorMittal Commercial RPS S.a r.l., Sheet Piling",
+      "title": "Z-Sections, Steel Sheet Piling - New standard EN 10248 - Part 1: 2023 (flyer)",
+      "document": "Z&U-01.2026-GB",
+      "page": 1,
+      "url": "https://sheetpiling.arcelormittal.com/sites/default/files/2026-03/AMCRPS-Flyer%20Z-U-2026-web-EN.pdf",
+      "accessed": "2026-10-18"
+    }
+  },
+  "database_columns": [
+    "section",
+    "b_mm",
+    "h_mm",
+    "tf_mm",
+    "tw_mm",
+    "A_cm2_per_m",
+    "Gsp_kg_per_m",
+    "Gw_kg_per_m2",
+    "Iy_cm4_per_m",
+    "Wel_y_cm3_per_m",
+    "Sy_cm3_per_m",
+    "Wpl_y_cm3_per_m"
+  ],
+  "flyer_columns": [
+    "section",
+    "b_mm",
+    "h_mm",
+    "tf_mm",
+    "tw_mm",
+    "Gsp_kg_per_m",
+    "Gw_kg_per_m2",
+    "Iy_cm4_per_m",
+    "Wel_y_cm3_per_m"
+  ],
+  "rows": [
+    {
+      "id": "AZ_18",
+      "section_name": "AZ 18",
+      "source": "arcelormittal_db_az",
+      "database_row": "AZ 18 | 630 | 380 | 9.5 | 9.5 | 150 | 74.4 | 118 | 34200 | 1800 | 1050 | 2104",
+      "flyer_row": "AZ 18 | 630 | 380 | 9.5 | 9.5 | 74.4 | 118.1 | 34 200 | 1 800",
+      "expected_shear_area_cm2_per_m": 55.87
+    },
+    {
+      "id": "AZ_18_10_10",
+      "section_name": "AZ 18-10/10",
+      "source": "arcelormittal_db_az",
+      "database_row": "AZ 18-10/10 | 630 | 381 | 10.0 | 10.0 | 157 | 77.8 | 123 | 35540 | 1870 | 1095 | 2189",
+      "flyer_row": "AZ 18-10/10 | 630 | 381 | 10.0 | 10.0 | 77.8 | 123.4 | 35 540 | 1 870",
+      "expected_shear_area_cm2_per_m": 58.89
+    },
+    {
+      "id": "AZ_26",
+      "section_name": "AZ 26",
+      "source": "arcelormittal_db_az",
+      "database_row": "AZ 26 | 630 | 427 | 13.0 | 12.2 | 198 | 97.8 | 155 | 55510 | 2600 | 1530 | 3059",
+      "flyer_row": "AZ 26 | 630 | 427 | 13.0 | 12.2 | 97.8 | 155.2 | 55 510 | 2 600",
+      "expected_shear_area_cm2_per_m": 80.17
+    },
+    {
+      "id": "AZ_12_700",
+      "section_name": "AZ 12-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 12-700 | 700 | 314 | 8.5 | 8.5 | 123 | 67.7 | 97 | 18880 | 1205 | 710 | 1415",
+      "flyer_row": "AZ 12-700 | 700 | 314 | 8.5 | 8.5 | 67.7 | 96.7 | 18 880 | 1 205",
+      "expected_shear_area_cm2_per_m": 37.1
+    },
+    {
+      "id": "AZ_12_770",
+      "section_name": "AZ 12-770",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 12-770 | 770 | 344 | 8.5 | 8.5 | 120 | 72.6 | 94 | 21430 | 1245 | 740 | 1480",
+      "flyer_row": "AZ 12-770 | 770 | 344 | 8.5 | 8.5 | 72.6 | 94.3 | 21 430 | 1 245",
+      "expected_shear_area_cm2_per_m": 37.04
+    },
+    {
+      "id": "AZ_13_700",
+      "section_name": "AZ 13-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 13-700 | 700 | 315 | 9.5 | 9.5 | 135 | 74.0 | 106 | 20540 | 1305 | 770 | 1540",
+      "flyer_row": "AZ 13-700 | 700 | 315 | 9.5 | 9.5 | 74.0 | 105.7 | 20 540 | 1 305",
+      "expected_shear_area_cm2_per_m": 41.46
+    },
+    {
+      "id": "AZ_13_700_10_10",
+      "section_name": "AZ 13-700-10/10",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 13-700-10/10 | 700 | 316 | 10.0 | 10.0 | 140 | 77.2 | 110 | 21370 | 1355 | 800 | 1600",
+      "flyer_row": "AZ 13-700-10/10 | 700 | 316 | 10.0 | 10.0 | 77.2 | 110.2 | 21 370 | 1 355",
+      "expected_shear_area_cm2_per_m": 43.71
+    },
+    {
+      "id": "AZ_13_770",
+      "section_name": "AZ 13-770",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 13-770 | 770 | 344 | 9.0 | 9.0 | 126 | 76.1 | 99 | 22360 | 1300 | 775 | 1546",
+      "flyer_row": "AZ 13-770 | 770 | 344 | 9.0 | 9.0 | 76.1 | 98.8 | 22 360 | 1 300",
+      "expected_shear_area_cm2_per_m": 39.16
+    },
+    {
+      "id": "AZ_14_700",
+      "section_name": "AZ 14-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 14-700 | 700 | 316 | 10.5 | 10.5 | 146 | 80.3 | 115 | 22190 | 1405 | 835 | 1665",
+      "flyer_row": "AZ 14-700 | 700 | 316 | 10.5 | 10.5 | 80.3 | 114.7 | 22 190 | 1 405",
+      "expected_shear_area_cm2_per_m": 45.82
+    },
+    {
+      "id": "AZ_14_770",
+      "section_name": "AZ 14-770",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 14-770 | 770 | 345 | 9.5 | 9.5 | 132 | 79.5 | 103 | 23300 | 1355 | 805 | 1611",
+      "flyer_row": "AZ 14-770 | 770 | 345 | 9.5 | 9.5 | 79.5 | 103.2 | 23 300 | 1 355",
+      "expected_shear_area_cm2_per_m": 41.39
+    },
+    {
+      "id": "AZ_14_770_10_10",
+      "section_name": "AZ 14-770-10/10",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 14-770-10/10 | 770 | 345 | 10.0 | 10.0 | 137 | 82.9 | 108 | 24240 | 1405 | 840 | 1677",
+      "flyer_row": "AZ 14-770-10/10 | 770 | 345 | 10.0 | 10.0 | 82.9 | 107.7 | 24 240 | 1 405",
+      "expected_shear_area_cm2_per_m": 43.51
+    },
+    {
+      "id": "AZ_17_700",
+      "section_name": "AZ 17-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 17-700 | 700 | 420 | 8.5 | 8.5 | 133 | 73.1 | 104 | 36230 | 1730 | 1015 | 2027",
+      "flyer_row": "AZ 17-700 | 700 | 420 | 8.5 | 8.5 | 73.1 | 104.4 | 36 230 | 1 730",
+      "expected_shear_area_cm2_per_m": 49.97
+    },
+    {
+      "id": "AZ_18_700",
+      "section_name": "AZ 18-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 18-700 | 700 | 420 | 9.0 | 9.0 | 139 | 76.5 | 109 | 37800 | 1800 | 1060 | 2116",
+      "flyer_row": "AZ 18-700 | 700 | 420 | 9.0 | 9.0 | 76.5 | 109.3 | 37 800 | 1 800",
+      "expected_shear_area_cm2_per_m": 52.84
+    },
+    {
+      "id": "AZ_19_700",
+      "section_name": "AZ 19-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 19-700 | 700 | 421 | 9.5 | 9.5 | 146 | 80.0 | 114 | 39380 | 1870 | 1105 | 2206",
+      "flyer_row": "AZ 19-700 | 700 | 421 | 9.5 | 9.5 | 80.0 | 114.3 | 39 380 | 1 870",
+      "expected_shear_area_cm2_per_m": 55.85
+    },
+    {
+      "id": "AZ_20_700",
+      "section_name": "AZ 20-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 20-700 | 700 | 421 | 10.0 | 10.0 | 152 | 83.5 | 119 | 40960 | 1945 | 1150 | 2296",
+      "flyer_row": "AZ 20-700 | 700 | 421 | 10.0 | 10.0 | 83.5 | 119.3 | 40 960 | 1 945",
+      "expected_shear_area_cm2_per_m": 58.71
+    },
+    {
+      "id": "AZ_24_700",
+      "section_name": "AZ 24-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 24-700 | 700 | 459 | 11.2 | 11.2 | 174 | 95.7 | 137 | 55820 | 2430 | 1435 | 2867",
+      "flyer_row": "AZ 24-700 | 700 | 459 | 11.2 | 11.2 | 95.7 | 136.7 | 55 820 | 2 430",
+      "expected_shear_area_cm2_per_m": 71.65
+    },
+    {
+      "id": "AZ_26_700",
+      "section_name": "AZ 26-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 26-700 | 700 | 460 | 12.2 | 12.2 | 187 | 102.9 | 147 | 59720 | 2600 | 1535 | 3070",
+      "flyer_row": "AZ 26-700 | 700 | 460 | 12.2 | 12.2 | 102.9 | 146.9 | 59 720 | 2 600",
+      "expected_shear_area_cm2_per_m": 78.05
+    },
+    {
+      "id": "AZ_28_700",
+      "section_name": "AZ 28-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 28-700 | 700 | 461 | 13.2 | 13.2 | 200 | 110.0 | 157 | 63620 | 2760 | 1635 | 3273",
+      "flyer_row": "AZ 28-700 | 700 | 461 | 13.2 | 13.2 | 110.0 | 157.2 | 63 620 | 2 760",
+      "expected_shear_area_cm2_per_m": 84.44
+    },
+    {
+      "id": "AZ_36_700N",
+      "section_name": "AZ 36-700N",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 36-700N | 700 | 499 | 15.0 | 11.2 | 216 | 118.6 | 169 | 89610 | 3590 | 2055 | 4110",
+      "flyer_row": "AZ 36-700N | 700 | 499 | 15.0 | 11.2 | 118.6 | 169.5 | 89 610 | 3 590",
+      "expected_shear_area_cm2_per_m": 77.44
+    },
+    {
+      "id": "AZ_38_700N",
+      "section_name": "AZ 38-700N",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 38-700N | 700 | 500 | 16.0 | 12.2 | 230 | 126.4 | 181 | 94840 | 3795 | 2180 | 4360",
+      "flyer_row": "AZ 38-700N | 700 | 500 | 16.0 | 12.2 | 126.4 | 180.6 | 94 840 | 3 795",
+      "expected_shear_area_cm2_per_m": 84.35
+    },
+    {
+      "id": "AZ_40_700N",
+      "section_name": "AZ 40-700N",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 40-700N | 700 | 501 | 17.0 | 13.2 | 244 | 134.2 | 192 | 100080 | 3995 | 2305 | 4605",
+      "flyer_row": "AZ 40-700N | 700 | 501 | 17.0 | 13.2 | 134.2 | 191.7 | 100 080 | 3 995",
+      "expected_shear_area_cm2_per_m": 91.27
+    },
+    {
+      "id": "AZ_42_700N",
+      "section_name": "AZ 42-700N",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 42-700N | 700 | 499 | 18.0 | 14.0 | 259 | 142.1 | 203 | 104930 | 4205 | 2425 | 4855",
+      "flyer_row": "AZ 42-700N | 700 | 499 | 18.0 | 14.0 | 142.1 | 203.1 | 104 930 | 4 205",
+      "expected_shear_area_cm2_per_m": 96.2
+    },
+    {
+      "id": "AZ_44_700N",
+      "section_name": "AZ 44-700N",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 44-700N | 700 | 500 | 19.0 | 15.0 | 273 | 149.9 | 214 | 110150 | 4405 | 2550 | 5105",
+      "flyer_row": "AZ 44-700N | 700 | 500 | 19.0 | 15.0 | 149.9 | 214.2 | 110 150 | 4 405",
+      "expected_shear_area_cm2_per_m": 103.07
+    },
+    {
+      "id": "AZ_46_700N",
+      "section_name": "AZ 46-700N",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 46-700N | 700 | 501 | 20.0 | 16.0 | 287 | 157.7 | 225 | 115370 | 4605 | 2675 | 5350",
+      "flyer_row": "AZ 46-700N | 700 | 501 | 20.0 | 16.0 | 157.7 | 225.3 | 115 370 | 4 605",
+      "expected_shear_area_cm2_per_m": 109.94
+    },
+    {
+      "id": "AZ_48_700",
+      "section_name": "AZ 48-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 48-700 | 700 | 503 | 22.0 | 15.0 | 288 | 158.5 | 226 | 119650 | 4755 | 2745 | 5490",
+      "flyer_row": "AZ 48-700 | 700 | 503 | 22.0 | 15.0 | 158.5 | 226.4 | 119 650 | 4 755",
+      "expected_shear_area_cm2_per_m": 103.07
+    },
+    {
+      "id": "AZ_50_700",
+      "section_name": "AZ 50-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 50-700 | 700 | 504 | 23.0 | 16.0 | 303 | 166.3 | 238 | 124890 | 4955 | 2870 | 5735",
+      "flyer_row": "AZ 50-700 | 700 | 504 | 23.0 | 16.0 | 166.3 | 237.5 | 124 890 | 4 955",
+      "expected_shear_area_cm2_per_m": 109.94
+    },
+    {
+      "id": "AZ_52_700",
+      "section_name": "AZ 52-700",
+      "source": "arcelormittal_db_az700_az770",
+      "database_row": "AZ 52-700 | 700 | 505 | 24.0 | 17.0 | 317 | 174.1 | 249 | 130140 | 5155 | 2990 | 5985",
+      "flyer_row": "AZ 52-700 | 700 | 505 | 24.0 | 17.0 | 174.1 | 248.7 | 130 140 | 5 155",
+      "expected_shear_area_cm2_per_m": 116.81
+    }
+  ]
+}
