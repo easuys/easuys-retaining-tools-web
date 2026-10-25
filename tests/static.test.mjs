@@ -10,7 +10,6 @@ import {
   SAMPLE_PROJECT,
   SAMPLE_RESULT,
   EC7_PARTIAL_FACTOR_DEFAULTS,
-  EC7_PRESET_FACTORS,
   STEEL_SHEET_PILE_LIBRARY,
   applyQuickEditorStructureAction,
   applyQuickEditorPatch,
@@ -105,11 +104,10 @@ test("frontend is configured for retaining domain and API", async () => {
 });
 
 test("pull-request CI is bounded, read-only and cannot deploy", async () => {
-  // run the same assertions in Windows worktrees with CRLF checkouts.
-  const workflow = (await readFile(
+  const workflow = await readFile(
     new URL("../.github/workflows/pr-ci.yml", import.meta.url),
     "utf8"
-  )).replaceAll("\r\n", "\n");
+  );
   const triggerBlock = workflow.split("permissions:", 1)[0];
 
   assert.match(triggerBlock, /^on:\n  pull_request:\s*$/m);
@@ -169,10 +167,7 @@ test("runAnalysis posts the project payload to the retaining API and returns par
   assert.equal(capturedUrl, `${API_BASE_URL}${ANALYSIS_ROUTE}`);
   assert.equal(capturedOptions.method, "POST");
   assert.equal(capturedOptions.headers["content-type"], "application/json");
-  // a classic request omits the EC7-only project selection.
-  const expectedPayload = structuredClone(SAMPLE_PROJECT);
-  delete expectedPayload.ec7_preset;
-  assert.deepEqual(JSON.parse(capturedOptions.body), expectedPayload);
+  assert.deepEqual(JSON.parse(capturedOptions.body), SAMPLE_PROJECT);
   assert.deepEqual(body, { phases: [{ name: "ok" }] });
 });
 
@@ -320,8 +315,6 @@ test("quick editor shows design-mode gamma M0 defaults when manual steel gamma i
 });
 
 test("EC7 partial factors show API defaults, store edits and reset to defaults", () => {
-  // new projects use RK2; the legacy defaults remain available as R1N8.
-  const defaults = EC7_PRESET_FACTORS.be_rk2;
   const classicHtml = buildQuickEditorHtml(SAMPLE_PROJECT, 1);
   const ec7Project = applyQuickEditorPatch(SAMPLE_PROJECT, 1, { design_mode: "ec7" });
   const ec7Html = buildQuickEditorHtml(ec7Project, 1);
@@ -329,12 +322,12 @@ test("EC7 partial factors show API defaults, store edits and reset to defaults",
   assert.doesNotMatch(classicHtml, /Partial factors \(EC7-BE, design approach 1\)/);
   assert.match(ec7Html, /Partial factors \(EC7-BE, design approach 1\)/);
   assert.match(ec7Html, /Reset to defaults/);
-  assert.match(ec7Html, /Preset values for RK2 \(default\) \(EC7-BE, design approach 1\)/);
+  assert.match(ec7Html, /Default values for EC7-BE \(design approach 1\)\. Every factor can be changed; the engineer remains responsible for the partial factors\./);
   assert.equal((ec7Html.match(/data-qe-ec7-factor=/g) ?? []).length, 20);
 
   for (const setName of ["set1", "set2"]) {
     for (const [key, value] of Object.entries(EC7_PARTIAL_FACTOR_DEFAULTS[setName])) {
-      const shown = key === "overdig_fraction" ? defaults[setName][key] * 100 : defaults[setName][key];
+      const shown = key === "overdig_fraction" ? value * 100 : value;
       assert.match(ec7Html, new RegExp(`data-qe-ec7-factor="${setName}\\.${key}"[^>]*value="${shown}"`));
     }
   }
@@ -352,8 +345,8 @@ test("EC7 partial factors show API defaults, store edits and reset to defaults",
   assert.equal(edited.ec7_partial_factors.set2.overdig_fraction, 0.05);
 
   const reset = resetEc7PartialFactors(edited);
-  assert.deepEqual(reset.ec7_partial_factors, defaults);
-  assert.equal(reset.ec7_partial_factors.set1.overdig_fraction, 0);
+  assert.deepEqual(reset.ec7_partial_factors, EC7_PARTIAL_FACTOR_DEFAULTS);
+  assert.equal(reset.ec7_partial_factors.set1.overdig_fraction, 0.1);
 });
 
 test("EC7 action types are explicit in phase and point-load requests", async () => {
@@ -384,9 +377,8 @@ test("EC7 action types are explicit in phase and point-load requests", async () 
   assert.equal(payload.phases[1].surcharge_right_action, "variable_favourable");
   assert.equal(payload.phases[1].vertical_line_load_action, "permanent_unfavourable");
   assert.equal(payload.supports[0].action_type, "permanent_favourable");
-  // unchanged factors are selected by preset, never sent as overrides.
-  assert.equal(payload.ec7_preset, "be_rk2");
-  assert.equal("ec7_partial_factors" in payload, false);
+  assert.equal(payload.ec7_partial_factors.set1.overdig_fraction, 0.1);
+  assert.equal(payload.ec7_partial_factors.set2.overdig_fraction, 0.1);
 
   const classicPayload = buildAnalysisPayload({ ...ec7Project, design_mode: "classic" });
   assert.equal("ec7_partial_factors" in classicPayload, false);

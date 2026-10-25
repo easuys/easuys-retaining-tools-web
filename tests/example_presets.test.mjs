@@ -5,7 +5,6 @@ import { test } from "node:test";
 
 import {
   EXAMPLE_PRESETS,
-  EC7_PARTIAL_FACTOR_DEFAULTS,
   STEEL_SHEET_PILE_LIBRARY,
   STUDY_REQUEST_EMAIL,
   VALIDATION_PAGE_URL,
@@ -106,18 +105,11 @@ test("examples use public API features only and never the on-request methods", (
   }
 });
 
-test("stored R1N8 example fixtures pin the geometry and actions of the current RK2 examples", () => {
+test("the example fixture matches the request the browser sends for each preset", () => {
   for (const preset of EXAMPLE_PRESETS) {
     const entry = FIXTURE.presets[preset.id];
     assert.ok(entry, `fixture for ${preset.id}`);
-    // these are stored pre-selector R1N8 results, not fresh RK2 runs.
-    // Replay the old request shape to keep the original result hashes honest.
-    const payload = JSON.parse(browserRequestBody(preset));
-    assert.equal(payload.ec7_preset, "be_rk2");
-    assert.equal("ec7_partial_factors" in payload, false);
-    delete payload.ec7_preset;
-    payload.ec7_partial_factors = structuredClone(EC7_PARTIAL_FACTOR_DEFAULTS);
-    const sha = createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+    const sha = createHash("sha256").update(browserRequestBody(preset)).digest("hex");
     assert.equal(entry.request_sha256, sha, `${preset.id} changed: rerun scripts/build_example_presets_fixture.mjs`);
     assert.equal(entry.result.earth_pressure_method, "coulomb");
   }
@@ -133,9 +125,7 @@ test("design summary reports governing values, EC7 set and pass state for the ex
   assert.equal(anchored.overallText, "All assessed checks pass");
   assert.equal(anchored.wallLabel, "AZ 26-700 · fy 355 MPa");
   assert.equal(anchored.ec7.label, "EC7-BE, design approach 1, sets 1 and 2");
-  // name the stored result's R1N8 preset independently of the RK2 editor.
-  assert.match(anchored.ec7.detail, /R1N8 \(D-Sheet office values\) \(stored result; preset metadata unavailable\): preset partial factors/);
-  assert.match(anchored.ec7.detail, /overdig 10 % of H, at most 0\.5 m; bending governed by set 2, shear by set 1/);
+  assert.match(anchored.ec7.detail, /Default EC7-BE partial factors; overdig 10 % of H, at most 0\.5 m; bending governed by set 2, shear by set 1/);
   const figures = Object.fromEntries(anchored.figures.map((figure) => [figure.id, figure]));
   assert.equal(figures.moment.value, "510 kNm/m");
   assert.match(figures.moment.detail, /^EC7 set 2 · at -6\.3 m$/);

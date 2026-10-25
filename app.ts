@@ -133,86 +133,32 @@ export type Ec7ActionType =
   | "variable_unfavourable"
   | "variable_favourable";
 
-export type Ec7PresetId = "be_rk1" | "be_rk2" | "be_rk3" | "r1n8_dsheet";
-export type ExcavationCondition = "dry" | "wet";
-
-// Mirrored API factor values: EC7_PRESETS_VERSION = ec7-be-presets-2026-10-24-a.
-// Keep every set/field pinned in tests/ec7_presets.test.mjs.
-export const EC7_PRESETS_VERSION = "ec7-be-presets-2026-10-24-a";
-export const EC7_PRESET_FACTORS = {
-  be_rk1: {
-    set1: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.1, variable_favourable: 0,
-      tan_phi: 1, cohesion: 1, soil_unit_weight: 1, subgrade_modulus: 1,
-      effect: 1.2, overdig_fraction: 0, overdig_max_m: 0,
-      undrained_shear_strength: 1, wall_friction_rule: "tan_factor",
-    },
-    set2: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.1, variable_favourable: 0,
-      tan_phi: 1.1, cohesion: 1.1, soil_unit_weight: 1, subgrade_modulus: 1,
-      effect: 1, overdig_fraction: 0.1, overdig_max_m: 0.5,
-      undrained_shear_strength: 1.25, overdig_dry_m: 0.3, wall_friction_rule: "tan_factor",
-    },
+export const EC7_PARTIAL_FACTOR_DEFAULTS = {
+  set1: {
+    permanent_unfavourable: 1.0,
+    permanent_favourable: 1.0,
+    variable_unfavourable: 1.2,
+    variable_favourable: 0.0,
+    tan_phi: 1.0,
+    cohesion: 1.0,
+    subgrade_modulus: 1.0,
+    effect: 1.5,
+    overdig_fraction: 0.10,
+    overdig_max_m: 0.5,
   },
-  be_rk2: {
-    set1: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.1, variable_favourable: 0,
-      tan_phi: 1, cohesion: 1, soil_unit_weight: 1, subgrade_modulus: 1,
-      effect: 1.35, overdig_fraction: 0, overdig_max_m: 0,
-      undrained_shear_strength: 1, wall_friction_rule: "tan_factor",
-    },
-    set2: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.1, variable_favourable: 0,
-      tan_phi: 1.25, cohesion: 1.25, soil_unit_weight: 1, subgrade_modulus: 1,
-      effect: 1, overdig_fraction: 0.1, overdig_max_m: 0.5,
-      undrained_shear_strength: 1.4, overdig_dry_m: 0.3, wall_friction_rule: "tan_factor",
-    },
-  },
-  be_rk3: {
-    set1: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.2, variable_favourable: 0,
-      tan_phi: 1, cohesion: 1, soil_unit_weight: 1, subgrade_modulus: 1,
-      effect: 1.5, overdig_fraction: 0, overdig_max_m: 0,
-      undrained_shear_strength: 1, wall_friction_rule: "tan_factor",
-    },
-    set2: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.2, variable_favourable: 0,
-      tan_phi: 1.4, cohesion: 1.4, soil_unit_weight: 1, subgrade_modulus: 1,
-      effect: 1, overdig_fraction: 0.1, overdig_max_m: 0.5,
-      undrained_shear_strength: 1.55, overdig_dry_m: 0.3, wall_friction_rule: "tan_factor",
-    },
-  },
-  r1n8_dsheet: {
-    set1: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.2, variable_favourable: 0,
-      tan_phi: 1, cohesion: 1, subgrade_modulus: 1,
-      effect: 1.5, overdig_fraction: 0.1, overdig_max_m: 0.5,
-    },
-    set2: {
-      permanent_unfavourable: 1, permanent_favourable: 1,
-      variable_unfavourable: 1.1, variable_favourable: 0,
-      tan_phi: 1.25, cohesion: 1.25, subgrade_modulus: 1,
-      effect: 1, overdig_fraction: 0.1, overdig_max_m: 0.5,
-    },
+  set2: {
+    permanent_unfavourable: 1.0,
+    permanent_favourable: 1.0,
+    variable_unfavourable: 1.1,
+    variable_favourable: 0.0,
+    tan_phi: 1.25,
+    cohesion: 1.25,
+    subgrade_modulus: 1.0,
+    effect: 1.0,
+    overdig_fraction: 0.10,
+    overdig_max_m: 0.5,
   },
 } as const;
-
-// Compatibility name for the factor values used by older saved projects.
-export const EC7_PARTIAL_FACTOR_DEFAULTS = EC7_PRESET_FACTORS.r1n8_dsheet;
-
-const EC7_PRESET_LABELS: Record<Ec7PresetId, string> = {
-  be_rk1: "RK1 (lighter, inferred)",
-  be_rk2: "RK2 (default)",
-  be_rk3: "RK3 (stricter, inferred)",
-  r1n8_dsheet: "R1N8 (D-Sheet office values)",
-};
 
 type Ec7PartialFactorSet = {
   permanent_unfavourable?: number;
@@ -232,13 +178,6 @@ type Ec7PartialFactors = {
   set2?: Ec7PartialFactorSet;
 };
 
-type Ec7PresetFactorSet = Required<Ec7PartialFactorSet> & {
-  soil_unit_weight?: number;
-  undrained_shear_strength?: number;
-  overdig_dry_m?: number;
-  wall_friction_rule?: string;
-};
-
 type WallSegmentInput = {
   label?: string;
   top_level_m: number;
@@ -253,7 +192,6 @@ type WallSegmentInput = {
 
 type PhaseInput = {
   name: string;
-  excavation_condition?: ExcavationCondition;
   excavation_level_left_m: number;
   excavation_level_right_m: number;
   surface_level_left_m?: number;
@@ -309,8 +247,6 @@ type SupportInput = {
 
 type ProjectInput = {
   design_mode: "classic" | "ec7";
-  ec7_preset?: Ec7PresetId;
-  ec7_excavation_condition?: ExcavationCondition;
   ec7_partial_factors?: Ec7PartialFactors;
   wall_type: "steel_sheet_pile" | "diaphragm_wall";
   wall_geometry: {
@@ -339,7 +275,6 @@ type ProjectInput = {
 
 export const SAMPLE_PROJECT: ProjectInput = {
   design_mode: "classic",
-  ec7_preset: "be_rk2",
   wall_type: "steel_sheet_pile",
   wall_geometry: {
     top_level_m: 0,
@@ -464,7 +399,7 @@ const sameLayersBothSides = (layers: SoilLayerInput[]) => ({
 
 // One-click examples. Public API features only: horizontal ground, uniform
 // surcharges, the Coulomb earth-pressure default, EC7-BE design approach 1 with
-// risk class RK2. Left = excavation side, right = retained side.
+// the default partial factors. Left = excavation side, right = retained side.
 // Soil values are typical illustrative values for Belgian soils, not project data.
 export const EXAMPLE_PRESETS: ReadonlyArray<ExamplePreset> = [
   {
@@ -480,7 +415,6 @@ export const EXAMPLE_PRESETS: ReadonlyArray<ExamplePreset> = [
     note: "Typical of a temporary pit or a basement edge in Campine or Flemish sand.",
     project: {
       design_mode: "ec7",
-      ec7_preset: "be_rk2",
       wall_type: "steel_sheet_pile",
       wall_geometry: {
         top_level_m: 0,
@@ -529,7 +463,6 @@ export const EXAMPLE_PRESETS: ReadonlyArray<ExamplePreset> = [
     note: "Excavate to −2.0 m, install and prestress the anchors, then excavate to the final level.",
     project: {
       design_mode: "ec7",
-      ec7_preset: "be_rk2",
       wall_type: "steel_sheet_pile",
       wall_geometry: {
         top_level_m: 0,
@@ -609,7 +542,6 @@ export const EXAMPLE_PRESETS: ReadonlyArray<ExamplePreset> = [
     note: "Typical Brussels profile: fill over Brussels sand on Ieper clay. Moment and shear resistance are the entered design values of the reinforced section.",
     project: {
       design_mode: "ec7",
-      ec7_preset: "be_rk2",
       wall_type: "diaphragm_wall",
       wall_geometry: {
         top_level_m: 0,
@@ -1262,43 +1194,17 @@ function defaultSteelGammaM0(designMode: ProjectInput["design_mode"] | undefined
   return designMode === "ec7" ? 1.1 : 1;
 }
 
-export function normalizeProject(project: ProjectInput): ProjectInput {
-  return { ...structuredClone(project), ec7_preset: project.ec7_preset ?? "r1n8_dsheet" };
-}
-
-function ec7PresetForProject(project: ProjectInput): Ec7PresetId {
-  return project.ec7_preset ?? "r1n8_dsheet";
-}
-
-// Only the existing public factor fields may be overridden.
-const EC7_PUBLIC_FACTOR_FIELDS = Object.keys(EC7_PARTIAL_FACTOR_DEFAULTS.set1) as Array<keyof Ec7PartialFactorSet>;
-
-function ec7FactorOverrides(preset: Ec7PresetId, factors: Ec7PartialFactors): Ec7PartialFactors {
-  const overrides: Ec7PartialFactors = {};
-  for (const setName of ["set1", "set2"] as const) {
-    for (const field of EC7_PUBLIC_FACTOR_FIELDS) {
-      const value = factors?.[setName]?.[field];
-      if (value !== undefined && value !== EC7_PRESET_FACTORS[preset][setName][field]) {
-        (overrides[setName] ??= {})[field] = value;
-      }
-    }
-  }
-  return overrides;
-}
-
-function ec7PartialFactorsForProject(project: ProjectInput): Record<"set1" | "set2", Ec7PresetFactorSet> {
-  const defaults = EC7_PRESET_FACTORS[ec7PresetForProject(project)];
-  const overrides = ec7FactorOverrides(ec7PresetForProject(project), project.ec7_partial_factors);
+function ec7PartialFactorsForProject(project: ProjectInput): Required<Ec7PartialFactors> {
   return {
-    set1: { ...defaults.set1, ...overrides.set1 },
-    set2: { ...defaults.set2, ...overrides.set2 },
+    set1: { ...EC7_PARTIAL_FACTOR_DEFAULTS.set1, ...(project.ec7_partial_factors?.set1 ?? {}) },
+    set2: { ...EC7_PARTIAL_FACTOR_DEFAULTS.set2, ...(project.ec7_partial_factors?.set2 ?? {}) },
   };
 }
 
 export function resetEc7PartialFactors(project: ProjectInput) {
   return {
-    ...normalizeProject(project),
-    ec7_partial_factors: structuredClone(EC7_PRESET_FACTORS[ec7PresetForProject(project)]),
+    ...structuredClone(project),
+    ec7_partial_factors: structuredClone(EC7_PARTIAL_FACTOR_DEFAULTS),
   };
 }
 
@@ -1362,41 +1268,23 @@ function ec7FactorBlock(project: ProjectInput) {
       <h3 id="ec7-factor-title">Partial factors (EC7-BE, design approach 1)</h3>
       <div class="table-shell ec7-factor-table-shell">
         <table class="ec7-factor-table"><thead><tr><th>Factor</th><th>Set 1</th><th>Set 2</th></tr></thead>
-          <tbody>${rows.map((row) => `<tr><th scope="row">${row.label}</th><td>${inputs("set1", row.key, row.percent)}</td><td>${inputs("set2", row.key, row.percent)}</td></tr>`).join("")}${ec7PresetOnlyFactorRows(factors)}</tbody>
+          <tbody>${rows.map((row) => `<tr><th scope="row">${row.label}</th><td>${inputs("set1", row.key, row.percent)}</td><td>${inputs("set2", row.key, row.percent)}</td></tr>`).join("")}</tbody>
         </table>
       </div>
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-ec7-reset>Reset to defaults</button></div>
-      <p class="quick-editor-note">Preset values for ${escapeHtml(EC7_PRESET_LABELS[ec7PresetForProject(project)])} (EC7-BE, design approach 1). The engineer remains responsible for the partial factors. Additional preset values are read-only; excavation condition controls the RK set 2 overdig: dry 0.3 m, wet 10 % of H up to 0.5 m.</p>
+      <p class="quick-editor-note">Default values for EC7-BE (design approach 1). Every factor can be changed; the engineer remains responsible for the partial factors.</p>
     </section>`;
-}
-
-function ec7PresetOnlyFactorRows(factors: any) {
-  const rows = [
-    { key: "soil_unit_weight", label: "Soil unit weight (÷)" },
-    { key: "undrained_shear_strength", label: "Undrained shear strength (÷)" },
-    { key: "overdig_dry_m", label: "Dry excavation overdig (m)" },
-    { key: "wall_friction_rule", label: "Wall friction rule" },
-  ];
-  return rows.filter((row) => factors?.set1?.[row.key] !== undefined || factors?.set2?.[row.key] !== undefined)
-    .map((row) => `<tr><th scope="row">${row.label}</th>${["set1", "set2"].map((setName) => {
-      const value = factors?.[setName]?.[row.key];
-      const shown = value === "tan_factor" ? "Factor on tan δ" : value ?? "—";
-      return `<td>${escapeHtml(shown)}</td>`;
-    }).join("")}</tr>`).join("");
 }
 
 export function buildAnalysisPayload(project: ProjectInput): ProjectInput {
   const payload = structuredClone(project);
   if (payload.design_mode !== "ec7") {
-    delete payload.ec7_preset;
-    delete payload.ec7_excavation_condition;
     delete payload.ec7_partial_factors;
     payload.phases = payload.phases.map((phase) => {
       const cleanPhase = { ...phase };
       delete cleanPhase.surcharge_left_action;
       delete cleanPhase.surcharge_right_action;
       delete cleanPhase.vertical_line_load_action;
-      delete cleanPhase.excavation_condition;
       return cleanPhase;
     });
     payload.supports = payload.supports.map((support) => {
@@ -1405,10 +1293,7 @@ export function buildAnalysisPayload(project: ProjectInput): ProjectInput {
       return cleanSupport;
     });
   } else {
-    payload.ec7_preset = ec7PresetForProject(payload);
-    const overrides = ec7FactorOverrides(payload.ec7_preset, payload.ec7_partial_factors);
-    if (Object.keys(overrides).length) payload.ec7_partial_factors = overrides;
-    else delete payload.ec7_partial_factors;
+    payload.ec7_partial_factors = ec7PartialFactorsForProject(payload);
     payload.phases = payload.phases.map((phase) => ({
       ...phase,
       surcharge_left_action: phase.surcharge_left_action ?? "variable_unfavourable",
@@ -2169,10 +2054,6 @@ export function buildQuickEditorHtml(project: ProjectInput, phaseIndex = 0, focu
       <div class="quick-editor-actions"><button type="button" class="secondary-button" data-qe-structure-action="phase_duplicate">Duplicate phase</button><button type="button" class="secondary-button" data-qe-structure-action="phase_remove">Remove phase</button></div>
       <label class="quick-editor-field"><span>Wall type</span><select data-qe-wall-type><option value="steel_sheet_pile" ${project.wall_type === "steel_sheet_pile" ? "selected" : ""}>Steel sheet pile</option><option value="diaphragm_wall" ${project.wall_type === "diaphragm_wall" ? "selected" : ""}>Diaphragm wall</option></select></label>
       <label class="quick-editor-field"><span>Design mode</span><select data-qe-design-mode><option value="classic" ${project.design_mode === "classic" ? "selected" : ""}>Classic</option><option value="ec7" ${project.design_mode === "ec7" ? "selected" : ""}>EC7-BE (design approach 1)</option></select></label>
-      ${project.design_mode === "ec7" ? `
-      <label class="quick-editor-field"><span>Risk class (EC7-BE guideline 2022)</span><select data-qe-ec7-preset>${Object.entries(EC7_PRESET_LABELS).map(([id, label]) => `<option value="${id}" ${ec7PresetForProject(project) === id ? "selected" : ""}>${label}</option>`).join("")}</select></label>
-      <label class="quick-editor-field"><span>Excavation condition</span><select data-qe-ec7-excavation-condition>${["", "dry", "wet"].map((value) => `<option value="${value}" ${(project.ec7_excavation_condition ?? "") === value ? "selected" : ""}>${value || "not stated"}</option>`).join("")}</select></label>
-      ` : ""}
       <label class="quick-editor-field"><span>Toe control</span><select data-qe-toe-mode><option value="fixed" ${toeControlMode === "fixed" ? "selected" : ""}>Fixed toe</option><option value="search" ${toeControlMode === "search" ? "selected" : ""}>Search length</option></select></label>
       <label class="quick-editor-field"><span>Top level</span><input data-qe-top-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.top_level_m)}"></label>
       <label class="quick-editor-field"><span>Toe level</span><input data-qe-toe-level type="number" step="0.1" value="${escapeHtml(project.wall_geometry.toe_level_m)}"></label>
@@ -2265,15 +2146,12 @@ export function reconcileQuickEditorEventPatch(changedField: string, patch: any)
     delete reconciled.toe_level_m;
   } else if (changedField === "design_mode") {
     reconciled.gamma_m0 = defaultSteelGammaM0(reconciled.design_mode);
-  } else if (changedField === "ec7_preset") {
-    // The form still contains the previous preset's values until it rerenders.
-    delete reconciled.ec7_partial_factors;
   }
   return reconciled;
 }
 
 export function applyQuickEditorPatch(project: ProjectInput, phaseIndex: number, patch: any, focus: EditorFocusState = {}) {
-  const nextProject = normalizeProject(project);
+  const nextProject = structuredClone(project);
   const focusState = normalizeEditorFocus(nextProject, focus);
   nextProject.design_options = {
     ...(nextProject.design_options || {}),
@@ -2288,27 +2166,19 @@ export function applyQuickEditorPatch(project: ProjectInput, phaseIndex: number,
   const nextWallLengthSearch = nextProject.design_options?.wall_length_search;
   nextProject.wall_type = patch.wall_type ?? nextProject.wall_type;
   nextProject.design_mode = patch.design_mode ?? nextProject.design_mode;
-  if (patch.ec7_preset !== undefined && patch.ec7_preset !== nextProject.ec7_preset) {
-    nextProject.ec7_preset = patch.ec7_preset;
-    delete nextProject.ec7_partial_factors;
-  }
-  if (patch.ec7_excavation_condition !== undefined) {
-    if (patch.ec7_excavation_condition === "") delete nextProject.ec7_excavation_condition;
-    else nextProject.ec7_excavation_condition = patch.ec7_excavation_condition;
-  }
   if (nextProject.design_mode === "ec7") {
-    const overrides = ec7FactorOverrides(ec7PresetForProject(nextProject), {
+    nextProject.ec7_partial_factors = {
+      ...ec7PartialFactorsForProject(nextProject),
+      ...(patch.ec7_partial_factors ?? {}),
       set1: {
-        ...nextProject.ec7_partial_factors?.set1,
+        ...ec7PartialFactorsForProject(nextProject).set1,
         ...(patch.ec7_partial_factors?.set1 ?? {}),
       },
       set2: {
-        ...nextProject.ec7_partial_factors?.set2,
+        ...ec7PartialFactorsForProject(nextProject).set2,
         ...(patch.ec7_partial_factors?.set2 ?? {}),
       },
-    });
-    if (Object.keys(overrides).length) nextProject.ec7_partial_factors = overrides;
-    else delete nextProject.ec7_partial_factors;
+    };
   }
   nextProject.wall_geometry.top_level_m = patch.top_level_m ?? nextProject.wall_geometry.top_level_m;
   nextProject.wall_geometry.toe_level_m = patch.toe_level_m ?? nextProject.wall_geometry.toe_level_m;
@@ -2918,12 +2788,6 @@ const REMOVED_WARNING_CODES = new Set(["FIRST_PASS_EC7_FACTORS", "BENCHMARK_IMPO
 
 export function readableWarningMessage(code: string) {
   if (REMOVED_WARNING_CODES.has(code)) return "";
-  if (code === "EC7_PRESET_INFERRED_FACTORS" || code.startsWith("EC7_PRESET_INFERRED_FACTORS:")) {
-    return "The selected risk class includes inferred factors. Review the inferred fields in the EC7 verification before using the results.";
-  }
-  if (code === "EC7_OVERDIG_CONDITION_NOT_STATED" || code.startsWith("EC7_OVERDIG_CONDITION_NOT_STATED:")) {
-    return "The excavation condition was not stated. Select dry or wet and review the overdig applied in each phase.";
-  }
   const nonConverged = /^EC7_PHASE_DID_NOT_CONVERGE:(set1|set2):(.+)$/.exec(code);
   if (nonConverged) {
     const setNumber = nonConverged[1] === "set1" ? 1 : 2;
@@ -3117,29 +2981,6 @@ function ec7SupportForceEnvelope(setResult: any) {
   }).join("; ");
 }
 
-function ec7ResultPresetLabel(result: any) {
-  const preset = result?.ec7_verification?.preset;
-  // Older responses can contain obsolete default annotations in their label.
-  if (preset?.label) return String(preset.label).replace(/\s*\((?:internal|public) default\)/gi, "");
-  const id: Ec7PresetId = result?.normalized_input?.ec7_preset ?? "r1n8_dsheet";
-  return `${EC7_PRESET_LABELS[id] ?? id} (stored result; preset metadata unavailable)`;
-}
-
-function ec7PresetBasisText(preset: any) {
-  switch (preset?.basis) {
-    case "cited": return "Cited in the EC7-BE guideline 2022";
-    case "inferred": return "Includes inferred factors";
-    case "project_files": return "D-Sheet office files";
-    default: return "Basis not returned for this stored result";
-  }
-}
-
-function ec7InferredFieldsText(preset: any) {
-  return Array.isArray(preset?.inferred_fields) && preset.inferred_fields.length
-    ? preset.inferred_fields.map((field: string) => String(field).replace(/^set([12])\./, "Set $1: ").replaceAll("_", " ")).join("; ")
-    : "none";
-}
-
 export function buildEc7VerificationHtml(result: any) {
   const verification = result?.ec7_verification;
   if (!verification) return "";
@@ -3149,7 +2990,7 @@ export function buildEc7VerificationHtml(result: any) {
   const partialFactors = verification.partial_factors ?? {};
   const factorRows = EC7_FACTOR_DISPLAY_ROWS.map((row) => `
     <tr><th scope="row">${row.label}</th><td>${ec7FactorValue(partialFactors.set1, row)}</td><td>${ec7FactorValue(partialFactors.set2, row)}</td></tr>
-  `).join("") + ec7PresetOnlyFactorRows(partialFactors);
+  `).join("");
   const summaryRows = sets.map((setResult: any, index: number) => {
     const governing = setResult?.governing ?? {};
     const setNumber = index + 1;
@@ -3173,7 +3014,6 @@ export function buildEc7VerificationHtml(result: any) {
     <article class="result-card result-card-wide ec7-verification" aria-labelledby="ec7-verification-title">
       <h3 id="ec7-verification-title">EC7 verification</h3>
       <p>EC7-BE design approach 1 with sets 1 and 2. Moments, shear and support forces use the factor on effects; displacements remain unfactored.</p>
-      <p>Risk class used: <strong>${escapeHtml(ec7ResultPresetLabel(result))}</strong>. Basis: ${escapeHtml(ec7PresetBasisText(verification.preset))}. Inferred fields: ${escapeHtml(ec7InferredFieldsText(verification.preset))}.</p>
       ${failureAlerts}
       <h4>Partial factors used</h4>
       <div class="table-shell"><table><thead><tr><th>Factor</th><th>Set 1</th><th>Set 2</th></tr></thead><tbody>${factorRows}</tbody></table></div>
@@ -3418,13 +3258,12 @@ export function wallSectionShortLabel(project: ProjectInput) {
   return segment?.label || "Diaphragm wall";
 }
 
-function ec7FactorsAreDefaults(partialFactors: any, preset: Ec7PresetId) {
+function ec7FactorsAreDefaults(partialFactors: any) {
   for (const setName of ["set1", "set2"] as const) {
-    const defaults = EC7_PRESET_FACTORS[preset]?.[setName];
-    if (!defaults) return false;
+    const defaults = EC7_PARTIAL_FACTOR_DEFAULTS[setName] as Record<string, number>;
     for (const [key, value] of Object.entries(defaults)) {
-      const used = partialFactors?.[setName]?.[key] ?? value;
-      if (used !== value) return false;
+      const used = Number(partialFactors?.[setName]?.[key] ?? value);
+      if (Math.abs(used - value) > 1e-9) return false;
     }
   }
   return true;
@@ -3451,18 +3290,13 @@ export function buildDesignSummary(project: ProjectInput, result: any, caseTitle
 
   const bendingSet = splitGoverningPhase(wall?.bending_governing_phase).set;
   const shearSet = splitGoverningPhase(wall?.shear_governing_phase).set;
-  const resultPresetId: Ec7PresetId = verification?.preset?.id ?? result?.normalized_input?.ec7_preset ?? "r1n8_dsheet";
   const ec7 = verification
     ? {
         active: true,
         label: "EC7-BE, design approach 1, sets 1 and 2",
         detail: [
-          `${ec7ResultPresetLabel(result)}: ${ec7FactorsAreDefaults(verification.partial_factors, resultPresetId) ? "preset partial factors" : "partial factors changed by the user"}`,
-          `basis: ${ec7PresetBasisText(verification.preset)}`,
-          verification.preset?.inferred_fields?.length ? `inferred fields: ${ec7InferredFieldsText(verification.preset)}` : "",
-          resultPresetId === "r1n8_dsheet"
-            ? `overdig ${fmt(Number(verification.partial_factors?.set1?.overdig_fraction ?? 0.1) * 100, 0)} % of H, at most ${fmt(verification.partial_factors?.set1?.overdig_max_m ?? 0.5, 1)} m`
-            : "overdig by phase (see EC7 verification)",
+          ec7FactorsAreDefaults(verification.partial_factors) ? "Default EC7-BE partial factors" : "Partial factors changed by the user",
+          `overdig ${fmt(Number(verification.partial_factors?.set1?.overdig_fraction ?? 0.1) * 100, 0)} % of H, at most ${fmt(verification.partial_factors?.set1?.overdig_max_m ?? 0.5, 1)} m`,
           bendingSet || shearSet
             ? `bending governed by ${bendingSet || "the characteristic analysis"}, shear by ${shearSet || "the characteristic analysis"}`
             : "",
@@ -4594,8 +4428,6 @@ function bootApp() {
           phase_name: (quickEditor.querySelector("[data-qe-phase-name]") as HTMLInputElement | null)?.value,
           wall_type: (quickEditor.querySelector("[data-qe-wall-type]") as HTMLSelectElement | null)?.value,
           design_mode: (quickEditor.querySelector("[data-qe-design-mode]") as HTMLSelectElement | null)?.value,
-          ec7_preset: (quickEditor.querySelector("[data-qe-ec7-preset]") as HTMLSelectElement | null)?.value,
-          ec7_excavation_condition: (quickEditor.querySelector("[data-qe-ec7-excavation-condition]") as HTMLSelectElement | null)?.value,
           ec7_partial_factors: readEc7FactorInputs(quickEditor),
           toe_mode: (quickEditor.querySelector("[data-qe-toe-mode]") as HTMLSelectElement | null)?.value,
           top_level_m: Number((quickEditor.querySelector("[data-qe-top-level]") as HTMLInputElement | null)?.value),
@@ -4724,9 +4556,7 @@ function bootApp() {
                 ? "segment_bottom_level_m"
                 : field.matches("[data-qe-design-mode]")
                   ? "design_mode"
-                  : field.matches("[data-qe-ec7-preset]")
-                    ? "ec7_preset"
-                    : "";
+                  : "";
         currentProject = applyQuickEditorPatch(
           currentProject,
           currentPreviewPhaseIndex,
@@ -4818,7 +4648,7 @@ function bootApp() {
 
   input.addEventListener("input", () => {
     try {
-      currentProject = normalizeProject(JSON.parse(input.value));
+      currentProject = JSON.parse(input.value);
       markEdited();
       currentPreviewPhaseIndex = Math.min(currentPreviewPhaseIndex, Math.max(0, currentProject.phases.length - 1));
       currentEditorFocus = normalizeEditorFocus(currentProject, currentEditorFocus);
@@ -4847,7 +4677,7 @@ function bootApp() {
     try {
       status.textContent = "Running phased analysis...";
       status.classList.remove("status-error");
-      currentProject = normalizeProject(JSON.parse(input.value));
+      currentProject = JSON.parse(input.value);
       currentResult = await runAnalysis(currentProject, fetch, apiBaseUrl);
       currentResultDesignView = "characteristic";
       currentPreviewPhaseIndex = governingPhaseIndex(currentResult, currentProject.phases.length);
