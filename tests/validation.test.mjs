@@ -84,3 +84,16 @@ test("validation page publishes only the SPW 2006 comparison", async () => {
   assert.match(html, /id="spw-title"/);
   assert.doesNotMatch(html, /D-Sheet|Deltares|tutorial|Culmann|tutorials-title/i);
 });
+
+// 27/10/2026: software directories ask for a version history next to scope and validation.
+test("validation page carries dated release notes", async () => {
+  const html = await readFile(validationUrl, "utf8");
+  const releases = html.match(/<section[^>]*id="releases"[\s\S]*?<\/section>/);
+
+  assert.ok(releases, "validation.html needs a section with id=\"releases\"");
+  const dates = [...releases[0].matchAll(/<strong>(\d{1,2} [A-Z][a-z]+ 20\d\d)<\/strong>/g)].map((match) => Date.parse(match[1]));
+  assert.ok(dates.length >= 3, "expected at least three dated release entries");
+  assert.ok(dates.every((value) => !Number.isNaN(value)), "release dates must read as dates");
+  assert.deepEqual([...dates].sort((a, b) => b - a), dates, "release entries run newest first");
+  assert.match(releases[0], /formula version/i);
+});
