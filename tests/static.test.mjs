@@ -60,7 +60,8 @@ test("frontend is configured for retaining domain and API", async () => {
 
   assert.equal(cname.trim(), "retaining.easuys.com");
   assert.match(html, /EA Suys Retaining Tools/);
-  assert.match(html, /name="robots" content="noindex,nofollow"/);
+  assert.match(html, /name="robots" content="index, follow"/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/retaining\.easuys\.com\/">/);
   assert.match(html, /<strong>Engineering preview\.<\/strong>/);
   assert.match(html, /not a design release/);
   assert.doesNotMatch(html, /commercial|validation pending|still pending/i);
@@ -102,6 +103,24 @@ test("frontend is configured for retaining domain and API", async () => {
   assert.match(deployWorkflow, /actions\/deploy-pages@v4/);
   assert.match(deployWorkflow, /cp index\.html app\.js styles\.css CNAME README\.md page-dist\//);
   assert.match(deployWorkflow, /cp -R docs\/screenshots page-dist\/docs\/screenshots/);
+});
+
+// 27/10/2026: the workspace and validation page are indexable, like www.easuys.be and the structural tools.
+test("published pages are indexable and listed in the sitemap", async () => {
+  const deployWorkflow = await readFile(new URL("../.github/workflows/deploy-pages.yml", import.meta.url), "utf8");
+  const robots = await readFile(new URL("../robots.txt", import.meta.url), "utf8");
+  const sitemap = await readFile(new URL("../sitemap.xml", import.meta.url), "utf8");
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+
+  assert.match(deployWorkflow, /cp robots\.txt sitemap\.xml page-dist\//);
+  assert.match(robots, /^User-agent: \*\r?\nAllow: \/\r?$/m);
+  assert.match(robots, /^Sitemap: https:\/\/retaining\.easuys\.com\/sitemap\.xml\r?$/m);
+  assert.deepEqual(locs, ["https://retaining.easuys.com/", "https://retaining.easuys.com/validation.html"]);
+  for (const [page, url] of [["../index.html", locs[0]], ["../validation.html", locs[1]]]) {
+    const html = await readFile(new URL(page, import.meta.url), "utf8");
+    assert.doesNotMatch(html, /noindex/i, `${page} must not block indexing`);
+    assert.ok(html.includes(`<link rel="canonical" href="${url}">`), `${page} needs canonical ${url}`);
+  }
 });
 
 test("pull-request CI is bounded, read-only and cannot deploy", async () => {
