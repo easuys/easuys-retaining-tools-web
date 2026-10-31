@@ -1037,3 +1037,11 @@ th { background: #f0eee7; font-weight: 700; }
 .phase-alert strong { color: #8a1c14; }
 
 .ec7-verification h4 { margin: 12px 0 5px; }
+
+.analytics-note {
+  margin: 24px auto 32px;
+  max-width: 1200px;
+  padding: 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
